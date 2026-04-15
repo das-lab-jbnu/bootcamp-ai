@@ -1,0 +1,75 @@
+:root {
+  --brand-navy: #002d56;
+  --brand-slate: #475569;
+  --brand-light: #f8fafc;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.page-wrap {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+.hero-gradient {
+  background: linear-gradient(135deg, #002d56 0%, #0f172a 100%);
+}
+
+.hero-dynamic {
+  position: relative;
+  overflow: hidden;
+  background-color: #0b1d33;
+  background-image:
+    linear-gradient(120deg, rgba(0, 26, 51, 0.58) 0%, rgba(2, 45, 86, 0.42) 45%, rgba(15, 23, 42, 0.62) 100%),
+    url("../images/hero-robot-robot.jpg");
+  background-size: cover, cover;
+  background-position: center, 50% 45%;
+  animation: hero-pan 16s ease-in-out infinite alternate;
+}
+
+.hero-dynamic::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 25%, rgba(59, 130, 246, 0.2), transparent 50%);
+  pointer-events: none;
+}
+
+.hero-dynamic > .max-w-6xl {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes hero-pan {
+  from {
+    background-position: center, 48% 50%;
+  }
+  to {
+    background-position: center, 52% 46%;
+  }
+}
+
+.section-title {
+  color: var(--brand-navy);
+  letter-spacing: -0.02em;
+}
+
+.card {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(2, 6, 23, 0.04);
+}
+

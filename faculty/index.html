@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>교수진/인프라 | 전북대 방산 AI 부트캠프</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body>
+    <div class="page-wrap">
+      <header id="site-header"></header>
+      <main class="max-w-6xl mx-auto px-4 py-12">
+        <h1 class="section-title text-3xl font-bold">교수진 및 인프라</h1>
+        <section class="mt-8">
+          <h2 class="text-xl font-semibold text-slate-900">참여 교수진</h2>
+          <div id="faculty-list" class="mt-4 grid gap-4 md:grid-cols-2"></div>
+        </section>
+        <section class="mt-10">
+          <h2 class="text-xl font-semibold text-slate-900">핵심 장비</h2>
+          <div id="infra-list" class="mt-4 grid gap-4 md:grid-cols-3"></div>
+        </section>
+      </main>
+      <footer id="site-footer"></footer>
+    </div>
+    <script src="../assets/js/data.js"></script>
+    <script src="../assets/js/common.js"></script>
+    <script>
+      renderCards(
+        "faculty-list",
+        window.BOOTCAMP_DATA.faculty,
+        (prof) =>
+          `<article class="card p-5"><h3 class="font-semibold">${prof.name}</h3><p class="text-sm text-slate-600 mt-1">${prof.role}</p></article>`
+      );
+      renderCards(
+        "infra-list",
+        window.BOOTCAMP_DATA.infra,
+        (item) => `<article class="card p-5 text-sm text-slate-700">${item}</article>`
+      );
+    </script>
+  </body>
+</html>
