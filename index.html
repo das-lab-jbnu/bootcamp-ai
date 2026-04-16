@@ -1,28 +1,9 @@
 ﻿<!doctype html>
 <html lang="ko">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="K-방산에 적응하는 AI 인재 양성 부트캠프 사업" />
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="전북대학교 방산AI부트캠프" />
-    <meta property="og:title" content="전북대학교 방산AI부트캠프" />
-    <meta property="og:description" content="K-방산에 적응하는 AI 인재 양성 부트캠프 사업" />
-    <meta property="og:url" content="https://das.jbnu.ac.kr/bootcamp-ai/index.html" />
-    <meta property="og:image" content="https://das.jbnu.ac.kr/bootcamp-ai/assets/images/hero-robot-robot.jpg?v=2" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="전북대학교 방산AI부트캠프" />
-    <meta name="twitter:description" content="K-방산에 적응하는 AI 인재 양성 부트캠프 사업" />
-    <meta name="twitter:image" content="https://das.jbnu.ac.kr/bootcamp-ai/assets/images/hero-robot-robot.jpg?v=2" />
     <title>전북대 방산 AI 부트캠프</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="./assets/js/version.js"></script>
-    <script src="./assets/js/asset-loader.js"></script>
-    <script>
-      loadBootcampAssets({ basePath: "./", loadData: true });
-    </script>
+    <link rel="stylesheet" href="./assets/css/style.css" />
   </head>
   <body>
     <div class="page-wrap">
@@ -46,6 +27,8 @@
       <footer id="site-footer"></footer>
     </div>
 
+    <script src="./assets/js/data.js"></script>
+    <script src="./assets/js/common.js"></script>
     <script>
       const data = window.BOOTCAMP_DATA;
       document.getElementById("hero-message").textContent = data.heroMessage;
