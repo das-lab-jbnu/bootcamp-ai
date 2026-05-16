@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>방산개방형아키텍처 강의계획서</title>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+        background: #f3f6fb;
+        color: #1f2937;
+        line-height: 1.7;
+    }
+
+    .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 40px 24px;
+    }
+
+    .hero {
+        background: linear-gradient(135deg, #071b3a, #0b3d91, #1479c9);
+        color: white;
+        padding: 56px 48px;
+        border-radius: 28px;
+        box-shadow: 0 20px 40px rgba(11, 61, 145, 0.25);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero::after {
+        content: "";
+        position: absolute;
+        width: 260px;
+        height: 260px;
+        right: -80px;
+        top: -80px;
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 50%;
+    }
+
+    .badge {
+        display: inline-block;
+        background: rgba(255,255,255,0.16);
+        border: 1px solid rgba(255,255,255,0.3);
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 14px;
+        margin-bottom: 18px;
+    }
+
+    .hero h1 {
+        font-size: 42px;
+        margin: 0 0 12px;
+        letter-spacing: -1px;
+    }
+
+    .hero p {
+        font-size: 18px;
+        margin: 0;
+        color: #dbeafe;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin: 28px 0;
+    }
+
+    .summary-card {
+        background: white;
+        border-radius: 20px;
+        padding: 22px;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+        border-top: 5px solid #0b3d91;
+    }
+
+    .summary-card .label {
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .summary-card .value {
+        font-size: 24px;
+        font-weight: 800;
+        color: #0b3d91;
+        margin-top: 4px;
+    }
+
+    section {
+        background: white;
+        margin-top: 26px;
+        padding: 34px;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    h2 {
+        margin-top: 0;
+        font-size: 25px;
+        color: #0f172a;
+        border-left: 7px solid #0b3d91;
+        padding-left: 14px;
+    }
+
+    .lead {
+        font-size: 17px;
+        color: #334155;
+    }
+
+    .keyword-box {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+    }
+
+    .keyword {
+        background: #e0f2fe;
+        color: #075985;
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+    }
+
+    .box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        padding: 22px;
+    }
+
+    .box h3 {
+        margin-top: 0;
+        color: #0b3d91;
+    }
+
+    ul {
+        margin-bottom: 0;
+        padding-left: 22px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: 16px;
+        margin-top: 18px;
+    }
+
+    th {
+        background: #0b3d91;
+        color: white;
+        padding: 14px;
+        font-size: 15px;
+    }
+
+    td {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 14px;
+        vertical-align: top;
+        background: white;
+    }
+
+    tr:nth-child(even) td {
+        background: #f8fafc;
+    }
+
+    .tag-online {
+        display: inline-block;
+        background: #dbeafe;
+        color: #1d4ed8;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    .tag-lab {
+        display: inline-block;
+        background: #dcfce7;
+        color: #15803d;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    .timeline-title {
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .eval-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-top: 18px;
+    }
+
+    .eval-card {
+        background: linear-gradient(180deg, #ffffff, #f8fafc);
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        padding: 22px;
+        text-align: center;
+    }
+
+    .eval-card strong {
+        display: block;
+        font-size: 28px;
+        color: #0b3d91;
+        margin-bottom: 4px;
+    }
+
+    .footer {
+        text-align: center;
+        margin-top: 36px;
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    @media print {
+        body {
+            background: white;
+        }
+
+        section, .hero, .summary-card {
+            box-shadow: none;
+        }
+    }
+
+    @media (max-width: 800px) {
+        .summary-grid,
+        .two-col,
+        .eval-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .hero h1 {
+            font-size: 32px;
+        }
+    }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+    <div class="hero">
+        <div class="badge">자율시스템 Track</div>
+        <h1>방산개방형아키텍처</h1>
+        <p>ROS2 기반 자율무인체계 · 인지-판단-제어 시스템 · 자율주행 플랫폼 이해</p>
+    </div>
+
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="label">총 교육시간</div>
+            <div class="value">40H</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">온라인 이론</div>
+            <div class="value">24H</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">오프라인 실습</div>
+            <div class="value">16H</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">핵심 플랫폼</div>
+            <div class="value">ROS2</div>
+        </div>
+    </div>
+
+    <section>
+        <h2>1. 교과목 개요</h2>
+        <p class="lead">
+            본 교과목은 방산 분야에서 활용되는 개방형 아키텍처의 개념을 이해하고,
+            ROS2 기반 자율주행 및 무인체계 시스템의 구조를 학습하는 과목이다.
+            특히 자율주행 시스템의 핵심 구조인 센서, 인지, 판단, 제어 과정을
+            하나의 통합 아키텍처 관점에서 다룬다.
+        </p>
+
+        <div class="keyword-box">
+            <span class="keyword">Defense Open Architecture</span>
+            <span class="keyword">ROS2</span>
+            <span class="keyword">Autonomous System</span>
+            <span class="keyword">Perception</span>
+            <span class="keyword">Planning</span>
+            <span class="keyword">Control</span>
+            <span class="keyword">UGV / UAV</span>
+        </div>
+    </section>
+
+    <section>
+        <h2>2. 교육 목표</h2>
+        <div class="two-col">
+            <div class="box">
+                <h3>기술 이해</h3>
+                <ul>
+                    <li>방산 개방형 아키텍처의 필요성 이해</li>
+                    <li>ROS2 기반 로봇 시스템 구조 이해</li>
+                    <li>자율주행 시스템 구성요소 이해</li>
+                    <li>센서-인지-판단-제어 흐름 이해</li>
+                </ul>
+            </div>
+
+            <div class="box">
+                <h3>실무 역량</h3>
+                <ul>
+                    <li>ROS2 개발환경 구축</li>
+                    <li>Topic, Service, Action 통신 실습</li>
+                    <li>센서 데이터 시각화 및 처리</li>
+                    <li>자율주행 통합 시스템 구성 실습</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>3. 운영 방식</h2>
+        <table>
+            <tr>
+                <th>구분</th>
+                <th>시간</th>
+                <th>운영 내용</th>
+            </tr>
+            <tr>
+                <td><span class="tag-online">온라인</span></td>
+                <td>24시간</td>
+                <td>
+                    방산 개방형 아키텍처, ROS2 기본 개념, 자율주행 시스템,
+                    인지-판단-제어 구조에 대한 이론 강의
+                </td>
+            </tr>
+            <tr>
+                <td><span class="tag-lab">실습</span></td>
+                <td>16시간</td>
+                <td>
+                    ROS2 환경 구축, Publisher/Subscriber 구현,
+                    센서 데이터 처리, 자율주행 통합 실습
+                </td>
+            </tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>4. 주차별 강의계획</h2>
+        <table>
+            <tr>
+                <th>주차</th>
+                <th>방식</th>
+                <th>주제</th>
+                <th>세부 내용</th>
+                <th>시간</th>
+            </tr>
+
+            <tr>
+                <td>1</td>
+                <td><span class="tag-online">온라인</span></td>
+                <td class="timeline-title">방산 개방형 아키텍처 개요</td>
+                <td>방산 SW 플랫폼 변화, Open Architecture 개념, ROS2 필요성</td>
+                <td>3H</td>
+            </tr>
+
+            <tr>
+                <td>2</td>
+                <td><span class="tag-online">온라인</span></td>
+                <td class="timeline-title">자율주행 시스템 구조</td>
+                <td>자율주행 차량 구조, 센서-인지-판단-제어 흐름, ADAS와 자율주행 단계</td>
+                <td>3H</td>
+            </tr>
+
+            <tr>
+                <td>3</td>
+                <td><span class="tag-online">온라인</span></td>
+                <td class="timeline-title">ROS2 기본 구조</td>
+                <td>Node, Topic, Service, Action, DDS 기반 통신 구조</td>
+                <td>3H</td>
+            </tr>
+
+            <tr>
+                <td>4</td>
+                <td><span class="tag-online">온라인</span></td>
+                <td class="timeline-title">자율주행 센서 시스템</td>
+                <td>Camera, LiDAR, Radar, GPS, IMU 센서 구조</td>
+                <td>3H</td>
+            </tr>
+
+            <tr>
+                <td>5</td>
+                <td><span class="tag-online">온라인</span></td>
+                <td class="timeline-title">인지 시스템</td>
+                <td>객체 인식, 차선 인식, Sensor Fusion, 딥러닝 기반 인지</td>
+                <td>3H</td>
+            </tr>
+
+            <tr>
+                <td>6</td>
+                <td><span class="tag-online">온라인</span></td>
+                <td class="timeline-title">판단 시스템</td>
+                <td>경로 계획, 행동 계획, Mission Planning, 의사결정 구조</td>
+                <td>3H</td>
+            </tr>
+
+            <tr>
+                <td>7</td>
+                <td><span class="tag-online">온라인</span></td>
+                <td class="timeline-title">제어 시스템</td>
+                <td>PID 제어, 차량 제어, Ackermann Steering 기초</td>
+                <td>3H</td>
+            </tr>
+
+            <tr>
+                <td>8</td>
+                <td><span class="tag-online">온라인</span></td>
+                <td class="timeline-title">방산 무인체계 적용 사례</td>
+                <td>UGV, 미래 전장 AI 시스템</td>
+                <td>3H</td>
+            </tr>
+
+            <tr>
+                <td>9</td>
+                <td><span class="tag-lab">실습</span></td>
+                <td class="timeline-title">ROS2 개발환경 구축</td>
+                <td>Ubuntu, ROS2 Humble, Workspace, Package 생성</td>
+                <td>4H</td>
+            </tr>
+
+            <tr>
+                <td>10</td>
+                <td><span class="tag-lab">실습</span></td>
+                <td class="timeline-title">ROS2 통신 실습</td>
+                <td>Publisher, Subscriber, Topic Echo, Service, Action 실습</td>
+                <td>4H</td>
+            </tr>
+
+            <tr>
+                <td>11</td>
+                <td><span class="tag-lab">실습</span></td>
+                <td class="timeline-title">센서 데이터 처리</td>
+                <td>Camera, LiDAR, PointCloud, RViz 시각화</td>
+                <td>4H</td>
+            </tr>
+
+            <tr>
+                <td>12</td>
+                <td><span class="tag-lab">실습</span></td>
+                <td class="timeline-title">자율주행 통합 실습</td>
+                <td>인지-판단-제어 연결, 시뮬레이션</td>
+                <td>4H</td>
+            </tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>5. 평가 방법</h2>
+        <div class="eval-grid">
+            <div class="eval-card">
+                <strong>40%</strong>
+                출석 및 참여도
+            </div>
+            <div class="eval-card">
+                <strong>30%</strong>
+                온라인 학습
+            </div>
+            <div class="eval-card">
+                <strong>40%</strong>
+                최종 프로젝트
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>6. 기대 효과</h2>
+        <div class="two-col">
+            <div class="box">
+                <h3>학습자 역량</h3>
+                <ul>
+                    <li>ROS2 기반 자율시스템 개발 이해</li>
+                    <li>방산 무인체계 소프트웨어 구조 이해</li>
+                    <li>센서 및 AI 기반 판단 시스템 이해</li>
+                </ul>
+            </div>
+
+            <div class="box">
+                <h3>산업 연계성</h3>
+                <ul>
+                    <li>UGV, UAV, 자율주행 플랫폼 개발 기초 확보</li>
+                    <li>방산 AI 및 로봇 시스템 실무 역량 강화</li>
+                    <li>개방형 아키텍처 기반 시스템 통합 역량 확보</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <div class="footer">
+        방산개방형아키텍처 | Defense Open Architecture for Autonomous Systems
+    </div>
+
+</div>
+</body>
+</html>

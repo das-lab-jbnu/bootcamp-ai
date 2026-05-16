@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>AIpy 솔루션 기반 Agentic AI 실전 프로젝트 강의계획서</title>
+
+<style>
+    *{
+        box-sizing:border-box;
+    }
+
+    body{
+        margin:0;
+        font-family:"Pretendard","Noto Sans KR","Malgun Gothic",sans-serif;
+        background:#f3f6fb;
+        color:#1f2937;
+        line-height:1.7;
+    }
+
+    .container{
+        max-width:1100px;
+        margin:0 auto;
+        padding:40px 24px;
+    }
+
+    .hero{
+        background:linear-gradient(135deg,#111827,#1e3a8a,#2563eb);
+        color:white;
+        padding:56px 48px;
+        border-radius:28px;
+        box-shadow:0 20px 40px rgba(37,99,235,0.25);
+        position:relative;
+        overflow:hidden;
+    }
+
+    .hero::after{
+        content:"";
+        position:absolute;
+        width:260px;
+        height:260px;
+        border-radius:50%;
+        background:rgba(255,255,255,0.08);
+        top:-80px;
+        right:-80px;
+    }
+
+    .badge{
+        display:inline-block;
+        background:rgba(255,255,255,0.16);
+        border:1px solid rgba(255,255,255,0.3);
+        padding:6px 14px;
+        border-radius:999px;
+        font-size:14px;
+        margin-bottom:18px;
+    }
+
+    .hero h1{
+        margin:0 0 12px;
+        font-size:40px;
+        letter-spacing:-1px;
+    }
+
+    .hero p{
+        margin:0;
+        font-size:18px;
+        color:#dbeafe;
+    }
+
+    .summary-grid{
+        display:grid;
+        grid-template-columns:repeat(4,1fr);
+        gap:18px;
+        margin:28px 0;
+    }
+
+    .summary-card{
+        background:white;
+        border-radius:20px;
+        padding:22px;
+        box-shadow:0 10px 25px rgba(15,23,42,0.08);
+        border-top:5px solid #2563eb;
+    }
+
+    .summary-card .label{
+        color:#64748b;
+        font-size:14px;
+    }
+
+    .summary-card .value{
+        font-size:24px;
+        font-weight:800;
+        color:#1d4ed8;
+        margin-top:4px;
+    }
+
+    section{
+        background:white;
+        margin-top:26px;
+        padding:34px;
+        border-radius:24px;
+        box-shadow:0 10px 30px rgba(15,23,42,0.06);
+    }
+
+    h2{
+        margin-top:0;
+        font-size:25px;
+        color:#0f172a;
+        border-left:7px solid #2563eb;
+        padding-left:14px;
+    }
+
+    .lead{
+        font-size:17px;
+        color:#334155;
+    }
+
+    .keyword-box{
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+        margin-top:16px;
+    }
+
+    .keyword{
+        background:#dbeafe;
+        color:#1d4ed8;
+        padding:8px 14px;
+        border-radius:999px;
+        font-weight:600;
+        font-size:14px;
+    }
+
+    .two-col{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:22px;
+    }
+
+    .box{
+        background:#f8fafc;
+        border:1px solid #e2e8f0;
+        border-radius:18px;
+        padding:22px;
+    }
+
+    .box h3{
+        margin-top:0;
+        color:#2563eb;
+    }
+
+    ul{
+        padding-left:22px;
+        margin-bottom:0;
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        overflow:hidden;
+        border-radius:16px;
+        margin-top:18px;
+    }
+
+    th{
+        background:#2563eb;
+        color:white;
+        padding:14px;
+        font-size:15px;
+    }
+
+    td{
+        border-bottom:1px solid #e5e7eb;
+        padding:14px;
+        vertical-align:top;
+        background:white;
+    }
+
+    tr:nth-child(even) td{
+        background:#f8fafc;
+    }
+
+    .tag-online{
+        display:inline-block;
+        background:#dbeafe;
+        color:#1d4ed8;
+        padding:5px 10px;
+        border-radius:999px;
+        font-weight:700;
+        font-size:13px;
+    }
+
+    .tag-offline{
+        display:inline-block;
+        background:#dcfce7;
+        color:#15803d;
+        padding:5px 10px;
+        border-radius:999px;
+        font-weight:700;
+        font-size:13px;
+    }
+
+    .timeline-title{
+        font-weight:800;
+        color:#0f172a;
+    }
+
+    .eval-grid{
+        display:grid;
+        grid-template-columns:repeat(4,1fr);
+        gap:16px;
+        margin-top:18px;
+    }
+
+    .eval-card{
+        background:linear-gradient(180deg,#ffffff,#f8fafc);
+        border:1px solid #e2e8f0;
+        border-radius:18px;
+        padding:22px;
+        text-align:center;
+    }
+
+    .eval-card strong{
+        display:block;
+        font-size:28px;
+        color:#2563eb;
+        margin-bottom:4px;
+    }
+
+    .footer{
+        text-align:center;
+        margin-top:36px;
+        color:#64748b;
+        font-size:14px;
+    }
+
+    @media(max-width:800px){
+
+        .summary-grid,
+        .two-col,
+        .eval-grid{
+            grid-template-columns:1fr;
+        }
+
+        .hero h1{
+            font-size:30px;
+        }
+
+    }
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="hero">
+
+        <div class="badge">Defense AI Track</div>
+
+        <h1>AIpy 솔루션 기반 Agentic AI 실전 프로젝트</h1>
+
+        <p>
+            생성형 AI · RAG · 멀티에이전트 · 방산 특화 AI 서비스 실전 프로젝트
+        </p>
+
+    </div>
+
+    <div class="summary-grid">
+
+        <div class="summary-card">
+            <div class="label">총 교육시간</div>
+            <div class="value">40H</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="label">온라인 실시간</div>
+            <div class="value">8H</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="label">오프라인 실습</div>
+            <div class="value">32H</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="label">운영기간</div>
+            <div class="value">07.13 ~ 07.24</div>
+        </div>
+
+    </div>
+
+    <section>
+
+        <h2>1. 교과목 개요</h2>
+
+        <p class="lead">
+            본 교과목은 생성형 AI 및 Agentic AI 기술을 활용하여
+            기업 실무형 AI 서비스를 직접 설계·구현하는 프로젝트 기반 교육과정이다.
+        </p>
+
+        <p class="lead">
+            특히 방산 분야 데이터를 활용한 RAG(Retrieval-Augmented Generation)
+            기반 AI 서비스 구축과 멀티 에이전트 시스템 설계를 중심으로,
+            실무형 AI Agent 개발 역량을 강화하는 것을 목표로 한다.
+        </p>
+
+        <div class="keyword-box">
+
+            <span class="keyword">Generative AI</span>
+            <span class="keyword">Agentic AI</span>
+            <span class="keyword">RAG</span>
+            <span class="keyword">Vector DB</span>
+            <span class="keyword">Prompt Engineering</span>
+            <span class="keyword">Multi-Agent</span>
+            <span class="keyword">Defense AI</span>
+
+        </div>
+
+    </section>
+
+    <section>
+
+        <h2>2. 교육 목표</h2>
+
+        <div class="two-col">
+
+            <div class="box">
+
+                <h3>AI 기술 역량</h3>
+
+                <ul>
+                    <li>생성형 AI 및 Agent 구조 이해</li>
+                    <li>RAG 기반 데이터 처리 이해</li>
+                    <li>멀티 에이전트 시스템 설계</li>
+                    <li>AI 서비스 성능 검증 및 평가</li>
+                </ul>
+
+            </div>
+
+            <div class="box">
+
+                <h3>실무 프로젝트 역량</h3>
+
+                <ul>
+                    <li>기업 실무형 PoC 프로젝트 수행</li>
+                    <li>비정형 데이터 자산화 실습</li>
+                    <li>AI 서비스 자동화 구현</li>
+                    <li>산업 문제 해결형 프로젝트 경험 확보</li>
+                </ul>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section>
+
+        <h2>3. 운영 방식</h2>
+
+        <table>
+
+            <tr>
+                <th>구분</th>
+                <th>시간</th>
+                <th>운영 내용</th>
+            </tr>
+
+            <tr>
+
+                <td><span class="tag-online">온라인</span></td>
+
+                <td>8시간</td>
+
+                <td>
+                    생성형 AI 및 AI Agent 구조 이해,
+                    방산 AI 활용 사례 및 프로젝트 기획 중심 이론 강의
+                </td>
+
+            </tr>
+
+            <tr>
+
+                <td><span class="tag-offline">오프라인</span></td>
+
+                <td>32시간</td>
+
+                <td>
+                    AIpy 기반 데이터 전처리, RAG 구축,
+                    멀티 에이전트 설계 및 팀 프로젝트 실습 운영
+                </td>
+
+            </tr>
+
+        </table>
+
+    </section>
+
+    <section>
+
+        <h2>4. 주차별 강의계획</h2>
+
+        <table>
+
+            <tr>
+                <th>회차</th>
+                <th>방식</th>
+                <th>주제</th>
+                <th>세부 내용</th>
+                <th>시간</th>
+            </tr>
+
+            <tr>
+
+                <td>1일차</td>
+
+                <td><span class="tag-online">온라인</span></td>
+
+                <td class="timeline-title">생성형 AI 및 Agentic AI 개요</td>
+
+                <td>
+                    생성형 AI 기술 동향, AI Agent 구조,
+                    방산 산업 적용 사례 및 프로젝트 방향 설정
+                </td>
+
+                <td>4H</td>
+
+            </tr>
+
+            <tr>
+
+                <td>2일차</td>
+
+                <td><span class="tag-online">온라인</span></td>
+
+                <td class="timeline-title">프롬프트 엔지니어링 및 프로젝트 기획</td>
+
+                <td>
+                    프롬프트 설계 기법,
+                    PBL 프로젝트 주제 도출 및 팀 구성
+                </td>
+
+                <td>4H</td>
+
+            </tr>
+
+            <tr>
+
+                <td>3일차</td>
+
+                <td><span class="tag-offline">오프라인</span></td>
+
+                <td class="timeline-title">비정형 데이터 전처리 실습</td>
+
+                <td>
+                    PDF/HWP 데이터 추출,
+                    텍스트 구조화 및 데이터 자산화 실습
+                </td>
+
+                <td>4H</td>
+
+            </tr>
+
+            <tr>
+
+                <td>4일차</td>
+
+                <td><span class="tag-offline">오프라인</span></td>
+
+                <td class="timeline-title">RAG 데이터 구조화 및 청킹 전략</td>
+
+                <td>
+                    문서 구조 분석,
+                    Chunking 전략 및 임베딩 최적화 실습
+                </td>
+
+                <td>4H</td>
+
+            </tr>
+
+            <tr>
+
+                <td>5일차</td>
+
+                <td><span class="tag-offline">오프라인</span></td>
+
+                <td class="timeline-title">벡터 DB 및 시맨틱 검색</td>
+
+                <td>
+                    벡터 데이터베이스 구축,
+                    시맨틱 검색 최적화 실습
+                </td>
+
+                <td>4H</td>
+
+            </tr>
+
+            <tr>
+
+                <td>6일차</td>
+
+                <td><span class="tag-offline">오프라인</span></td>
+
+                <td class="timeline-title">AI Agent 워크플로우 설계</td>
+
+                <td>
+                    AIpy Agent Studio 기반
+                    자동화 워크플로우 설계 및 구현
+                </td>
+
+                <td>4H</td>
+
+            </tr>
+
+            <tr>
+
+                <td>7일차</td>
+
+                <td><span class="tag-offline">오프라인</span></td>
+
+                <td class="timeline-title">멀티 에이전트 및 API 연동</td>
+
+                <td>
+                    멀티 에이전트 협업 구조 설계,
+                    외부 API 연동 실습
+                </td>
+
+                <td>4H</td>
+
+            </tr>
+
+            <tr>
+
+                <td>8일차</td>
+
+                <td><span class="tag-offline">오프라인</span></td>
+
+                <td class="timeline-title">생성형 AI 신뢰성 검증</td>
+
+                <td>
+                    Hallucination 대응 전략,
+                    Fact-checking 및 성능 평가 실습
+                </td>
+
+                <td>4H</td>
+
+            </tr>
+
+            <tr>
+
+                <td>9일차</td>
+
+                <td><span class="tag-offline">오프라인</span></td>
+
+                <td class="timeline-title">PoC 프로젝트 고도화</td>
+
+                <td>
+                    프로젝트 결과물 개선,
+                    프롬프트 최적화 및 서비스 안정화
+                </td>
+
+                <td>4H</td>
+
+            </tr>
+
+            <tr>
+
+                <td>10일차</td>
+
+                <td><span class="tag-offline">오프라인</span></td>
+
+                <td class="timeline-title">최종 프로젝트 발표</td>
+
+                <td>
+                    팀별 결과 발표,
+                    산업체 전문가 피드백 및 종합 평가
+                </td>
+
+                <td>4H</td>
+
+            </tr>
+
+        </table>
+
+    </section>
+
+    <section>
+
+        <h2>5. 평가 방법</h2>
+
+        <div class="eval-grid">
+
+            <div class="eval-card">
+                <strong>20%</strong>
+                출석 및 참여도
+            </div>
+
+            <div class="eval-card">
+                <strong>30%</strong>
+                프로젝트 수행
+            </div>
+
+            <div class="eval-card">
+                <strong>30%</strong>
+                AI 서비스 구현
+            </div>
+
+            <div class="eval-card">
+                <strong>20%</strong>
+                최종 발표
+            </div>
+
+        </div>
+
+    </section>
+
+    <section>
+
+        <h2>6. 기대 효과</h2>
+
+        <div class="two-col">
+
+            <div class="box">
+
+                <h3>학습자 역량</h3>
+
+                <ul>
+                    <li>생성형 AI 및 Agentic AI 실무 역량 확보</li>
+                    <li>RAG 기반 데이터 처리 기술 습득</li>
+                    <li>멀티 에이전트 서비스 설계 경험 확보</li>
+                    <li>기업 프로젝트 기반 실무 수행 경험 강화</li>
+                </ul>
+
+            </div>
+
+            <div class="box">
+
+                <h3>산업 연계성</h3>
+
+                <ul>
+                    <li>방산·공공 분야 AI 서비스 개발 경험 확보</li>
+                    <li>산학협력 기반 프로젝트 수행 역량 강화</li>
+                    <li>AI Agent 기반 서비스 상용화 이해</li>
+                    <li>취업 및 인턴십 연계 기반 마련</li>
+                </ul>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <div class="footer">
+        AIpy 기반 Agentic AI 실전 프로젝트 |
+        AI Agent & Defense AI Project Bootcamp
+    </div>
+
+</div>
+
+</body>
+</html>

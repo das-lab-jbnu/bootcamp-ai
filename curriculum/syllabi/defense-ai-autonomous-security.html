@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>국방 AI 및 자율무인체계 보안 강의계획서</title>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+        background:
+            radial-gradient(circle at top left, rgba(14, 165, 233, 0.14), transparent 28rem),
+            linear-gradient(180deg, #eef4fb 0%, #f7fafc 44%, #eef4fb 100%);
+        color: #1f2937;
+        line-height: 1.7;
+    }
+
+    .container {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 40px 24px;
+    }
+
+    .hero {
+        background:
+            linear-gradient(135deg, rgba(3, 7, 18, 0.94), rgba(7, 27, 58, 0.95), rgba(12, 74, 110, 0.9)),
+            repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 74px);
+        color: white;
+        padding: 58px 48px;
+        border-radius: 28px;
+        box-shadow: 0 24px 48px rgba(8, 47, 73, 0.28);
+        position: relative;
+        overflow: hidden;
+        min-height: 360px;
+    }
+
+    .hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(125, 211, 252, 0.12) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(125, 211, 252, 0.1) 1px, transparent 1px);
+        background-size: 42px 42px;
+        mask-image: linear-gradient(90deg, transparent, #000 20%, #000 82%, transparent);
+    }
+
+    .hero::after {
+        content: "";
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        right: -92px;
+        top: -92px;
+        border: 1px solid rgba(125, 211, 252, 0.42);
+        border-radius: 50%;
+        box-shadow: inset 0 0 60px rgba(14, 165, 233, 0.2);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 760px;
+    }
+
+    .badge {
+        display: inline-block;
+        background: rgba(14, 165, 233, 0.18);
+        border: 1px solid rgba(186, 230, 253, 0.38);
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 14px;
+        margin-bottom: 18px;
+        color: #e0f2fe;
+    }
+
+    .lab-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        width: fit-content;
+        margin: 14px 0 6px;
+        padding: 10px 14px;
+        border: 1px solid rgba(186, 230, 253, 0.38);
+        border-radius: 14px;
+        background: rgba(248, 250, 252, 0.1);
+        color: #f8fafc;
+        text-decoration: none;
+        backdrop-filter: blur(6px);
+    }
+
+    .lab-link img {
+        width: 44px;
+        height: 44px;
+        object-fit: contain;
+        border-radius: 10px;
+        background: white;
+        padding: 4px;
+    }
+
+    .lab-link strong {
+        display: block;
+        font-size: 16px;
+        line-height: 1.2;
+    }
+
+    .lab-link span {
+        display: block;
+        color: #bae6fd;
+        font-size: 13px;
+        line-height: 1.35;
+    }
+
+    .hero h1 {
+        font-size: 42px;
+        margin: 0 0 10px;
+        letter-spacing: -0.5px;
+    }
+
+    .hero .subtitle {
+        margin: 0;
+        font-size: 20px;
+        color: #bae6fd;
+        font-weight: 700;
+    }
+
+    .hero .banner {
+        margin: 18px 0 0;
+        font-size: 18px;
+        color: #e0f2fe;
+    }
+
+    .signal-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+    }
+
+    .signal {
+        background: rgba(15, 23, 42, 0.44);
+        border: 1px solid rgba(125, 211, 252, 0.32);
+        border-radius: 999px;
+        color: #f8fafc;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 8px 13px;
+    }
+
+    .drone-field {
+        position: absolute;
+        right: 34px;
+        bottom: 28px;
+        width: 300px;
+        height: 190px;
+        z-index: 1;
+        opacity: 0.95;
+    }
+
+    .drone-node {
+        position: absolute;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: #7dd3fc;
+        box-shadow: 0 0 22px rgba(125, 211, 252, 0.88);
+    }
+
+    .drone-node::before,
+    .drone-node::after {
+        content: "";
+        position: absolute;
+        width: 32px;
+        height: 1px;
+        left: -8px;
+        top: 7px;
+        background: rgba(224, 242, 254, 0.78);
+    }
+
+    .drone-node::after {
+        transform: rotate(90deg);
+    }
+
+    .drone-node:nth-child(1) { left: 22px; top: 44px; }
+    .drone-node:nth-child(2) { left: 92px; top: 12px; }
+    .drone-node:nth-child(3) { left: 166px; top: 50px; }
+    .drone-node:nth-child(4) { left: 236px; top: 26px; }
+    .drone-node:nth-child(5) { left: 60px; top: 132px; }
+    .drone-node:nth-child(6) { left: 148px; top: 112px; }
+    .drone-node:nth-child(7) { left: 238px; top: 142px; }
+
+    .swarm-line {
+        position: absolute;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(125, 211, 252, 0), rgba(125, 211, 252, 0.55), rgba(125, 211, 252, 0));
+        transform-origin: left;
+    }
+
+    .line-1 { left: 36px; top: 56px; width: 132px; transform: rotate(-12deg); }
+    .line-2 { left: 104px; top: 26px; width: 140px; transform: rotate(11deg); }
+    .line-3 { left: 72px; top: 142px; width: 180px; transform: rotate(-6deg); }
+    .line-4 { left: 162px; top: 62px; width: 92px; transform: rotate(56deg); }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin: 28px 0;
+    }
+
+    .summary-card {
+        background: white;
+        border-radius: 20px;
+        padding: 22px;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+        border-top: 5px solid #0f3b5f;
+    }
+
+    .summary-card .label {
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .summary-card .value {
+        font-size: 24px;
+        font-weight: 800;
+        color: #0f3b5f;
+        margin-top: 4px;
+    }
+
+    section {
+        background: white;
+        margin-top: 26px;
+        padding: 34px;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    h2 {
+        margin-top: 0;
+        font-size: 25px;
+        color: #0f172a;
+        border-left: 7px solid #0f3b5f;
+        padding-left: 14px;
+    }
+
+    .lead {
+        font-size: 17px;
+        color: #334155;
+    }
+
+    .overview-image {
+        margin: 18px 0 24px;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        overflow: hidden;
+        background: #f8fafc;
+    }
+
+    .overview-image img {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+
+    .keyword-box {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+    }
+
+    .keyword {
+        background: #e0f2fe;
+        color: #075985;
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .two-col,
+    .three-col {
+        display: grid;
+        gap: 22px;
+    }
+
+    .two-col {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .three-col {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        padding: 22px;
+    }
+
+    .box h3 {
+        margin-top: 0;
+        color: #0f3b5f;
+    }
+
+    ul {
+        margin-bottom: 0;
+        padding-left: 22px;
+    }
+
+    .paper-card {
+        border: 1px solid #cbd5e1;
+        border-radius: 18px;
+        background:
+            linear-gradient(180deg, #ffffff, #f8fafc),
+            repeating-linear-gradient(0deg, transparent 0 30px, rgba(15, 59, 95, 0.05) 30px 31px);
+        padding: 24px;
+    }
+
+    .paper-meta {
+        color: #64748b;
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .paper-title {
+        margin: 8px 0 16px;
+        font-size: 21px;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .paper-flow {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .paper-step {
+        border: 1px solid #dbe4ee;
+        border-radius: 14px;
+        padding: 14px;
+        background: #f8fafc;
+        font-size: 14px;
+        font-weight: 700;
+        color: #164e63;
+        text-align: center;
+    }
+
+    .architecture {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr 1fr;
+        align-items: center;
+        gap: 18px;
+        margin-top: 18px;
+    }
+
+    .arch-column {
+        display: grid;
+        gap: 12px;
+    }
+
+    .arch-node {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 16px;
+        padding: 16px;
+        text-align: center;
+        font-weight: 800;
+        color: #0f3b5f;
+    }
+
+    .arch-core {
+        min-height: 220px;
+        border-radius: 22px;
+        background:
+            linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(15, 59, 95, 0.92)),
+            linear-gradient(90deg, rgba(125, 211, 252, 0.16) 1px, transparent 1px);
+        background-size: auto, 28px 28px;
+        color: white;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        padding: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .arch-core::after {
+        content: "";
+        position: absolute;
+        inset: 22px;
+        border: 1px dashed rgba(186, 230, 253, 0.42);
+        border-radius: 18px;
+    }
+
+    .arch-core strong {
+        display: block;
+        font-size: 24px;
+        margin-bottom: 8px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .arch-core span {
+        color: #bae6fd;
+        position: relative;
+        z-index: 1;
+    }
+
+    .battle-grid {
+        display: grid;
+        grid-template-columns: 1fr 0.8fr 1fr;
+        gap: 18px;
+        align-items: stretch;
+        margin-top: 18px;
+    }
+
+    .team-card {
+        border-radius: 20px;
+        padding: 24px;
+        color: white;
+        min-height: 220px;
+    }
+
+    .team-card h3 {
+        margin-top: 0;
+        font-size: 24px;
+    }
+
+    .red-team {
+        background: linear-gradient(135deg, #7f1d1d, #b91c1c);
+    }
+
+    .blue-team {
+        background: linear-gradient(135deg, #0c4a6e, #1d4ed8);
+    }
+
+    .vs-card {
+        border: 1px solid #cbd5e1;
+        border-radius: 20px;
+        background: #f8fafc;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        padding: 22px;
+    }
+
+    .vs-card strong {
+        display: block;
+        color: #0f172a;
+        font-size: 32px;
+        margin-bottom: 8px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: 16px;
+        margin-top: 18px;
+    }
+
+    th {
+        background: #0f3b5f;
+        color: white;
+        padding: 14px;
+        font-size: 15px;
+    }
+
+    td {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 14px;
+        vertical-align: top;
+        background: white;
+    }
+
+    tr:nth-child(even) td {
+        background: #f8fafc;
+    }
+
+    .tag-online,
+    .tag-lab,
+    .tag-final {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-weight: 800;
+        font-size: 13px;
+        white-space: nowrap;
+        word-break: keep-all;
+    }
+
+    .tag-online {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .tag-lab {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .tag-final {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .timeline-title {
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .nowrap {
+        white-space: nowrap;
+        word-break: keep-all;
+    }
+
+    .calendar-wrap {
+        margin: 18px 0 24px;
+        display: grid;
+        gap: 18px;
+    }
+
+    .calendar-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        color: #475569;
+        font-size: 14px;
+    }
+
+    .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+    }
+
+    .legend-swatch {
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+    }
+
+    .legend-swatch.online {
+        background: #bfdbfe;
+        border: 1px solid #60a5fa;
+    }
+
+    .legend-swatch.offline {
+        background: #fecaca;
+        border: 1px solid #f87171;
+    }
+
+    .course-calendar {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .calendar-month {
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        padding: 18px;
+        background: #f8fafc;
+    }
+
+    .calendar-month h3 {
+        margin: 0 0 12px;
+        color: #0f3b5f;
+        font-size: 18px;
+    }
+
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    .calendar-weekday,
+    .calendar-day {
+        min-height: 34px;
+        display: grid;
+        place-items: center;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .calendar-weekday {
+        color: #64748b;
+        min-height: 24px;
+    }
+
+    .calendar-day {
+        background: white;
+        border: 1px solid #e2e8f0;
+        color: #334155;
+    }
+
+    .calendar-day.empty {
+        background: transparent;
+        border-color: transparent;
+    }
+
+    .calendar-day.online-day {
+        background: #dbeafe;
+        border-color: #60a5fa;
+        color: #1d4ed8;
+    }
+
+    .calendar-day.offline-day {
+        background: #fee2e2;
+        border-color: #f87171;
+        color: #b91c1c;
+    }
+
+    .eval-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 18px;
+    }
+
+    .eval-card {
+        background: linear-gradient(180deg, #ffffff, #f8fafc);
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        padding: 22px;
+        text-align: center;
+    }
+
+    .eval-card strong {
+        display: block;
+        font-size: 28px;
+        color: #0f3b5f;
+        margin-bottom: 4px;
+    }
+
+    .footer {
+        text-align: center;
+        margin-top: 36px;
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    @media print {
+        body {
+            background: white;
+        }
+
+        section, .hero, .summary-card {
+            box-shadow: none;
+        }
+    }
+
+    @media (max-width: 900px) {
+        .summary-grid,
+        .two-col,
+        .three-col,
+        .paper-flow,
+        .architecture,
+        .battle-grid,
+        .course-calendar,
+        .eval-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .hero {
+            padding: 42px 28px;
+        }
+
+        .hero h1 {
+            font-size: 32px;
+        }
+
+        .drone-field {
+            position: relative;
+            right: auto;
+            bottom: auto;
+            width: 100%;
+            margin-top: 32px;
+        }
+    }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+    <div class="hero">
+        <div class="hero-content">
+            <div class="badge">Summer Intensive · Defense & Advanced Security Lab</div>
+            <h1>국방 AI 및 자율무인체계 보안</h1>
+            <p class="subtitle">Defense AI Security for Autonomous Systems</p>
+            <a class="lab-link" href="https://das.jbnu.ac.kr" target="_blank" rel="noopener">
+                <img src="../images/das-logo.png" alt="DAS Lab 로고">
+                <span>
+                    <strong>DAS Lab</strong>
+                    Defense & Advanced Security Lab
+                </span>
+            </a>
+            <p class="banner">국방 AI 드론 Red Team / Blue Team 공격·방어 실습</p>
+            <div class="signal-grid">
+                <span class="signal">Drone Swarm Security</span>
+                <span class="signal">Autonomous Battlefield</span>
+                <span class="signal">AI-based Attack & Defense</span>
+                <span class="signal">Simulation-based Defense AI Education</span>
+            </div>
+        </div>
+
+        <div class="drone-field" aria-hidden="true">
+            <div class="swarm-line line-1"></div>
+            <div class="swarm-line line-2"></div>
+            <div class="swarm-line line-3"></div>
+            <div class="swarm-line line-4"></div>
+            <div class="drone-node"></div>
+            <div class="drone-node"></div>
+            <div class="drone-node"></div>
+            <div class="drone-node"></div>
+            <div class="drone-node"></div>
+            <div class="drone-node"></div>
+            <div class="drone-node"></div>
+        </div>
+    </div>
+
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="label">총 교육시간</div>
+            <div class="value">40H</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">온라인 학습</div>
+            <div class="value">21H</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">오프라인 실습</div>
+            <div class="value">16H</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">최종 발표</div>
+            <div class="value">3H</div>
+        </div>
+    </div>
+
+    <section>
+        <h2>1. 교과목 개요</h2>
+        <figure class="overview-image">
+            <img src="../images/overview_course.png" alt="국방 AI 및 자율무인체계 보안 과정 전체 개요">
+        </figure>
+        <p class="lead">
+            본 과정은 순수 ROS2 또는 로보틱스 구현 강의가 아니라, 국방 AI 환경에서
+            자율무인체계와 드론 군집이 직면하는 보안 위협을 분석하고 공격·방어 관점에서
+            실험하는 프로젝트 기반 집중 교육과정이다.
+        </p>
+        <p class="lead">
+            학습자는 최신 논문과 사례를 바탕으로 위협 모델을 이해하고, 시뮬레이션 기반 환경에서
+            Red Team / Blue Team 시나리오를 설계하며, 방산 AI 보안 연구 주제를 발표 가능한 형태로 발전시킨다.
+        </p>
+
+        <div class="keyword-box">
+            <span class="keyword">Defense AI Security</span>
+            <span class="keyword">Drone Swarm</span>
+            <span class="keyword">Autonomous Systems</span>
+            <span class="keyword">Cyber-Physical Security</span>
+            <span class="keyword">Red Team / Blue Team</span>
+            <span class="keyword">ROS2 + Gazebo + PX4 Simulation</span>
+        </div>
+    </section>
+
+    <section>
+        <h2>2. 연구형 학습 구조</h2>
+        <div class="paper-card">
+            <div class="paper-meta">Research-oriented flipped learning</div>
+            <div class="paper-title">논문 기반 개념 학습에서 공격·방어 시뮬레이션 프로젝트까지</div>
+            <p class="lead">
+                온라인 학습에서는 짧은 강의 영상, 최신 논문 리뷰, toy problem, 보안 개념 정리를 통해
+                오프라인 실습 전에 공통 언어를 맞춘다. 이후 팀 단위로 실험 가설, 공격·방어 시나리오,
+                시뮬레이션 결과를 구성한다.
+            </p>
+            <div class="paper-flow">
+                <div class="paper-step">Paper Review</div>
+                <div class="paper-step">Threat Analysis</div>
+                <div class="paper-step">Simulation Scenario</div>
+                <div class="paper-step">Defense AI Project</div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>3. 핵심 주제</h2>
+        <div class="three-col">
+            <div class="box">
+                <h3>드론 군집 보안</h3>
+                <ul>
+                    <li>Drone Communication Security</li>
+                    <li>군집 운용 위협 분석</li>
+                    <li>자율무인체계 보안 개념</li>
+                </ul>
+            </div>
+            <div class="box">
+                <h3>AI 기반 공격·방어</h3>
+                <ul>
+                    <li>AI-based Attack & Defense</li>
+                    <li>Red Team / Blue Team 사고방식</li>
+                    <li>탐지·대응 전략 설계</li>
+                </ul>
+            </div>
+            <div class="box">
+                <h3>시뮬레이션 실험</h3>
+                <ul>
+                    <li>Autonomous System Simulation</li>
+                    <li>ROS2 + Gazebo + PX4 기반 개념 실습</li>
+                    <li>Research-based Project</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>4. 방산 AI 보안 아키텍처</h2>
+        <div class="architecture">
+            <div class="arch-column">
+                <div class="arch-node">위협 정보</div>
+                <div class="arch-node">드론 통신 보안</div>
+                <div class="arch-node">전장 환경 데이터</div>
+            </div>
+            <div class="arch-core">
+                <div>
+                    <strong>Autonomous Battlefield Lab</strong>
+                    <span>AI 분석 · 시뮬레이션 · 공격/방어 실험 · 결과 검증</span>
+                </div>
+            </div>
+            <div class="arch-column">
+                <div class="arch-node">Red Team 시나리오</div>
+                <div class="arch-node">Blue Team 대응</div>
+                <div class="arch-node">보고서 및 발표</div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>5. Red Team / Blue Team 실습 관점</h2>
+        <div class="battle-grid">
+            <div class="team-card red-team">
+                <h3>Red Team</h3>
+                <ul>
+                    <li>자율무인체계 보안 위협 가설 수립</li>
+                    <li>공격 표면과 취약 운용 조건 분석</li>
+                    <li>시뮬레이션 기반 공격 시나리오 설계</li>
+                </ul>
+            </div>
+            <div class="vs-card">
+                <div>
+                    <strong>VS</strong>
+                    <span>Attack / Defense Simulation</span>
+                </div>
+            </div>
+            <div class="team-card blue-team">
+                <h3>Blue Team</h3>
+                <ul>
+                    <li>탐지·방어 전략 및 완화 방안 설계</li>
+                    <li>AI 기반 이상 징후 분석 관점 학습</li>
+                    <li>실험 결과 검토와 방어 개선안 도출</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>6. 운영 방식</h2>
+        <div class="calendar-wrap" aria-label="교육 운영 일정 달력">
+            <div class="calendar-legend">
+                <span class="legend-item"><span class="legend-swatch online"></span>온라인 학습: 6.22~7.10</span>
+                <span class="legend-item"><span class="legend-swatch offline"></span>오프라인 실습: 7.13~7.24</span>
+            </div>
+            <div class="course-calendar">
+                <div class="calendar-month">
+                    <h3>2026년 6월</h3>
+                    <div class="calendar-grid">
+                        <div class="calendar-weekday">일</div>
+                        <div class="calendar-weekday">월</div>
+                        <div class="calendar-weekday">화</div>
+                        <div class="calendar-weekday">수</div>
+                        <div class="calendar-weekday">목</div>
+                        <div class="calendar-weekday">금</div>
+                        <div class="calendar-weekday">토</div>
+                        <div class="calendar-day empty"></div>
+                        <div class="calendar-day">1</div>
+                        <div class="calendar-day">2</div>
+                        <div class="calendar-day">3</div>
+                        <div class="calendar-day">4</div>
+                        <div class="calendar-day">5</div>
+                        <div class="calendar-day">6</div>
+                        <div class="calendar-day">7</div>
+                        <div class="calendar-day">8</div>
+                        <div class="calendar-day">9</div>
+                        <div class="calendar-day">10</div>
+                        <div class="calendar-day">11</div>
+                        <div class="calendar-day">12</div>
+                        <div class="calendar-day">13</div>
+                        <div class="calendar-day">14</div>
+                        <div class="calendar-day">15</div>
+                        <div class="calendar-day">16</div>
+                        <div class="calendar-day">17</div>
+                        <div class="calendar-day">18</div>
+                        <div class="calendar-day">19</div>
+                        <div class="calendar-day">20</div>
+                        <div class="calendar-day">21</div>
+                        <div class="calendar-day online-day">22</div>
+                        <div class="calendar-day online-day">23</div>
+                        <div class="calendar-day online-day">24</div>
+                        <div class="calendar-day online-day">25</div>
+                        <div class="calendar-day online-day">26</div>
+                        <div class="calendar-day online-day">27</div>
+                        <div class="calendar-day online-day">28</div>
+                        <div class="calendar-day online-day">29</div>
+                        <div class="calendar-day online-day">30</div>
+                    </div>
+                </div>
+                <div class="calendar-month">
+                    <h3>2026년 7월</h3>
+                    <div class="calendar-grid">
+                        <div class="calendar-weekday">일</div>
+                        <div class="calendar-weekday">월</div>
+                        <div class="calendar-weekday">화</div>
+                        <div class="calendar-weekday">수</div>
+                        <div class="calendar-weekday">목</div>
+                        <div class="calendar-weekday">금</div>
+                        <div class="calendar-weekday">토</div>
+                        <div class="calendar-day empty"></div>
+                        <div class="calendar-day empty"></div>
+                        <div class="calendar-day empty"></div>
+                        <div class="calendar-day online-day">1</div>
+                        <div class="calendar-day online-day">2</div>
+                        <div class="calendar-day online-day">3</div>
+                        <div class="calendar-day online-day">4</div>
+                        <div class="calendar-day online-day">5</div>
+                        <div class="calendar-day online-day">6</div>
+                        <div class="calendar-day online-day">7</div>
+                        <div class="calendar-day online-day">8</div>
+                        <div class="calendar-day online-day">9</div>
+                        <div class="calendar-day online-day">10</div>
+                        <div class="calendar-day">11</div>
+                        <div class="calendar-day">12</div>
+                        <div class="calendar-day offline-day">13</div>
+                        <div class="calendar-day offline-day">14</div>
+                        <div class="calendar-day offline-day">15</div>
+                        <div class="calendar-day offline-day">16</div>
+                        <div class="calendar-day offline-day">17</div>
+                        <div class="calendar-day offline-day">18</div>
+                        <div class="calendar-day offline-day">19</div>
+                        <div class="calendar-day offline-day">20</div>
+                        <div class="calendar-day offline-day">21</div>
+                        <div class="calendar-day offline-day">22</div>
+                        <div class="calendar-day offline-day">23</div>
+                        <div class="calendar-day offline-day">24</div>
+                        <div class="calendar-day">25</div>
+                        <div class="calendar-day">26</div>
+                        <div class="calendar-day">27</div>
+                        <div class="calendar-day">28</div>
+                        <div class="calendar-day">29</div>
+                        <div class="calendar-day">30</div>
+                        <div class="calendar-day">31</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <table>
+            <tr>
+                <th>구분</th>
+                <th>기간</th>
+                <th>시간</th>
+                <th>운영 내용</th>
+            </tr>
+            <tr>
+                <td><span class="tag-online">온라인</span></td>
+                <td>3주</td>
+                <td>21H</td>
+                <td>
+                    Flipped learning 방식으로 짧은 강의 영상, 최신 논문 리뷰,
+                    toy problem, AI/드론 보안 개념 학습을 진행한다.
+                </td>
+            </tr>
+            <tr>
+                <td><span class="tag-lab">오프라인</span></td>
+                <td>2주</td>
+                <td>16H</td>
+                <td>
+                    팀 기반 프로젝트, Red Team / Blue Team 실습, 시뮬레이션 실험,
+                    협업 디버깅, 공격·방어 시나리오 개발을 수행한다.
+                </td>
+            </tr>
+            <tr>
+                <td><span class="tag-final">발표</span></td>
+                <td class="nowrap">최종 세션</td>
+                <td>3H</td>
+                <td>
+                    프로젝트 발표, 공격·방어 결과 공유, 시뮬레이션 데모,
+                    lessons learned, debriefing session을 진행한다.
+                </td>
+            </tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>7. 학습 일정</h2>
+        <table>
+            <tr>
+                <th>단계</th>
+                <th>방식</th>
+                <th>주제</th>
+                <th>학습 방향</th>
+                <th>시간</th>
+            </tr>
+            <tr>
+                <td>Week 1</td>
+                <td><span class="tag-online">온라인</span></td>
+                <td class="timeline-title">국방 AI 보안 개요</td>
+                <td>자율무인체계, 드론 군집, CPS 보안, 미래 전장 AI 위협 관점 이해</td>
+                <td>7H</td>
+            </tr>
+            <tr>
+                <td>Week 2</td>
+                <td><span class="tag-online">온라인</span></td>
+                <td class="timeline-title">AI/드론 보안 개념과 논문 리뷰</td>
+                <td>최신 연구 사례 분석, toy problem, 공격·방어 사고방식 정리</td>
+                <td>7H</td>
+            </tr>
+            <tr>
+                <td>Week 3</td>
+                <td><span class="tag-online">온라인</span></td>
+                <td class="timeline-title">연구 주제 선정 및 발표 제안</td>
+                <td>프로젝트 주제 또는 논문 선정, 오프라인 실습 전 발표 초안 준비</td>
+                <td>7H</td>
+            </tr>
+            <tr>
+                <td>Lab 1</td>
+                <td><span class="tag-lab">오프라인</span></td>
+                <td class="timeline-title">공격·방어 시나리오 설계</td>
+                <td>팀 구성, 실험 가설 수립, Red Team / Blue Team 역할 정의</td>
+                <td>8H</td>
+            </tr>
+            <tr>
+                <td>Lab 2</td>
+                <td><span class="tag-lab">오프라인</span></td>
+                <td class="timeline-title">시뮬레이션 실험 및 프로젝트 개발</td>
+                <td>시뮬레이션 결과 정리, 협업 디버깅, 방어 전략 개선</td>
+                <td>8H</td>
+            </tr>
+            <tr>
+                <td>Final</td>
+                <td><span class="tag-final">발표</span></td>
+                <td class="timeline-title">최종 발표 및 디브리핑</td>
+                <td>공격·방어 결과, 시뮬레이션 데모, lessons learned 공유</td>
+                <td>3H</td>
+            </tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>8. 온라인 학습 안내</h2>
+        <div class="two-col">
+            <div class="box">
+                <h3>Flipped Learning</h3>
+                <ul>
+                    <li>짧은 강의 영상으로 핵심 개념 사전 학습</li>
+                    <li>최신 논문과 사례 중심의 연구형 학습</li>
+                    <li>AI/drone security concepts와 toy problem 수행</li>
+                </ul>
+            </div>
+            <div class="box">
+                <h3>사전 발표 준비</h3>
+                <p>
+                    학습자는 국방 AI, 드론 보안, 자율무인체계와 관련된 연구 주제 또는 논문을 선정하고,
+                    오프라인 실습이 시작되기 전에 짧은 발표 제안서를 준비한다.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>9. 오프라인 집중 실습</h2>
+        <div class="two-col">
+            <div class="box">
+                <h3>팀 기반 프로젝트</h3>
+                <ul>
+                    <li>프로젝트 주제별 팀 구성</li>
+                    <li>시뮬레이션 기반 실험 설계</li>
+                    <li>협업 디버깅과 결과 해석</li>
+                </ul>
+            </div>
+            <div class="box">
+                <h3>공격·방어 실험</h3>
+                <ul>
+                    <li>Red Team / Blue Team exercise</li>
+                    <li>공격·방어 시나리오 비교</li>
+                    <li>방어 전략 개선 및 검증</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>10. 평가 및 산출물</h2>
+        <div class="eval-grid">
+            <div class="eval-card">
+                <strong>25%</strong>
+                온라인 학습
+            </div>
+            <div class="eval-card">
+                <strong>25%</strong>
+                온라인 학습 기간 동안 준비한 본인의 공격 또는 방어 제안 기법
+            </div>
+            <div class="eval-card">
+                <strong>50%</strong>
+                최종 발표 및 팀 프로젝트 산출물
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>11. 기대 효과</h2>
+        <div class="two-col">
+            <div class="box">
+                <h3>학습자 역량</h3>
+                <ul>
+                    <li>국방 AI 및 자율무인체계 보안 위협 분석 역량 확보</li>
+                    <li>공격·방어 관점의 연구형 문제 정의 능력 강화</li>
+                    <li>시뮬레이션 결과를 발표와 보고서로 정리하는 역량 확보</li>
+                </ul>
+            </div>
+            <div class="box">
+                <h3>산업 연계성</h3>
+                <ul>
+                    <li>방산 드론·무인체계 보안 실무 감각 강화</li>
+                    <li>미래 전장 AI 보안 교육과 연구 프로젝트 연계</li>
+                    <li>Defense & Advanced Security Lab 기반 후속 심화 학습 확장</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <div class="footer">
+        국방 AI 및 자율무인체계 보안 | Defense AI Security for Autonomous Systems
+    </div>
+
+</div>
+</body>
+</html>
