@@ -75,20 +75,27 @@ function submitApplication(payload) {
       status
     ]);
 
-    sendSubmissionEmail({
-      email: payload.email,
-      name: payload.name,
-      program: payload.program,
-      timestamp,
-      application_id: applicationId,
-      status
-    });
+    let emailSent = true;
+    try {
+      sendSubmissionEmail({
+        email: payload.email,
+        name: payload.name,
+        program: payload.program,
+        timestamp,
+        application_id: applicationId,
+        status
+      });
+    } catch (error) {
+      emailSent = false;
+      console.error(`Submission email failed for ${applicationId}: ${error.message}`);
+    }
 
     return {
       result: "success",
       application_id: applicationId,
       timestamp: timestamp.toISOString(),
-      status
+      status,
+      email_sent: emailSent
     };
   } finally {
     lock.releaseLock();
@@ -137,6 +144,7 @@ function updateApplication(payload) {
     setCell(sheet, rowNumber, headerMap, "student_id", payload.student_id);
     setCell(sheet, rowNumber, headerMap, "organization", payload.organization);
     setCell(sheet, rowNumber, headerMap, "phone", payload.phone);
+    setCell(sheet, rowNumber, headerMap, "program", payload.program);
     setCell(sheet, rowNumber, headerMap, "motivation", payload.motivation);
 
     return { result: "success", application_id: payload.application_id };

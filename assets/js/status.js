@@ -50,7 +50,11 @@ const ApplicationStatus = (() => {
 
     try {
       const email = document.querySelector(SELECTORS.lookupEmail).value.trim();
-      const result = await postJson({ action: "status", email });
+      const result = await getJson({ action: "status", email });
+      if (result.result !== "success") {
+        throw new Error(result.message || "Lookup failed");
+      }
+
       applications = Array.isArray(result.applications) ? result.applications : [];
       renderApplications();
 
@@ -164,6 +168,11 @@ const ApplicationStatus = (() => {
 
     try {
       const result = await postJson({ action: "update", ...buildPayload(form) });
+      if (result.result === "duplicate") {
+        showMessage(SELECTORS.editMessage, "이미 해당 프로그램에 신청하셨습니다.", "error");
+        return;
+      }
+
       if (result.result !== "success") {
         throw new Error(result.message || "Update failed");
       }
@@ -186,7 +195,11 @@ const ApplicationStatus = (() => {
     const email = document.querySelector(SELECTORS.lookupEmail).value.trim();
     if (!email) return;
 
-    const result = await postJson({ action: "status", email });
+    const result = await getJson({ action: "status", email });
+    if (result.result !== "success") {
+      throw new Error(result.message || "Lookup failed");
+    }
+
     applications = Array.isArray(result.applications) ? result.applications : [];
     renderApplications();
   }
@@ -212,6 +225,28 @@ const ApplicationStatus = (() => {
         "Content-Type": "text/plain;charset=utf-8"
       },
       body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Request failed: ${response.status}`);
+    }
+
+    const text = await response.text();
+    try {
+      return JSON.parse(text);
+    } catch (error) {
+      throw new Error(`Invalid JSON response: ${text.slice(0, 120)}`);
+    }
+  }
+
+  async function getJson(params) {
+    const url = new URL(ENDPOINT);
+    Object.entries(params).forEach(([key, value]) => {
+      url.searchParams.set(key, value);
+    });
+
+    const response = await fetch(url.toString(), {
+      method: "GET"
     });
 
     if (!response.ok) {

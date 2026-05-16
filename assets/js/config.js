@@ -1,6 +1,6 @@
 window.BOOTCAMP_CONFIG = {
   appsScriptEndpoints: {
-    production: "https://script.google.com/macros/s/AKfycbzcVjY83Gws1kzkNN8S5s0fZSvlTLUbqc8ZRsYWuMf_ip_LW5H71o9VGFGYDd1OQHIR/exec",
+    production: "https://script.google.com/macros/s/AKfycbzeUIxoYLxWC8_X0KJ4DPCP70DXp6cmuYXBRHya6bFX7qUXFzqOxmk7tw6Cq1J0ADN0/exec",
     development: "https://script.google.com/macros/s/PASTE_DEV_DEPLOYMENT_ID/exec"
   },
   activeEndpoint: "production"

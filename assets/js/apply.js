@@ -82,8 +82,9 @@ const ApplyForm = (() => {
     setSubmitting(true);
     resetMessage();
 
+    let payload = null;
     try {
-      const payload = buildPayload(form);
+      payload = buildPayload(form);
       const result = await postJson({ action: "submit", ...payload });
 
       if (result.result === "duplicate") {
@@ -103,6 +104,16 @@ const ApplyForm = (() => {
       }, 900);
     } catch (error) {
       console.error("Application submit failed:", error);
+      if (payload && (await wasApplicationSaved(payload))) {
+        showMessage("신청이 정상적으로 접수되었습니다.", "success");
+        form.reset();
+
+        window.setTimeout(() => {
+          closeModal();
+        }, 900);
+        return;
+      }
+
       showMessage("제출 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", "error");
     } finally {
       setSubmitting(false);
@@ -151,9 +162,48 @@ const ApplyForm = (() => {
     }
   }
 
+  async function getJson(params) {
+    const url = new URL(ENDPOINT);
+    Object.entries(params).forEach(([key, value]) => {
+      url.searchParams.set(key, value);
+    });
+
+    const response = await fetch(url.toString(), {
+      method: "GET"
+    });
+
+    if (!response.ok) {
+      throw new Error(`Request failed: ${response.status}`);
+    }
+
+    const text = await response.text();
+    try {
+      return JSON.parse(text);
+    } catch (error) {
+      throw new Error(`Invalid JSON response: ${text.slice(0, 120)}`);
+    }
+  }
+
+  async function wasApplicationSaved(payload) {
+    try {
+      const result = await getJson({ action: "status", email: payload.email });
+      const applications = Array.isArray(result.applications) ? result.applications : [];
+      return applications.some((application) => {
+        return normalizeValue(application.email) === normalizeValue(payload.email) && application.program === payload.program;
+      });
+    } catch (error) {
+      console.error("Application save verification failed:", error);
+      return false;
+    }
+  }
+
   function getField(formData, name) {
     const value = formData.get(name);
     return typeof value === "string" ? value.trim() : "";
+  }
+
+  function normalizeValue(value) {
+    return String(value || "").trim().toLowerCase();
   }
 
   function setSubmitting(isSubmitting) {

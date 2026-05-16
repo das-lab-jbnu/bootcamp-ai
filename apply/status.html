@@ -80,7 +80,7 @@
           <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
             <div>
               <h2 id="edit-modal-title" class="text-xl font-bold text-slate-950">신청 내용 수정</h2>
-              <p class="mt-1 text-sm text-slate-600">신청 ID와 프로그램명은 변경할 수 없습니다.</p>
+              <p class="mt-1 text-sm text-slate-600">신청 ID는 유지되며, 프로그램과 신청 정보를 수정할 수 있습니다.</p>
             </div>
             <button
               class="inline-flex h-9 w-9 items-center justify-center border border-slate-300 text-xl leading-none text-slate-600 hover:bg-slate-100"
@@ -97,7 +97,18 @@
 
             <div class="grid gap-2">
               <label class="text-sm font-semibold text-slate-800" for="edit-program">프로그램명</label>
-              <input class="apply-field bg-slate-100 text-slate-700" id="edit-program" name="program" type="text" readonly required />
+              <select class="apply-field" id="edit-program" name="program" required>
+                <option value="">프로그램을 선택해주세요.</option>
+                <option value="[크라우드 아카데미] LLM 인스트럭션">[크라우드 아카데미] LLM 인스트럭션</option>
+                <option value="[자율이동체계 Track] 방산개방형아키텍처(MOSA SDK실습)">
+                  [자율이동체계 Track] 방산개방형아키텍처(MOSA SDK실습)
+                </option>
+                <option value="[군수 AX 전환 Track] 첨단소재 군수 AX">[군수 AX 전환 Track] 첨단소재 군수 AX</option>
+                <option value="[군수 AX 전환 Track] 항공기개발운영프로세스와 첨단기술융복합화">
+                  [군수 AX 전환 Track] 항공기개발운영프로세스와 첨단기술융복합화
+                </option>
+                <option value="[사이버보안 Track] 방산 AI 보안">[사이버보안 Track] 방산 AI 보안</option>
+              </select>
             </div>
 
             <div class="grid gap-4 md:grid-cols-2">
