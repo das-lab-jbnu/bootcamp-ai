@@ -1,0 +1,16 @@
+{
+  "scriptId": "PASTE_YOUR_APPS_SCRIPT_PROJECT_ID_HERE",
+  "rootDir": "google-apps-script",
+  "scriptExtensions": [".gs", ".js"],
+  "htmlExtensions": [".html"],
+  "jsonExtensions": [".json"],
+  "filePushOrder": [
+    "config.gs",
+    "utils.gs",
+    "sheets.gs",
+    "email.gs",
+    "api.gs",
+    "Code.gs"
+  ],
+  "skipSubdirectories": false
+}

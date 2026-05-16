@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>신청 내역 조회 | 전북대 방산 AI 부트캠프</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body>
+    <div class="page-wrap">
+      <header id="site-header"></header>
+      <main class="max-w-6xl mx-auto px-4 py-12">
+        <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h1 class="section-title text-3xl font-bold">신청 내역 조회</h1>
+            <p class="mt-3 text-sm text-slate-600">신청 시 사용한 이메일로 접수 내역을 확인하고 수정할 수 있습니다.</p>
+          </div>
+          <a
+            class="inline-flex w-fit items-center justify-center border border-blue-900 px-5 py-2 text-sm font-semibold text-blue-900 hover:bg-blue-50"
+            href="./index.html"
+          >
+            프로그램 목록
+          </a>
+        </div>
+
+        <section class="mt-10 border-t-2 border-slate-500 bg-slate-50 px-4 py-5 md:px-6">
+          <form class="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end" id="status-form" novalidate>
+            <div class="grid gap-2">
+              <label class="text-sm font-semibold text-slate-800" for="lookup-email">이메일</label>
+              <input
+                class="apply-field"
+                id="lookup-email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+                required
+              />
+            </div>
+            <button
+              class="inline-flex items-center justify-center bg-blue-900 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+              id="status-submit"
+              type="submit"
+            >
+              <span class="apply-spinner mr-2" aria-hidden="true"></span>
+              <span data-status-text>신청 조회</span>
+            </button>
+          </form>
+          <p class="mt-4 hidden text-sm" id="status-message" role="status" aria-live="polite"></p>
+        </section>
+
+        <section class="mt-8 hidden" id="status-results">
+          <div class="overflow-x-auto border border-slate-200">
+            <table class="min-w-full divide-y divide-slate-200 bg-white text-sm">
+              <thead class="bg-slate-100 text-left text-slate-800">
+                <tr>
+                  <th class="px-4 py-3 font-semibold">신청 ID</th>
+                  <th class="px-4 py-3 font-semibold">프로그램명</th>
+                  <th class="px-4 py-3 font-semibold">상태</th>
+                  <th class="px-4 py-3 font-semibold">신청 시간</th>
+                  <th class="px-4 py-3 font-semibold">관리</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200" id="status-list"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+
+      <div class="apply-modal" id="edit-modal" hidden>
+        <div class="apply-modal__backdrop" data-edit-close></div>
+        <section
+          class="apply-modal__dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-modal-title"
+          tabindex="-1"
+        >
+          <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
+            <div>
+              <h2 id="edit-modal-title" class="text-xl font-bold text-slate-950">신청 내용 수정</h2>
+              <p class="mt-1 text-sm text-slate-600">신청 ID와 프로그램명은 변경할 수 없습니다.</p>
+            </div>
+            <button
+              class="inline-flex h-9 w-9 items-center justify-center border border-slate-300 text-xl leading-none text-slate-600 hover:bg-slate-100"
+              type="button"
+              aria-label="수정 폼 닫기"
+              data-edit-close
+            >
+              &times;
+            </button>
+          </div>
+
+          <form class="grid gap-4 px-5 py-5" id="edit-form" novalidate>
+            <input id="edit-application-id" name="application_id" type="hidden" />
+
+            <div class="grid gap-2">
+              <label class="text-sm font-semibold text-slate-800" for="edit-program">프로그램명</label>
+              <input class="apply-field bg-slate-100 text-slate-700" id="edit-program" name="program" type="text" readonly required />
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              <div class="grid gap-2">
+                <label class="text-sm font-semibold text-slate-800" for="edit-name">이름</label>
+                <input class="apply-field" id="edit-name" name="name" type="text" autocomplete="name" required />
+              </div>
+              <div class="grid gap-2">
+                <label class="text-sm font-semibold text-slate-800" for="edit-student-id">학번</label>
+                <input class="apply-field" id="edit-student-id" name="student_id" type="text" inputmode="numeric" required />
+              </div>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              <div class="grid gap-2">
+                <label class="text-sm font-semibold text-slate-800" for="edit-email">이메일</label>
+                <input
+                  class="apply-field bg-slate-100 text-slate-700"
+                  id="edit-email"
+                  name="email"
+                  type="email"
+                  pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+                  readonly
+                  required
+                />
+              </div>
+              <div class="grid gap-2">
+                <label class="text-sm font-semibold text-slate-800" for="edit-organization">소속</label>
+                <input class="apply-field" id="edit-organization" name="organization" type="text" required />
+              </div>
+            </div>
+
+            <div class="grid gap-2">
+              <label class="text-sm font-semibold text-slate-800" for="edit-phone">연락처</label>
+              <input class="apply-field" id="edit-phone" name="phone" type="tel" autocomplete="tel" required />
+            </div>
+
+            <div class="grid gap-2">
+              <label class="text-sm font-semibold text-slate-800" for="edit-motivation">자기소개 / 지원동기</label>
+              <textarea class="apply-field min-h-32 resize-y" id="edit-motivation" name="motivation" required></textarea>
+            </div>
+
+            <p class="hidden text-sm" id="edit-message" role="status" aria-live="polite"></p>
+
+            <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
+              <button
+                class="inline-flex items-center justify-center border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                type="button"
+                data-edit-close
+              >
+                취소
+              </button>
+              <button
+                class="inline-flex items-center justify-center bg-blue-900 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                id="edit-submit"
+                type="submit"
+              >
+                <span class="apply-spinner mr-2" aria-hidden="true"></span>
+                <span data-edit-text>수정 저장</span>
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
+
+      <footer id="site-footer"></footer>
+    </div>
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/status.js"></script>
+  </body>
+</html>

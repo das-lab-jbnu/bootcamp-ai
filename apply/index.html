@@ -11,7 +11,15 @@
     <div class="page-wrap">
       <header id="site-header"></header>
       <main class="max-w-6xl mx-auto px-4 py-12">
-        <h1 class="section-title text-3xl font-bold">프로그램 신청/접수</h1>
+        <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <h1 class="section-title text-3xl font-bold">프로그램 신청/접수</h1>
+          <a
+            class="inline-flex w-fit items-center justify-center border border-blue-900 px-5 py-2 text-sm font-semibold text-blue-900 hover:bg-blue-50"
+            href="./status.html"
+          >
+            신청 내역 조회
+          </a>
+        </div>
 
         <section class="mt-10 space-y-6">
           <article class="border-t-2 border-slate-500 bg-slate-50 px-4 py-5 md:px-6">
@@ -27,14 +35,13 @@
               <span class="inline-flex w-fit items-center bg-blue-900 px-5 py-2 text-sm font-semibold text-white">접수중</span>
             </div>
             <div class="mt-6 grid gap-4 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
-              <a
-                class="inline-flex w-fit items-center justify-center bg-blue-900 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800"
-                href="https://docs.google.com/forms/d/e/1FAIpQLSeSSclRwmK6sBDNDhLCRUdf-VpNTLdnIM7pdn4QEVj8cNsjeQ/viewform?usp=dialog"
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                class="apply-btn inline-flex w-fit items-center justify-center bg-blue-900 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800"
+                type="button"
+                data-program="[크라우드 아카데미] LLM 인스트럭션"
               >
                 신청하기
-              </a>
+              </button>
               <div class="grid gap-3 md:max-w-xl">
                 <div class="grid grid-cols-[96px_1fr] items-center border-b border-slate-300 pb-2">
                   <span class="text-sm font-semibold text-slate-800">접수기간</span>
@@ -61,14 +68,13 @@
               <span class="inline-flex w-fit items-center bg-blue-900 px-5 py-2 text-sm font-semibold text-white">접수중</span>
             </div>
             <div class="mt-6 grid gap-4 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
-              <a
-                class="inline-flex w-fit items-center justify-center bg-blue-900 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800"
-                href="https://docs.google.com/forms/d/e/1FAIpQLSezjIkLtCcR0ilKuIGWmY4vsoxnxp9I_nesh2uXQk4Tf0ooFw/viewform?usp=dialog"
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                class="apply-btn inline-flex w-fit items-center justify-center bg-blue-900 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800"
+                type="button"
+                data-program="[자율이동체계 Track] 방산개방형아키텍처(MOSA SDK실습)"
               >
                 신청하기
-              </a>
+              </button>
               <div class="grid gap-3 md:max-w-xl">
                 <div class="grid grid-cols-[96px_1fr] items-center border-b border-slate-300 pb-2">
                   <span class="text-sm font-semibold text-slate-800">접수기간</span>
@@ -95,14 +101,13 @@
               <span class="inline-flex w-fit items-center bg-blue-900 px-5 py-2 text-sm font-semibold text-white">접수중</span>
             </div>
             <div class="mt-6 grid gap-4 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
-              <a
-                class="inline-flex w-fit items-center justify-center bg-blue-900 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800"
-                href="https://docs.google.com/forms/d/e/1FAIpQLScmQ0zkcrfvADP4-WpeyyipecZjVeADwGLPFsMSTm-JZ17BJQ/viewform?usp=dialog"
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                class="apply-btn inline-flex w-fit items-center justify-center bg-blue-900 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800"
+                type="button"
+                data-program="[군수 AX 전환 Track] 첨단소재 군수 AX"
               >
                 신청하기
-              </a>
+              </button>
               <div class="grid gap-3 md:max-w-xl">
                 <div class="grid grid-cols-[96px_1fr] items-center border-b border-slate-300 pb-2">
                   <span class="text-sm font-semibold text-slate-800">접수기간</span>
@@ -129,14 +134,13 @@
               <span class="inline-flex w-fit items-center bg-blue-900 px-5 py-2 text-sm font-semibold text-white">접수중</span>
             </div>
             <div class="mt-6 grid gap-4 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
-              <a
-                class="inline-flex w-fit items-center justify-center bg-blue-900 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800"
-                href="https://docs.google.com/forms/d/e/1FAIpQLScIOZyd_vL-amrvrqv3Sj0P9SitYdj4N3CGvK2oLRq2avuJyg/viewform?usp=dialog"
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                class="apply-btn inline-flex w-fit items-center justify-center bg-blue-900 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800"
+                type="button"
+                data-program="[군수 AX 전환 Track] 항공기개발운영프로세스와 첨단기술융복합화"
               >
                 신청하기
-              </a>
+              </button>
               <div class="grid gap-3 md:max-w-xl">
                 <div class="grid grid-cols-[96px_1fr] items-center border-b border-slate-300 pb-2">
                   <span class="text-sm font-semibold text-slate-800">접수기간</span>
@@ -163,14 +167,13 @@
               <span class="inline-flex w-fit items-center bg-blue-900 px-5 py-2 text-sm font-semibold text-white">접수중</span>
             </div>
             <div class="mt-6 grid gap-4 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
-              <a
-                class="inline-flex w-fit items-center justify-center bg-blue-900 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800"
-                href="https://docs.google.com/forms/d/e/1FAIpQLScOFJgYACKU5s2X5ljGmHVf4JK5vWpx1FJ5pdQ1JFrs3tyVMw/viewform?usp=dialog"
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                class="apply-btn inline-flex w-fit items-center justify-center bg-blue-900 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800"
+                type="button"
+                data-program="[사이버보안 Track] 방산 AI 보안"
               >
                 신청하기
-              </a>
+              </button>
               <div class="grid gap-3 md:max-w-xl">
                 <div class="grid grid-cols-[96px_1fr] items-center border-b border-slate-300 pb-2">
                   <span class="text-sm font-semibold text-slate-800">접수기간</span>
@@ -185,8 +188,103 @@
           </article>
         </section>
       </main>
+
+      <div class="apply-modal" id="apply-modal" hidden>
+        <div class="apply-modal__backdrop" data-apply-close></div>
+        <section
+          class="apply-modal__dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="apply-modal-title"
+          tabindex="-1"
+        >
+          <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
+            <div>
+              <h2 id="apply-modal-title" class="text-xl font-bold text-slate-950">프로그램 신청</h2>
+              <p class="mt-1 text-sm text-slate-600">선택한 프로그램 정보가 자동으로 포함됩니다.</p>
+            </div>
+            <button
+              class="inline-flex h-9 w-9 items-center justify-center border border-slate-300 text-xl leading-none text-slate-600 hover:bg-slate-100"
+              type="button"
+              aria-label="신청 폼 닫기"
+              data-apply-close
+            >
+              &times;
+            </button>
+          </div>
+
+          <form class="grid gap-4 px-5 py-5" id="apply-form" novalidate>
+            <div class="grid gap-2">
+              <label class="text-sm font-semibold text-slate-800" for="applicant-name">이름</label>
+              <input class="apply-field" id="applicant-name" name="name" type="text" autocomplete="name" required />
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              <div class="grid gap-2">
+                <label class="text-sm font-semibold text-slate-800" for="student-id">학번</label>
+                <input class="apply-field" id="student-id" name="student_id" type="text" inputmode="numeric" required />
+              </div>
+              <div class="grid gap-2">
+                <label class="text-sm font-semibold text-slate-800" for="applicant-email">이메일</label>
+                <input
+                  class="apply-field"
+                  id="applicant-email"
+                  name="email"
+                  type="email"
+                  autocomplete="email"
+                  pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              <div class="grid gap-2">
+                <label class="text-sm font-semibold text-slate-800" for="organization">소속</label>
+                <input class="apply-field" id="organization" name="organization" type="text" required />
+              </div>
+              <div class="grid gap-2">
+                <label class="text-sm font-semibold text-slate-800" for="phone">연락처</label>
+                <input class="apply-field" id="phone" name="phone" type="tel" autocomplete="tel" required />
+              </div>
+            </div>
+
+            <div class="grid gap-2">
+              <label class="text-sm font-semibold text-slate-800" for="program-name">프로그램명</label>
+              <input class="apply-field bg-slate-100 text-slate-700" id="program-name" name="program" type="text" readonly required />
+            </div>
+
+            <div class="grid gap-2">
+              <label class="text-sm font-semibold text-slate-800" for="motivation">자기소개 / 지원동기</label>
+              <textarea class="apply-field min-h-32 resize-y" id="motivation" name="motivation" required></textarea>
+            </div>
+
+            <p class="hidden text-sm" id="apply-message" role="status" aria-live="polite"></p>
+
+            <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
+              <button
+                class="inline-flex items-center justify-center border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                type="button"
+                data-apply-close
+              >
+                취소
+              </button>
+              <button
+                class="inline-flex items-center justify-center bg-blue-900 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                id="apply-submit"
+                type="submit"
+              >
+                <span class="apply-spinner mr-2" aria-hidden="true"></span>
+                <span data-submit-text>제출하기</span>
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
       <footer id="site-footer"></footer>
     </div>
     <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/apply.js"></script>
   </body>
 </html>

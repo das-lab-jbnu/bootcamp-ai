@@ -1,0 +1,18 @@
+{
+  "name": "bootcamp-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GitHub Pages frontend and Google Apps Script backend for bootcamp applications.",
+  "scripts": {
+    "gas:login": "clasp login",
+    "gas:pull": "clasp pull",
+    "gas:push": "clasp push",
+    "gas:deploy": "clasp deploy",
+    "gas:open": "clasp open",
+    "gas:versions": "clasp versions",
+    "gas:deployments": "clasp deployments"
+  },
+  "devDependencies": {
+    "@google/clasp": "latest"
+  }
+}
