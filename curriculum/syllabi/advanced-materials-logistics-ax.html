@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>첨단소재 군수 AX 강의계획서</title>
+    <style>
+      * {
+      box-sizing: border-box;
+      }
+      body {
+      margin: 0;
+      font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+      background:
+      radial-gradient(circle at top left, rgba(14, 165, 233, 0.14), transparent 28rem),
+      linear-gradient(180deg, #eef4fb 0%, #f7fafc 44%, #eef4fb 100%);
+      color: #1f2937;
+      line-height: 1.7;
+      }
+      .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 40px 24px;
+      }
+      .hero {
+      background:
+      linear-gradient(135deg, rgba(3, 7, 18, 0.94), rgba(7, 27, 58, 0.95), rgba(12, 74, 110, 0.9)),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 74px);
+      color: white;
+      padding: 58px 48px;
+      border-radius: 28px;
+      box-shadow: 0 24px 48px rgba(8, 47, 73, 0.28);
+      position: relative;
+      overflow: hidden;
+      min-height: 360px;
+      }
+      .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+      linear-gradient(rgba(125, 211, 252, 0.12) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(125, 211, 252, 0.1) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(90deg, transparent, #000 20%, #000 82%, transparent);
+      }
+      .hero::after {
+      content: "";
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      right: -92px;
+      top: -92px;
+      border: 1px solid rgba(125, 211, 252, 0.42);
+      border-radius: 50%;
+      box-shadow: inset 0 0 60px rgba(14, 165, 233, 0.2);
+      }
+      .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 760px;
+      }
+      .badge {
+      display: inline-block;
+      background: rgba(14, 165, 233, 0.18);
+      border: 1px solid rgba(186, 230, 253, 0.38);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      margin-bottom: 18px;
+      color: #e0f2fe;
+      }
+      .lab-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      width: fit-content;
+      margin: 14px 0 6px;
+      padding: 10px 14px;
+      border: 1px solid rgba(186, 230, 253, 0.38);
+      border-radius: 14px;
+      background: rgba(248, 250, 252, 0.1);
+      color: #f8fafc;
+      text-decoration: none;
+      backdrop-filter: blur(6px);
+      }
+      .lab-link img {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+      border-radius: 10px;
+      background: white;
+      padding: 4px;
+      }
+      .lab-link strong {
+      display: block;
+      font-size: 16px;
+      line-height: 1.2;
+      }
+      .lab-link span {
+      display: block;
+      color: #bae6fd;
+      font-size: 13px;
+      line-height: 1.35;
+      }
+      .hero h1 {
+      font-size: 42px;
+      margin: 0 0 10px;
+      letter-spacing: -0.5px;
+      }
+      .hero .subtitle {
+      margin: 0;
+      font-size: 20px;
+      color: #bae6fd;
+      font-weight: 700;
+      }
+      .hero .banner {
+      margin: 18px 0 0;
+      font-size: 18px;
+      color: #e0f2fe;
+      }
+      .signal-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+      }
+      .signal {
+      background: rgba(15, 23, 42, 0.44);
+      border: 1px solid rgba(125, 211, 252, 0.32);
+      border-radius: 999px;
+      color: #f8fafc;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 13px;
+      }
+      .drone-field {
+      position: absolute;
+      right: 34px;
+      bottom: 28px;
+      width: 300px;
+      height: 190px;
+      z-index: 1;
+      opacity: 0.95;
+      }
+      .drone-node {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #7dd3fc;
+      box-shadow: 0 0 22px rgba(125, 211, 252, 0.88);
+      }
+      .drone-node::before,
+      .drone-node::after {
+      content: "";
+      position: absolute;
+      width: 32px;
+      height: 1px;
+      left: -8px;
+      top: 7px;
+      background: rgba(224, 242, 254, 0.78);
+      }
+      .drone-node::after {
+      transform: rotate(90deg);
+      }
+      .drone-node:nth-child(1) { left: 22px; top: 44px; }
+      .drone-node:nth-child(2) { left: 92px; top: 12px; }
+      .drone-node:nth-child(3) { left: 166px; top: 50px; }
+      .drone-node:nth-child(4) { left: 236px; top: 26px; }
+      .drone-node:nth-child(5) { left: 60px; top: 132px; }
+      .drone-node:nth-child(6) { left: 148px; top: 112px; }
+      .drone-node:nth-child(7) { left: 238px; top: 142px; }
+      .swarm-line {
+      position: absolute;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(125, 211, 252, 0), rgba(125, 211, 252, 0.55), rgba(125, 211, 252, 0));
+      transform-origin: left;
+      }
+      .line-1 { left: 36px; top: 56px; width: 132px; transform: rotate(-12deg); }
+      .line-2 { left: 104px; top: 26px; width: 140px; transform: rotate(11deg); }
+      .line-3 { left: 72px; top: 142px; width: 180px; transform: rotate(-6deg); }
+      .line-4 { left: 162px; top: 62px; width: 92px; transform: rotate(56deg); }
+      .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin: 28px 0;
+      }
+      .summary-card {
+      background: white;
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+      border-top: 5px solid #0f3b5f;
+      }
+      .summary-card .label {
+      color: #64748b;
+      font-size: 14px;
+      }
+      .summary-card .value {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0f3b5f;
+      margin-top: 4px;
+      }
+      section {
+      background: white;
+      margin-top: 26px;
+      padding: 34px;
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      }
+      h2 {
+      margin-top: 0;
+      font-size: 25px;
+      color: #0f172a;
+      border-left: 7px solid #0f3b5f;
+      padding-left: 14px;
+      }
+      .lead {
+      font-size: 17px;
+      color: #334155;
+      }
+      .overview-image {
+      margin: 18px 0 24px;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #f8fafc;
+      }
+      .overview-image img {
+      display: block;
+      width: 100%;
+      height: auto;
+      }
+      .keyword-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+      }
+      .keyword {
+      background: #e0f2fe;
+      color: #075985;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+      }
+      .two-col,
+      .three-col {
+      display: grid;
+      gap: 22px;
+      }
+      .two-col {
+      grid-template-columns: 1fr 1fr;
+      }
+      .three-col {
+      grid-template-columns: repeat(3, 1fr);
+      }
+      .box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 22px;
+      }
+      .box h3 {
+      margin-top: 0;
+      color: #0f3b5f;
+      }
+      ul {
+      margin-bottom: 0;
+      padding-left: 22px;
+      }
+      .paper-card {
+      border: 1px solid #cbd5e1;
+      border-radius: 18px;
+      background:
+      linear-gradient(180deg, #ffffff, #f8fafc),
+      repeating-linear-gradient(0deg, transparent 0 30px, rgba(15, 59, 95, 0.05) 30px 31px);
+      padding: 24px;
+      }
+      .paper-meta {
+      color: #64748b;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      }
+      .paper-title {
+      margin: 8px 0 16px;
+      font-size: 21px;
+      font-weight: 800;
+      color: #0f172a;
+      }
+      .paper-flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+      }
+      .paper-step {
+      border: 1px solid #dbe4ee;
+      border-radius: 14px;
+      padding: 14px;
+      background: #f8fafc;
+      font-size: 14px;
+      font-weight: 700;
+      color: #164e63;
+      text-align: center;
+      }
+      .architecture {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr 1fr;
+      align-items: center;
+      gap: 18px;
+      margin-top: 18px;
+      }
+      .arch-column {
+      display: grid;
+      gap: 12px;
+      }
+      .arch-node {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      font-weight: 800;
+      color: #0f3b5f;
+      }
+      .arch-core {
+      min-height: 220px;
+      border-radius: 22px;
+      background:
+      linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(15, 59, 95, 0.92)),
+      linear-gradient(90deg, rgba(125, 211, 252, 0.16) 1px, transparent 1px);
+      background-size: auto, 28px 28px;
+      color: white;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      }
+      .arch-core::after {
+      content: "";
+      position: absolute;
+      inset: 22px;
+      border: 1px dashed rgba(186, 230, 253, 0.42);
+      border-radius: 18px;
+      }
+      .arch-core strong {
+      display: block;
+      font-size: 24px;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+      }
+      .arch-core span {
+      color: #bae6fd;
+      position: relative;
+      z-index: 1;
+      }
+      .battle-grid {
+      display: grid;
+      grid-template-columns: 1fr 0.8fr 1fr;
+      gap: 18px;
+      align-items: stretch;
+      margin-top: 18px;
+      }
+      .team-card {
+      border-radius: 20px;
+      padding: 24px;
+      color: white;
+      min-height: 220px;
+      }
+      .team-card h3 {
+      margin-top: 0;
+      font-size: 24px;
+      }
+      .red-team {
+      background: linear-gradient(135deg, #7f1d1d, #b91c1c);
+      }
+      .blue-team {
+      background: linear-gradient(135deg, #0c4a6e, #1d4ed8);
+      }
+      .vs-card {
+      border: 1px solid #cbd5e1;
+      border-radius: 20px;
+      background: #f8fafc;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 22px;
+      }
+      .vs-card strong {
+      display: block;
+      color: #0f172a;
+      font-size: 32px;
+      margin-bottom: 8px;
+      }
+      table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 16px;
+      margin-top: 18px;
+      }
+      th {
+      background: #0f3b5f;
+      color: white;
+      padding: 14px;
+      font-size: 15px;
+      }
+      td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 14px;
+      vertical-align: top;
+      background: white;
+      }
+      tr:nth-child(even) td {
+      background: #f8fafc;
+      }
+      .tag-online,
+      .tag-lab,
+      .tag-final {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 13px;
+      white-space: nowrap;
+      word-break: keep-all;
+      }
+      .tag-online {
+      background: #dbeafe;
+      color: #1d4ed8;
+      }
+      .tag-lab {
+      background: #fee2e2;
+      color: #b91c1c;
+      }
+      .tag-final {
+      background: #dcfce7;
+      color: #15803d;
+      }
+      .timeline-title {
+      font-weight: 800;
+      color: #0f172a;
+      }
+      .nowrap {
+      white-space: nowrap;
+      word-break: keep-all;
+      }
+      .calendar-wrap {
+      margin: 18px 0 24px;
+      display: grid;
+      gap: 18px;
+      }
+      .calendar-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      color: #475569;
+      font-size: 14px;
+      }
+      .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      }
+      .legend-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      }
+      .legend-swatch.online {
+      background: #bfdbfe;
+      border: 1px solid #60a5fa;
+      }
+      .legend-swatch.offline {
+      background: #fecaca;
+      border: 1px solid #f87171;
+      }
+      .course-calendar {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      }
+      .calendar-month {
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 18px;
+      background: #f8fafc;
+      }
+      .calendar-month h3 {
+      margin: 0 0 12px;
+      color: #0f3b5f;
+      font-size: 18px;
+      }
+      .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 6px;
+      }
+      .calendar-weekday,
+      .calendar-day {
+      min-height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 800;
+      }
+      .calendar-weekday {
+      color: #64748b;
+      min-height: 24px;
+      }
+      .calendar-day {
+      background: white;
+      border: 1px solid #e2e8f0;
+      color: #334155;
+      }
+      .calendar-day.empty {
+      background: transparent;
+      border-color: transparent;
+      }
+      .calendar-day.online-day {
+      background: #dbeafe;
+      border-color: #60a5fa;
+      color: #1d4ed8;
+      }
+      .calendar-day.offline-day {
+      background: #fee2e2;
+      border-color: #f87171;
+      color: #b91c1c;
+      }
+      .eval-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 18px;
+      }
+      .eval-card {
+      background: linear-gradient(180deg, #ffffff, #f8fafc);
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 22px;
+      text-align: center;
+      }
+      .eval-card strong {
+      display: block;
+      font-size: 28px;
+      color: #0f3b5f;
+      margin-bottom: 4px;
+      }
+      .footer {
+      text-align: center;
+      margin-top: 36px;
+      color: #64748b;
+      font-size: 14px;
+      }
+      @media print {
+      body {
+      background: white;
+      }
+      section, .hero, .summary-card {
+      box-shadow: none;
+      }
+      }
+      @media (max-width: 900px) {
+      .summary-grid,
+      .two-col,
+      .three-col,
+      .paper-flow,
+      .architecture,
+      .battle-grid,
+      .course-calendar,
+      .eval-grid {
+      grid-template-columns: 1fr;
+      }
+      .hero {
+      padding: 42px 28px;
+      }
+      .hero h1 {
+      font-size: 32px;
+      }
+      .drone-field {
+      position: relative;
+      right: auto;
+      bottom: auto;
+      width: 100%;
+      margin-top: 32px;
+      }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="hero">
+        <div class="hero-content">
+          <div class="badge">Summer Intensive · Defense & Advanced Security Lab</div>
+          <h1>[군수 AX 전환 Track] 첨단소재 군수 AX</h1>
+          <p class="subtitle">Advanced Materials for Defense AI</p>
+          <a class="lab-link" href="https://sites.google.com/view/moon1song" target="_blank" rel="noopener">
+          <span>
+          <strong>Song's Lab</strong>
+          Extreme Temperature and Heat Flux Lab
+          </span>
+          </a>
+          <p class="banner">첨단 국방소재 시험 평가 및 분석 실습</p>
+          <div class="signal-grid">
+            <span class="signal">Arc-Jet Test</span>
+            <span class="signal">High-Temperature-Gas Jet Test</span>
+            <span class="signal">Vaccum Plasma Spray Coating</span>
+            <span class="signal">Post-analysis of Materials </span>
+          </div>
+        </div>
+        <div class="drone-field" aria-hidden="true">
+          <div class="swarm-line line-1">
+          </div>
+          <div class="swarm-line line-2">
+          </div>
+          <div class="swarm-line line-3">
+          </div>
+          <div class="swarm-line line-4">
+          </div>
+          <div class="drone-node">
+          </div>
+          <div class="drone-node">
+          </div>
+          <div class="drone-node">
+          </div>
+          <div class="drone-node">
+          </div>
+          <div class="drone-node">
+          </div>
+          <div class="drone-node">
+          </div>
+          <div class="drone-node">
+          </div>
+        </div>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="label">총 교육시간</div>
+          <div class="value">40H</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">온라인 학습</div>
+          <div class="value">0H</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">오프라인 실습</div>
+          <div class="value">40H</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">최종 발표</div>
+          <div class="value">0H</div>
+        </div>
+      </div>
+      <section>
+        <h2>1. 교과목 개요</h2>
+        <p class="lead">
+          본 과정은 국방 분야의 핵심 경쟁력인 고온·극한 환경용 첨단 소재 기술을 다루는 실무 중심 교육이다. 초고온 환경을 모사하는 아크젯(Arc-jet) 및 고온 가스 제트 시험, 표면 특성을 극대화하는 진공 플라즈마 용사 코팅(VPS), 그리고 신뢰성 있는 데이터 확보를 위한 시편 전·후처리 기술까지 전 공정을 다룬다.
+        </p>
+        <p class="lead">
+          학습자는 5일간(총 40시간)의 집중적인 이론 및 장비 실습을 통해 시험 장비의 안정적인 운용과 정확한 데이터 획득 능력을 배양한다. 나아가 소재 후처리 분석법을 터득함으로써, 연구 개발 성과를 실제 국방 무기체계 및 군수 분야에 실무적으로 적용·연계할 수 있는 핵심 역량을 확보한다.
+        </p>
+        <div class="keyword-box">
+          <span class="keyword">Defense High-Temperature Materials</span>
+          <span class="keyword">Arc-jet Test</span>
+          <span class="keyword">High-Temperature-Gas Jet Test</span>
+          <span class="keyword">Vaccum Plasma Spray Coating</span>
+          <span class="keyword">Post-analysis of Materials</span>
+        </div>
+      </section>
+      <section>
+        <h2>2. 실습형 학습 구조</h2>
+        <div class="paper-card">
+          <div class="paper-meta">Research-oriented flipped learning</div>
+          <div class="paper-title">5일간(총 40시간)의 집중적인 장비 실습 및 분석을 통한 국방 군수분야 첨단소재 개발 실무 적용 역량 확보</div>
+          <p class="lead">
+            초고온 모사 시험 및 코텅 공정 조건 설계, 시험 장비의 안정적 운용을 통한 신뢰성 있는 데이터 확보, 소재 후처리 분석법 터득 및 국방 무기체계 연계성 검증 능력을 배양한다.
+          </p>
+          <div class="paper-flow">
+            <div class="paper-step">Arc-jet Test</div>
+            <div class="paper-step">High-Temperature-Gas Jet Test</div>
+            <div class="paper-step">Vaccum Plasma Spray Coating</div>
+            <div class="paper-step">Post-analysis of Materials</div>
+          </div>
+        </div>
+      </section>
+      <section>
+        <h2>3. 핵심 주제</h2>
+        <div class="three-col">
+          <div class="box">
+            <h3>초고온 환경 모사 시험</h3>
+            <ul>
+              <li>아크젯 시험</li>
+              <li>고온 연소가스 제트 시험</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>초고온 세라믹 코팅 시험</h3>
+            <ul>
+              <li>진공 플라즈마 용사 코팅</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>소재 분석</h3>
+            <ul>
+              <li>시편 전처리(고속 절단기, 마운팅, 연삭 연마 등)</li>
+              <li>주사전자현미경</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+      <section>
+        <h2>4. 국방첨단소재</h2>
+        <div class="architecture">
+          <div class="arch-column">
+            <div class="arch-node">아크젯 시험</div>
+            <div class="arch-node">고온 가스 제트 시험</div>
+            <div class="arch-node">진공플라즈마 용사코팅</div>
+          </div>
+          <div class="arch-core">
+            <div>
+              <strong>첨단국방소재</strong>
+              <span>초고온 환경 모사, 초고온 세라믹 코팅, 시편 분석</span>
+            </div>
+          </div>
+          <div class="arch-column">
+            <div class="arch-node">시편 전처리</div>
+            <div class="arch-node">주사전자현미경</div>
+            <div class="arch-node">군수AX를 위한 첨단소재 데이터 확보</div>
+          </div>
+        </div>
+      </section>
+      <section>
+        <h2>5. 장비 실습 목록</h2>
+        <div class="battle-grid">
+          <div class="team-card red-team">
+            <h3>초고온 환경 모사(2, 3일차)</h3>
+            <ul>
+              <li>아크젯 시험 실습(2일차)</li>
+              <li>고온 연소가스 제트 시험 실습(3일차)</li>
+            </ul>
+          </div>
+          <div class="vs-card">
+            <div>
+              <h3>전체 개요 소개(1일차)</h3>
+              <ul>
+              </ul>
+            </div>
+          </div>
+          <div class="team-card blue-team">
+            <h3>초고온 세라믹 코팅 및 시편 분석(4,5일차)</h3>
+            <ul>
+              <li>진공 플라즈마 용사 코팅 실습(4일차)</li>
+              <li>시편 후처리(4일차)</li>
+              <li>시편 전처리(5일차)</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+      <section>
+        <h2>6. 운영 방식</h2>
+        <div class="calendar-wrap" aria-label="교육 운영 일정 달력">
+          <div class="calendar-legend">
+            <span class="legend-item">
+            <span class="legend-swatch online">
+            </span>온라인 학습: -</span>
+            <span class="legend-item">
+            <span class="legend-swatch offline">
+            </span>오프라인 실습: 7/6~7/10 (장소: 전북대학교 고온플라즈마응용연구센터, 교통비 지원)</span>
+          </div>
+          <div class="course-calendar">
+            <div class="calendar-month">
+              <h3>2026년 6월</h3>
+              <div class="calendar-grid">
+                <div class="calendar-weekday">일</div>
+                <div class="calendar-weekday">월</div>
+                <div class="calendar-weekday">화</div>
+                <div class="calendar-weekday">수</div>
+                <div class="calendar-weekday">목</div>
+                <div class="calendar-weekday">금</div>
+                <div class="calendar-weekday">토</div>
+                <div class="calendar-day empty">
+                </div>
+                <div class="calendar-day">1</div>
+                <div class="calendar-day">2</div>
+                <div class="calendar-day">3</div>
+                <div class="calendar-day">4</div>
+                <div class="calendar-day">5</div>
+                <div class="calendar-day">6</div>
+                <div class="calendar-day">7</div>
+                <div class="calendar-day">8</div>
+                <div class="calendar-day">9</div>
+                <div class="calendar-day">10</div>
+                <div class="calendar-day">11</div>
+                <div class="calendar-day">12</div>
+                <div class="calendar-day">13</div>
+                <div class="calendar-day">14</div>
+                <div class="calendar-day">15</div>
+                <div class="calendar-day">16</div>
+                <div class="calendar-day">17</div>
+                <div class="calendar-day">18</div>
+                <div class="calendar-day">19</div>
+                <div class="calendar-day">20</div>
+                <div class="calendar-day">21</div>
+                <div class="calendar-day">22</div>
+                <div class="calendar-day">23</div>
+                <div class="calendar-day">24</div>
+                <div class="calendar-day">25</div>
+                <div class="calendar-day">26</div>
+                <div class="calendar-day">27</div>
+                <div class="calendar-day">28</div>
+                <div class="calendar-day">29</div>
+                <div class="calendar-day">30</div>
+              </div>
+            </div>
+            <div class="calendar-month">
+              <h3>2026년 7월</h3>
+              <div class="calendar-grid">
+                <div class="calendar-weekday">일</div>
+                <div class="calendar-weekday">월</div>
+                <div class="calendar-weekday">화</div>
+                <div class="calendar-weekday">수</div>
+                <div class="calendar-weekday">목</div>
+                <div class="calendar-weekday">금</div>
+                <div class="calendar-weekday">토</div>
+                <div class="calendar-day empty">
+                </div>
+                <div class="calendar-day empty">
+                </div>
+                <div class="calendar-day empty">
+                </div>
+                <div class="calendar-day">1</div>
+                <div class="calendar-day">2</div>
+                <div class="calendar-day">3</div>
+                <div class="calendar-day">4</div>
+                <div class="calendar-day">5</div>
+                <div class="calendar-day offline-day">6</div>
+                <div class="calendar-day offline-day">7</div>
+                <div class="calendar-day offline-day">8</div>
+                <div class="calendar-day offline-day">9</div>
+                <div class="calendar-day offline-day">10</div>
+                <div class="calendar-day">11</div>
+                <div class="calendar-day">12</div>
+                <div class="calendar-day">13</div>
+                <div class="calendar-day">14</div>
+                <div class="calendar-day">15</div>
+                <div class="calendar-day">16</div>
+                <div class="calendar-day">17</div>
+                <div class="calendar-day">18</div>
+                <div class="calendar-day">19</div>
+                <div class="calendar-day">20</div>
+                <div class="calendar-day">21</div>
+                <div class="calendar-day">22</div>
+                <div class="calendar-day">23</div>
+                <div class="calendar-day">24</div>
+                <div class="calendar-day">25</div>
+                <div class="calendar-day">26</div>
+                <div class="calendar-day">27</div>
+                <div class="calendar-day">28</div>
+                <div class="calendar-day">29</div>
+                <div class="calendar-day">30</div>
+                <div class="calendar-day">31</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <table>
+          <tr>
+            <th>구분</th>
+            <th>기간</th>
+            <th>시간</th>
+            <th>운영 내용</th>
+          </tr>
+          <tr>
+            <td>
+              <span class="tag-online">온라인</span>
+            </td>
+            <td>-</td>
+            <td>-</td>
+            <td>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span class="tag-lab">오프라인</span>
+            </td>
+            <td>1주</td>
+            <td>40H</td>
+            <td>
+              아크젯 시험(2일차), 고온 연소가스 시험(3일차), 진공 플라즈마 용사 코팅 및 시편 후처리(4일차), 시편 전처리(5일차) 실습을 수행한다.
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span class="tag-final">발표</span>
+            </td>
+            <td class="nowrap">-</td>
+            <td>-</td>
+            <td>
+            </td>
+          </tr>
+        </table>
+      </section>
+      <section>
+        <h2>7. 학습 일정</h2>
+        <table>
+          <tr>
+            <th>단계</th>
+            <th>방식</th>
+            <th>주제</th>
+            <th>학습 방향</th>
+            <th>시간</th>
+          </tr>
+          <tr>
+            <td>Day 1</td>
+            <td>
+              <span class="tag-lab">오프라인</span>
+            </td>
+            <td class="timeline-title">국방첨단소재 및 AI 개발을 위한 소재 데이터 획득 개요</td>
+            <td>국방분야 첨단소재 및 극한환경소재 이해, AI 개발을 위한 소재 데이터 획득 방법 및 사례 소개</td>
+            <td>8H</td>
+          </tr>
+          <tr>
+            <td>Day 2</td>
+            <td>
+              <span class="tag-lab">오프라인</span>
+            </td>
+            <td class="timeline-title">아크젯 시험</td>
+            <td>국방 첨단소재 분야 극한환경 사례 소개 및 아크젯 시험 실습</td>
+            <td>8H</td>
+          </tr>
+          <tr>
+            <td>Day 3</td>
+            <td>
+              <span class="tag-lab">오프라인</span>
+            </td>
+            <td class="timeline-title">고온 연소가스 제트 시험</td>
+            <td>국방 첨단소재 분야 극한환경 사례 소개 및 고온 연소가스 제트 시험 실습</td>
+            <td>8H</td>
+          </tr>
+          <tr>
+            <td>Day 4</td>
+            <td>
+              <span class="tag-lab">오프라인</span>
+            </td>
+            <td class="timeline-title">진공 플라즈마 용사 코팅 및 소재 후처리</td>
+            <td>진공 플라즈마 용사코팅 및 소재 후처리 실습</td>
+            <td>8H</td>
+          </tr>
+          <tr>
+            <td>Day 5</td>
+            <td>
+              <span class="tag-lab">오프라인</span>
+            </td>
+            <td class="timeline-title">소재 전처리 실습</td>
+            <td>소재 절단, 소재 마운팅, 소재 연삭/연마 등</td>
+            <td>8H</td>
+          </tr>
+        </table>
+      </section>
+      <section>
+        <h2>8. 온라인 학습 안내 (해당사항 없음)</h2>
+      </section>
+      <section>
+        <h2>9. 오프라인 학습</h2>
+        <div class="two-col">
+          <div class="box">
+            <h3>초고온 환경 모사</h3>
+            <ul>
+              <li>아크젯 시험</li>
+              <li>고온 연소가스 제트 시험</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>초고온 세라믹 코팅 및 시편 처리</h3>
+            <ul>
+              <li>진공 플라즈마 용사 코팅</li>
+              <li>소재 시편 전처리</li>
+              <li>소재 시편 후처리</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+      <section>
+        <h2>10. 평가 및 산출물</h2>
+        <div class="eval-grid">
+          <div class="eval-card">
+            <strong>10%</strong>
+            출석
+          </div>
+          <div class="eval-card">
+            <strong>80%</strong>
+            QUIZ 2~5일차 각 20% 반영
+          </div>
+          <div class="eval-card">
+            <strong>10%</strong>
+            참여도
+          </div>
+        </div>
+      </section>
+      <section>
+        <h2>11. 기대 효과</h2>
+        <div class="two-col">
+          <div class="box">
+            <h3>학습자 역량</h3>
+            <ul>
+              <li>국방 초고온·극한 환경용 첨단 소재 시험 및 공정 실무 역량 확보</li>
+              <li>가설 설정부터 데이터 획득, 후처리 분석까지의 연구형 문제 정의 능력 강화</li>
+              <li>실험 결과를 분석하고 무기체계 적용성을 평가하는 역량 확보</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>산업 연계성</h3>
+            <ul>
+              <li>아크젯 및 진공 플라즈마 용사 코팅(VPS) 기반의 방산 소재 실무 감각 강화</li>
+              <li>유도무기 및 핵심 군수 분야 첨단 소재 유관 교육과 연구 프로젝트 연계</li>
+              <li>극초고온 연구 기반의 후속 심화 학습 및 산학 협력 확장</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+      <div class="footer">
+        첨단소재 군수 AX | Advanced Material Defense AX
+      </div>
+    </div>
+  </body>
+</html>
