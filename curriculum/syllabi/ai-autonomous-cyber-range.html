@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 기반 자율무인체계 공방 실습 강의계획서</title>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        margin: 0;
+        font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+        background:
+            radial-gradient(circle at top left, rgba(14, 165, 233, 0.14), transparent 28rem),
+            linear-gradient(180deg, #eef4fb 0%, #f7fafc 44%, #eef4fb 100%);
+        color: #1f2937;
+        line-height: 1.7;
+        overflow-x: hidden;
+    }
+
+    .container {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 40px 24px;
+    }
+
+    .hero {
+        background:
+            linear-gradient(135deg, rgba(3, 7, 18, 0.94), rgba(7, 27, 58, 0.95), rgba(12, 74, 110, 0.9)),
+            repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 74px);
+        color: white;
+        padding: 58px 48px;
+        border-radius: 28px;
+        box-shadow: 0 24px 48px rgba(8, 47, 73, 0.28);
+        position: relative;
+        overflow: hidden;
+        min-height: 360px;
+    }
+
+    .hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(125, 211, 252, 0.12) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(125, 211, 252, 0.1) 1px, transparent 1px);
+        background-size: 42px 42px;
+        mask-image: linear-gradient(90deg, transparent, #000 20%, #000 82%, transparent);
+    }
+
+    .hero::after {
+        content: "";
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        right: -92px;
+        top: -92px;
+        border: 1px solid rgba(125, 211, 252, 0.42);
+        border-radius: 50%;
+        box-shadow: inset 0 0 60px rgba(14, 165, 233, 0.2);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 780px;
+    }
+
+    .badge {
+        display: inline-block;
+        background: rgba(14, 165, 233, 0.18);
+        border: 1px solid rgba(186, 230, 253, 0.38);
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 14px;
+        margin-bottom: 18px;
+        color: #e0f2fe;
+    }
+
+    .hero h1 {
+        font-size: 42px;
+        margin: 0 0 10px;
+        letter-spacing: 0;
+        line-height: 1.18;
+    }
+
+    .hero .subtitle {
+        margin: 0;
+        font-size: 20px;
+        color: #bae6fd;
+        font-weight: 700;
+    }
+
+    .hero .banner {
+        margin: 18px 0 0;
+        font-size: 30px;
+        color: #94a3b8;
+        font-weight: 800;
+        line-height: 1.35;
+    }
+
+    .signal-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+    }
+
+    .signal {
+        background: rgba(15, 23, 42, 0.44);
+        border: 1px solid rgba(125, 211, 252, 0.32);
+        border-radius: 999px;
+        color: #f8fafc;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 8px 13px;
+    }
+
+    .cyber-field {
+        position: absolute;
+        right: 34px;
+        bottom: 28px;
+        width: 300px;
+        height: 190px;
+        z-index: 1;
+        opacity: 0.95;
+    }
+
+    .cyber-node {
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #7dd3fc;
+        box-shadow: 0 0 22px rgba(125, 211, 252, 0.88);
+    }
+
+    .cyber-node:nth-child(1) { left: 22px; top: 44px; }
+    .cyber-node:nth-child(2) { left: 92px; top: 12px; }
+    .cyber-node:nth-child(3) { left: 166px; top: 50px; }
+    .cyber-node:nth-child(4) { left: 236px; top: 26px; }
+    .cyber-node:nth-child(5) { left: 60px; top: 132px; }
+    .cyber-node:nth-child(6) { left: 148px; top: 112px; }
+    .cyber-node:nth-child(7) { left: 238px; top: 142px; }
+
+    .cyber-line {
+        position: absolute;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(125, 211, 252, 0), rgba(125, 211, 252, 0.55), rgba(125, 211, 252, 0));
+        transform-origin: left;
+    }
+
+    .line-1 { left: 36px; top: 56px; width: 132px; transform: rotate(-12deg); }
+    .line-2 { left: 104px; top: 26px; width: 140px; transform: rotate(11deg); }
+    .line-3 { left: 72px; top: 142px; width: 180px; transform: rotate(-6deg); }
+    .line-4 { left: 162px; top: 62px; width: 92px; transform: rotate(56deg); }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin: 28px 0;
+    }
+
+    .summary-card {
+        background: white;
+        border-radius: 20px;
+        padding: 22px;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+        border-top: 5px solid #0f3b5f;
+    }
+
+    .summary-card .label {
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .summary-card .value {
+        font-size: 24px;
+        font-weight: 800;
+        color: #0f3b5f;
+        margin-top: 4px;
+        line-height: 1.3;
+    }
+
+    section {
+        background: white;
+        margin-top: 26px;
+        padding: 34px;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    h2 {
+        margin-top: 0;
+        font-size: 25px;
+        color: #0f172a;
+        border-left: 7px solid #0f3b5f;
+        padding-left: 14px;
+    }
+
+    h3 {
+        margin: 0 0 10px;
+        color: #0f3b5f;
+        font-size: 19px;
+    }
+
+    p {
+        margin: 0 0 14px;
+    }
+
+    .lead {
+        color: #334155;
+        font-size: 17px;
+    }
+
+    .keyword-box {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .keyword {
+        background: #e0f2fe;
+        color: #075985;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .competition-layout {
+        display: grid;
+        grid-template-columns: minmax(240px, 1fr) 2fr;
+        gap: 24px;
+        align-items: start;
+    }
+
+    .competition-image {
+        margin: 0;
+        border-radius: 18px;
+        overflow: hidden;
+        background: #050816;
+        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.18);
+    }
+
+    .competition-image img {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+
+    .news-link {
+        display: inline-flex;
+        width: fit-content;
+        margin-top: 8px;
+        color: #0f3b5f;
+        font-weight: 800;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(15, 59, 95, 0.45);
+    }
+
+    .competition-points {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin: 18px 0;
+    }
+
+    .competition-point {
+        background: #f8fafc;
+        border: 1px solid #d9e2ec;
+        border-radius: 16px;
+        padding: 14px;
+    }
+
+    .competition-point strong {
+        display: block;
+        margin-bottom: 4px;
+        color: #0f3b5f;
+        font-size: 15px;
+    }
+
+    .competition-point span {
+        display: block;
+        color: #475569;
+        font-size: 14px;
+        line-height: 1.55;
+    }
+
+    .three-col,
+    .platform-grid,
+    .effect-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+    }
+
+    .two-col {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+    }
+
+    .box {
+        background: #f8fafc;
+        border: 1px solid #d9e2ec;
+        border-radius: 18px;
+        padding: 20px;
+    }
+
+    ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: 18px;
+        background: white;
+    }
+
+    th,
+    td {
+        border: 1px solid #e2e8f0;
+        padding: 13px 14px;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    th {
+        background: #0f3b5f;
+        color: white;
+        font-weight: 800;
+    }
+
+    td:first-child {
+        font-weight: 800;
+        color: #0f3b5f;
+        white-space: nowrap;
+    }
+
+    .goal {
+        margin-top: 18px;
+        border-left: 6px solid #0f3b5f;
+        background: #eef6ff;
+        border-radius: 16px;
+        padding: 16px 18px;
+        color: #16324f;
+        font-weight: 800;
+    }
+
+    @media (max-width: 900px) {
+        .hero {
+            padding: 36px 26px;
+        }
+
+        .cyber-field {
+            display: none;
+        }
+
+        .summary-grid,
+        .competition-layout,
+        .competition-points,
+        .three-col,
+        .platform-grid,
+        .effect-grid,
+        .two-col {
+            grid-template-columns: 1fr;
+        }
+
+        section {
+            padding: 24px 18px;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .container {
+            padding: 24px 14px;
+        }
+
+        .hero h1 {
+            font-size: 28px;
+        }
+
+        .hero .banner {
+            font-size: 22px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            font-size: 14px;
+        }
+    }
+</style>
+</head>
+
+<body>
+<div class="container">
+    <div class="hero">
+        <div class="hero-content">
+            <div class="badge">Cybersecurity Track · Defense AI Cyber Range</div>
+            <h1>AI 기반 자율무인체계 공방 실습</h1>
+            <p class="subtitle">ROS2 · UAV/UGV Cyber Range · AI Red/Blue Teaming 기반 공격·방어 실습</p>
+            <p class="banner">AI 기반 자율무인체계 공격·방어 시나리오 구현 및 Cyber Range 기반 실시간 공방 수행</p>
+            <div class="signal-grid">
+                <span class="signal">ROS2</span>
+                <span class="signal">PX4</span>
+                <span class="signal">Gazebo</span>
+                <span class="signal">UAV/UGV Cyber Range</span>
+                <span class="signal">AI Red Team</span>
+                <span class="signal">AI Blue Team</span>
+            </div>
+        </div>
+
+        <div class="cyber-field" aria-hidden="true">
+            <div class="cyber-node"></div>
+            <div class="cyber-node"></div>
+            <div class="cyber-node"></div>
+            <div class="cyber-node"></div>
+            <div class="cyber-node"></div>
+            <div class="cyber-node"></div>
+            <div class="cyber-node"></div>
+            <div class="cyber-line line-1"></div>
+            <div class="cyber-line line-2"></div>
+            <div class="cyber-line line-3"></div>
+            <div class="cyber-line line-4"></div>
+        </div>
+    </div>
+
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="label">총 교육시간</div>
+            <div class="value">40H</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">이론</div>
+            <div class="value">8H</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">실습</div>
+            <div class="value">32H</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">실습 비중</div>
+            <div class="value">80%</div>
+        </div>
+    </div>
+
+    <section>
+        <h2>1. 교과목 개요</h2>
+        <p class="lead">
+            본 교과목은 AI 기반 자율무인체계 환경에서 발생 가능한 사이버 공격 및 방어 시나리오를
+            실습 중심으로 학습하는 프로젝트 기반 교과목이다.
+        </p>
+        <p class="lead">
+            학생들은 ROS2 · PX4 · Gazebo 기반 UAV/UGV 시뮬레이션 환경에서 AI 기반 Red Team / Blue Team
+            공방 구조를 직접 설계하고 구현한다.
+        </p>
+        <p class="lead">
+            특히 GPS Spoofing, Telemetry Manipulation, Sensor Spoofing, AI 기반 이상탐지,
+            자율 복구(Autonomous Recovery), AI Agent 기반 의사결정 구조 등을 중심으로 학습하며,
+            실제 Defense AI Cyber Range 구조를 축소 구현하는 것을 목표로 한다.
+        </p>
+        <p class="lead">
+            또한 팀 기반 공격·방어 실습을 통해 실제 국방 AI · 자율무인체계 · 미래전장 환경에서 요구되는
+            AI 사이버보안 역량을 습득한다.
+        </p>
+
+        <div class="keyword-box">
+            <span class="keyword">Defense AI</span>
+            <span class="keyword">UAV Cyber Security</span>
+            <span class="keyword">ROS2</span>
+            <span class="keyword">PX4</span>
+            <span class="keyword">Gazebo</span>
+            <span class="keyword">AI Red Team</span>
+            <span class="keyword">AI Blue Team</span>
+            <span class="keyword">Autonomous Defense</span>
+            <span class="keyword">GPS Spoofing</span>
+            <span class="keyword">Cyber Range</span>
+            <span class="keyword">Multi-Agent System</span>
+            <span class="keyword">MUM-T Security</span>
+        </div>
+    </section>
+
+    <section>
+        <h2>2. 대회 소개</h2>
+        <div class="competition-layout">
+            <figure class="competition-image">
+                <img src="../images/lig_competition.png" alt="Defense AI Hackathon DAH 2026 안내 포스터">
+            </figure>
+            <div>
+                <h3>Defense AI Hackathon DAH 2026</h3>
+                <p class="lead">
+                    LIG 디펜스&에어로스페이스(LIG D&A)는 국내 최초 방산 분야 에이전틱 AI 공방 해커톤인
+                    DAH(Defense AI Cyber Security Hackathon)를 개최하며, AI와 디지털 방산 기술이 결합되는
+                    새로운 사이버 전장 환경을 제시하고 있다.
+                </p>
+                <p class="lead">
+                    DAH는 단순 아이디어 경진대회가 아니라 AI Agent가 스스로 판단하고 실행하며 공격과 방어를
+                    수행하는 공방전 형태의 기술 경연이다. 참가자는 실제 방위산업과 사이버보안 도메인에서
+                    발생하는 고도화된 문제를 클라우드 기반 환경과 현장감 있는 데이터로 해결하게 된다.
+                </p>
+                <div class="competition-points">
+                    <div class="competition-point">
+                        <strong>국내 최초 방산 AI 공방 대회</strong>
+                        <span>AI Agent 기반 공격·방어 구조를 다루는 Defense AI Cyber Security Hackathon</span>
+                    </div>
+                    <div class="competition-point">
+                        <strong>본선 및 기술 경연</strong>
+                        <span>2026년 8월 21일 잠실 롯데월드타워 SKY31 컨벤션에서 본선 진행</span>
+                    </div>
+                    <div class="competition-point">
+                        <strong>상금 및 채용 연계</strong>
+                        <span>총 상금 2,000만 원 규모, 수상자에게 LIG D&A 채용 지원 시 우대 혜택 제공</span>
+                    </div>
+                    <div class="competition-point">
+                        <strong>K-방산 미래 기술</strong>
+                        <span>사이버 전장 대응, AI 통합지휘통제, MUM-T 구현과 연결되는 실전형 역량 검증</span>
+                    </div>
+                </div>
+                <p class="lead">
+                    본 실습 과정은 이러한 대회형 문제 해결 구조를 참고해, 자율무인체계 Cyber Range에서
+                    Red Team과 Blue Team이 실시간으로 공격·탐지·대응 시나리오를 구현하는 역량을 기른다.
+                    학생들은 대회 참가, 포트폴리오 구축, 방산 AI·사이버보안 분야 취업 및 연구 진입으로 이어질 수 있는
+                    실전 경험을 확보하게 된다.
+                </p>
+                <a class="news-link" href="https://v.daum.net/v/20260513153338690" target="_blank" rel="noopener noreferrer">
+                    관련 뉴스 기사 클릭해서 보기
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>3. 교육 목표</h2>
+        <div class="three-col">
+            <div class="box">
+                <h3>자율무인체계 보안 역량</h3>
+                <ul>
+                    <li>UAV/UGV 시스템 구조 이해</li>
+                    <li>ROS2 기반 무인체계 통신 구조 이해</li>
+                    <li>MAVLink · Telemetry 구조 분석</li>
+                    <li>AI 기반 자율시스템 보안 구조 이해</li>
+                </ul>
+            </div>
+            <div class="box">
+                <h3>AI 기반 공격 역량</h3>
+                <ul>
+                    <li>GPS Spoofing 시나리오 구현</li>
+                    <li>Sensor Manipulation 실습</li>
+                    <li>Telemetry 공격 구조 이해</li>
+                    <li>AI 기반 공격 Agent 설계</li>
+                </ul>
+            </div>
+            <div class="box">
+                <h3>AI 기반 방어 역량</h3>
+                <ul>
+                    <li>이상행동 탐지(Anomaly Detection)</li>
+                    <li>Autonomous Recovery 구현</li>
+                    <li>AI 기반 상황판단 구조 설계</li>
+                    <li>Red/Blue Team 기반 실시간 대응 실습</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>4. 수업 운영 방식</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>구분</th>
+                    <th>시간</th>
+                    <th>운영 내용</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>이론</td>
+                    <td>8H</td>
+                    <td>UAV 구조, ROS2, AI 기반 공격·방어 구조, Cyber Range 및 Defense AI 개념</td>
+                </tr>
+                <tr>
+                    <td>실습</td>
+                    <td>32H</td>
+                    <td>Gazebo 기반 UAV/UGV 실습, GPS Spoofing, AI 기반 이상탐지, Red/Blue Team 공방 실습</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="goal">
+            운영 기준: 대회 참석까지 상시로 운영 / Red Team·Blue Team 실습 완료 시 이수완료
+        </div>
+    </section>
+
+    <section>
+        <h2>5. 사용 장비 및 플랫폼</h2>
+        <div class="platform-grid">
+            <div class="box">
+                <h3>시뮬레이션 환경</h3>
+                <ul>
+                    <li>Gazebo Simulator</li>
+                    <li>PX4 SITL</li>
+                    <li>ROS2</li>
+                    <li>MAVROS</li>
+                    <li>Ubuntu Linux</li>
+                </ul>
+            </div>
+            <div class="box">
+                <h3>AI 및 보안 플랫폼</h3>
+                <ul>
+                    <li>Python</li>
+                    <li>OpenCV</li>
+                    <li>PyTorch</li>
+                    <li>Telemetry Logging System</li>
+                    <li>AI Agent Framework</li>
+                </ul>
+            </div>
+            <div class="box">
+                <h3>실습 환경</h3>
+                <ul>
+                    <li>UAV/UGV 시뮬레이션 환경</li>
+                    <li>Cyber Range 기반 공방 환경</li>
+                    <li>Team-based Attack/Defense Architecture</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>6. 주차별 강의계획</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>주차</th>
+                    <th>구분</th>
+                    <th>주제</th>
+                    <th>세부 내용</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td>이론</td><td>Defense AI 및 Cyber Range 개요</td><td>미래전장 · MUM-T · AI 공방 구조 이해</td></tr>
+                <tr><td>2</td><td>이론</td><td>UAV/UGV 시스템 구조</td><td>ROS2 · PX4 · MAVLink · Telemetry 구조</td></tr>
+                <tr><td>3</td><td>실습</td><td>ROS2 및 Gazebo 구축</td><td>Ubuntu · ROS2 · Gazebo 환경 설정</td></tr>
+                <tr><td>4</td><td>실습</td><td>UAV 시뮬레이션 실습</td><td>PX4 SITL · UAV 제어 및 Telemetry 분석</td></tr>
+                <tr><td>5</td><td>실습</td><td>ROS2 Topic 분석</td><td>센서 데이터 · Topic · Message 구조 분석</td></tr>
+                <tr><td>6</td><td>실습</td><td>GPS Spoofing 공격 실습</td><td>위치 정보 변조 및 이상행동 유도</td></tr>
+                <tr><td>7</td><td>실습</td><td>Sensor Manipulation</td><td>LiDAR/Camera 데이터 변조 실습</td></tr>
+                <tr><td>8</td><td>실습</td><td>MAVLink 및 Telemetry 공격</td><td>명령 변조 · Fake Packet 실습</td></tr>
+                <tr><td>9</td><td>이론</td><td>AI 기반 이상탐지</td><td>Anomaly Detection · AI 기반 탐지 구조</td></tr>
+                <tr><td>10</td><td>실습</td><td>Blue Team 방어 시스템</td><td>이상탐지 · Autonomous Recovery 구현</td></tr>
+                <tr><td>11</td><td>실습</td><td>AI Agent 기반 의사결정</td><td>AI 기반 공격/방어 Agent 설계</td></tr>
+                <tr><td>12</td><td>실습</td><td>Red Team vs Blue Team 공방</td><td>팀 기반 실시간 공격·방어 실습</td></tr>
+                <tr><td>13</td><td>실습</td><td>통합 Cyber Range 구축</td><td>팀별 시나리오 및 공방 환경 구성</td></tr>
+                <tr><td>14</td><td>실습</td><td>최종 시스템 튜닝</td><td>안정화 · AI Agent 개선</td></tr>
+                <tr><td>15</td><td>실습</td><td>최종 프로젝트 발표</td><td>AI 기반 자율무인체계 공방 시연</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>7. 평가 방법</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>항목</th>
+                    <th>비율</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>출석 및 참여도</td><td>20%</td></tr>
+                <tr><td>공격/방어 시나리오 구현</td><td>25%</td></tr>
+                <tr><td>AI 기반 탐지 및 대응 구현</td><td>25%</td></tr>
+                <tr><td>최종 공방 시연 및 발표</td><td>30%</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>8. 기대 효과</h2>
+        <div class="two-col">
+            <div class="box">
+                <h3>기술 역량 강화</h3>
+                <ul>
+                    <li>AI 기반 자율무인체계 보안 이해</li>
+                    <li>ROS2 · PX4 · Gazebo 실무 역량 확보</li>
+                    <li>AI 기반 공격·방어 알고리즘 구현 경험</li>
+                    <li>Cyber-Physical Security 실습 경험 확보</li>
+                </ul>
+            </div>
+            <div class="box">
+                <h3>산업 연계 효과</h3>
+                <ul>
+                    <li>Defense AI 및 무인체계 보안 분야 연계</li>
+                    <li>AI 기반 Cyber Range 실무 경험 확보</li>
+                    <li>방산 AI 해커톤 및 경진대회 참여 기반 마련</li>
+                    <li>미래 방산 AI · MUM-T · 자율무인체계 보안 인재 양성</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+</div>
+</body>
+</html>
