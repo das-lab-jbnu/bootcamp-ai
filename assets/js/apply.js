@@ -92,6 +92,11 @@ const ApplyForm = (() => {
         return;
       }
 
+      if (result.result === "closed") {
+        showMessage("해당 과목은 접수가 종료되었습니다.", "error");
+        return;
+      }
+      
       if (result.result !== "success") {
         throw new Error(result.message || "Submit failed");
       }

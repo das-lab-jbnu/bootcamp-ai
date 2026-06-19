@@ -27,6 +27,14 @@ function doPost(e) {
       });
     }
 
+    if (action === "getProgramSettings") {
+      return jsonResponse(getProgramSettings(payload));
+    }
+
+    if (action === "updateProgramSetting") {
+      return jsonResponse(updateProgramSetting(payload));
+    }
+
     if (action === "submit") {
       return jsonResponse(submitApplication(payload));
     }
@@ -43,7 +51,12 @@ function doPost(e) {
 
 function submitApplication(payload) {
   validatePayload(payload, ["name", "student_id", "email", "organization", "phone", "program", "motivation"]);
-
+ if (!isProgramOpen(payload.program)) {
+  return {
+    result: "closed",
+    message: "해당 과목은 접수가 종료되었습니다."
+  };
+ }
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
 
@@ -151,4 +164,63 @@ function updateApplication(payload) {
   } finally {
     lock.releaseLock();
   }
+}
+function getProgramSettings(payload) {
+  if (payload.password !== CONFIG.ADMIN_PASSWORD) {
+    return { result: "error", message: "관리자 비밀번호가 올바르지 않습니다." };
+  }
+
+  const sheet = getSettingsSheet();
+  const rows = sheet.getDataRange().getValues();
+  const settings = {};
+
+  for (let i = 1; i < rows.length; i++) {
+    settings[rows[i][0]] = rows[i][1] === true || rows[i][1] === "TRUE";
+  }
+
+  return { result: "success", settings };
+}
+
+function updateProgramSetting(payload) {
+  if (payload.password !== CONFIG.ADMIN_PASSWORD) {
+    return { result: "error", message: "관리자 비밀번호가 올바르지 않습니다." };
+  }
+
+  const sheet = getSettingsSheet();
+  const rows = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === payload.program) {
+      sheet.getRange(i + 1, 2).setValue(payload.isOpen === true);
+      return { result: "success" };
+    }
+  }
+
+  sheet.appendRow([payload.program, payload.isOpen === true]);
+  return { result: "success" };
+}
+
+function getSettingsSheet() {
+  const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  let sheet = ss.getSheetByName(CONFIG.SETTINGS_SHEET_NAME);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(CONFIG.SETTINGS_SHEET_NAME);
+    sheet.appendRow(["program", "is_open"]);
+  }
+
+  return sheet;
+}
+
+function isProgramOpen(program) {
+  const sheet = getSettingsSheet();
+  const rows = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === program) {
+      return rows[i][1] === true || rows[i][1] === "TRUE";
+    }
+  }
+
+  return true;
 }

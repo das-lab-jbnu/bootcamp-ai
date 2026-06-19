@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>관리자 페이지 | 방산 AI 부트캠프</title>
+  <script src="../assets/js/config.js"></script>
+  <script defer src="../assets/js/admin.js"></script>
+</head>
+<body>
+  <h1>관리자 페이지</h1>
+
+  <section id="login-area">
+    <input id="admin-password" type="password" placeholder="관리자 비밀번호" />
+    <button id="login-btn" type="button">확인</button>
+  </section>
+
+  <section id="admin-area" hidden>
+    <h2>과목별 접수 ON/OFF</h2>
+    <div id="program-list"></div>
+  </section>
+
+  <p id="message"></p>
+</body>
+</html>
