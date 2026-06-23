@@ -1,9 +1,9 @@
 window.BOOTCAMP_CONFIG = {
   appsScriptEndpoints: {
-    production: "https://script.google.com/macros/s/AKfycbzeUIxoYLxWC8_X0KJ4DPCP70DXp6cmuYXBRHya6bFX7qUXFzqOxmk7tw6Cq1J0ADN0/exec",
-    development: "https://script.google.com/macros/s/PASTE_DEV_DEPLOYMENT_ID/exec"
+    production: "https://script.google.com/macros/s/AKfycbyZDkceoDVZmJ37yWwiKmlcEHSp8ef13NVVxAo38x5-vjPmE-HlgaBrWLw9BdRNXNEBGw/exec",
+    development: "https://script.google.com/macros/s/AKfycbyZDkceoDVZmJ37yWwiKmlcEHSp8ef13NVVxAo38x5-vjPmE-HlgaBrWLw9BdRNXNEBGw/exec"
   },
-  activeEndpoint: "production"
+  activeEndpoint: "development"
 };
 
 window.getBootcampApiEndpoint = function getBootcampApiEndpoint() {

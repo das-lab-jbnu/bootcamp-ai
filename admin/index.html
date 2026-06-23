@@ -1,13 +1,58 @@
 <!doctype html>
 <html lang="ko">
+
 <head>
   <meta charset="utf-8" />
   <title>관리자 페이지 | 방산 AI 부트캠프</title>
   <script src="../assets/js/config.js"></script>
   <script defer src="../assets/js/admin.js"></script>
+  <style>
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 32px;
+      height: 18px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      cursor: pointer;
+      background: #d1d5db;
+      transition: .3s;
+      border-radius: 18px;
+    }
+
+    .slider:before {
+      content: "";
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      left: 2px;
+      top: 2px;
+      background: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    .switch input:checked+.slider {
+      background: #2563eb;
+    }
+
+    .switch input:checked+.slider:before {
+      transform: translateX(14px);
+    }
+  </style>
 </head>
+
 <body>
-  <h1>관리자 페이지</h1>
+  <h1>방산AI부트캠프 관리자 페이지</h1>
 
   <section id="login-area">
     <input id="admin-password" type="password" placeholder="관리자 비밀번호" />
@@ -15,10 +60,136 @@
   </section>
 
   <section id="admin-area" hidden>
-    <h2>과목별 접수 ON/OFF</h2>
-    <div id="program-list"></div>
+    <div style="display:flex; gap:24px; margin-top:20px;">
+
+      <!-- 왼쪽 메뉴 -->
+      <aside style="width:280px; border:1px solid #ddd; padding:16px;">
+        <h2>교과목 목록</h2>
+
+        <button id="add-program-btn" type="button" style="width:100%; margin-bottom:12px;">
+          + 교과목 추가
+        </button>
+
+        <div id="program-menu">
+
+        </div>
+
+        <hr>
+
+        <button type="button" style="width:100%;">
+          신청자 조회
+        </button>
+      </aside>
+
+      <!-- 오른쪽 화면 -->
+      <main style="flex:1; border:1px solid #ddd; padding:20px;">
+        <h2 id="selected-program-title">교과목을 선택하세요</h2>
+
+        <!-- 탭 메뉴 -->
+        <div style="display:flex; gap:8px; margin-bottom:20px;">
+          <button class="tab-btn" data-tab="basic" type="button">기본정보</button>
+          <button class="tab-btn" data-tab="schedule" type="button">일정</button>
+          <button class="tab-btn" data-tab="syllabus" type="button">강의계획서</button>
+          <button class="tab-btn" data-tab="setting" type="button">접수설정</button>
+          <button class="tab-btn" data-tab="status" type="button">신청현황</button>
+        </div>
+
+        <hr>
+
+        <!-- 기본정보 -->
+        <section id="tab-basic" class="tab-content">
+          <h3>기본정보</h3>
+
+          <label>교과목명</label><br>
+          <input id="program-name" type="text" style="width:100%;"><br><br>
+
+          <label>트랙</label><br>
+          <input id="program-track" type="text" style="width:100%;"><br><br>
+
+          <label>교과목 설명</label><br>
+          <textarea id="program-description" style="width:100%; height:80px;"></textarea><br><br>
+
+          <label style="display:flex; align-items:center; gap:12px;">
+            <span>접수페이지 노출</span>
+
+            <label class="switch">
+              <input id="program-visible" type="checkbox" checked>
+              <span class="slider"></span>
+            </label>
+          </label>
+        </section>
+
+        <!-- 일정 -->
+        <section id="tab-schedule" class="tab-content" hidden>
+          <h3>일정</h3>
+
+          <label>교육 시작일</label><br>
+          <input id="program-start-date" type="date"><br><br>
+
+          <label>교육 종료일</label><br>
+          <input id="program-end-date" type="date"><br><br>
+
+          <label>교육시간</label><br>
+          <input id="program-time" type="text" style="width:100%;"><br><br>
+
+          <label>교육장소</label><br>
+          <input id="program-location" type="text" placeholder="예: 전북대학교 창조2관" style="width:100%;">
+        </section>
+
+        <!-- 강의계획서 -->
+        <section id="tab-syllabus" class="tab-content" hidden>
+          <h3>강의계획서</h3>
+
+          <p>현재 파일: MOSA_강의계획서.pdf</p>
+
+          <label>파일 업로드</label><br>
+          <input type="file"><br><br>
+
+          <label>강의계획서 링크</label><br>
+          <input type="text" placeholder="Google Drive 링크" style="width:100%;">
+        </section>
+
+        <!-- 접수설정 -->
+        <section id="tab-setting" class="tab-content" hidden>
+          <h3>접수설정</h3>
+
+          <label>신청 시작일</label><br>
+          <input type="date" value="2026-06-01"><br><br>
+
+          <label>신청 종료일</label><br>
+          <input type="date" value="2026-06-30"><br><br>
+
+          <label style="display:flex; align-items:center; gap:12px;">
+            <span>접수 상태</span>
+
+            <label class="switch">
+              <input id="program-open" type="checkbox" checked>
+              <span class="slider"></span>
+            </label>
+          </label>
+        </section>
+
+        <!-- 신청현황 -->
+        <section id="tab-status" class="tab-content" hidden>
+          <h3>신청현황</h3>
+
+          <p>정원: 30명</p>
+          <p>신청인원: 0명</p>
+          <p>잔여인원: 30명</p>
+
+          <button type="button">신청자 명단 보기</button>
+          <button type="button">엑셀 다운로드</button>
+        </section>
+
+        <br>
+
+        <button id="save-program-btn" type="button">저장</button>
+        <button id="delete-program-btn" type="button">삭제</button>
+      </main>
+    </div>
   </section>
 
   <p id="message"></p>
 </body>
+
 </html>

@@ -96,7 +96,7 @@ const ApplyForm = (() => {
         showMessage("해당 과목은 접수가 종료되었습니다.", "error");
         return;
       }
-      
+
       if (result.result !== "success") {
         throw new Error(result.message || "Submit failed");
       }
@@ -238,4 +238,84 @@ const ApplyForm = (() => {
   return { init };
 })();
 
-document.addEventListener("DOMContentLoaded", ApplyForm.init);
+document.addEventListener("DOMContentLoaded", () => {
+  renderAdminProgramsOnApplyPage();
+  ApplyForm.init();
+});
+
+function renderAdminProgramsOnApplyPage() {
+  const programList = document.querySelector("#program-card-list");
+
+  if (!programList) {
+    return;
+  }
+
+  const savedData = localStorage.getItem("bootcampPrograms");
+
+  if (!savedData) {
+    return;
+  }
+
+  const programs = JSON.parse(savedData);
+
+  programList.innerHTML = "";
+
+  Object.keys(programs).forEach((key) => {
+    const program = programs[key];
+    const isOpen = program.isOpen !== false;
+    const article = document.createElement("article");
+    article.className = "border-t-2 border-slate-500 bg-slate-50 px-4 py-5 md:px-6";
+
+    article.innerHTML = `
+      <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div class="flex flex-col gap-3 md:flex-row md:items-center">
+          <span class="inline-flex w-fit items-center border border-slate-400 bg-white px-4 py-2 text-sm text-slate-700">
+            모집중
+          </span>
+          <div>
+            <h3 class="text-2xl font-bold text-slate-900">
+              ${program.name || key}
+            </h3>
+            <p class="mt-1 text-lg font-bold text-slate-600">
+              ${program.description || ""}
+            </p>
+          </div>
+        </div>
+        <span class="inline-flex w-fit items-center ${isOpen ? "bg-blue-900" : "bg-slate-500"} px-5 py-2 text-sm font-semibold text-white">
+  ${isOpen ? "접수중" : "접수종료"}
+</span>
+      </div>
+
+      <div class="mt-6 grid gap-4 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
+        <button
+          <button
+  class="${isOpen ? "apply-btn bg-blue-900 hover:bg-blue-800" : "bg-slate-400 cursor-not-allowed"} inline-flex w-fit items-center justify-center px-5 py-2 text-sm font-semibold text-white"
+  type="button"
+  data-program="${program.name || key}"
+  ${isOpen ? "" : "disabled"}
+>
+  ${isOpen ? "신청하기" : "접수종료"}
+</button>
+
+        <div class="grid gap-3 md:max-w-xl">
+          <div class="grid grid-cols-[128px_1fr] items-center border-b border-slate-300 pb-2">
+            <span class="text-sm font-semibold text-slate-800">교육기간</span>
+            <span class="text-sm text-slate-800">
+              ${program.startDate || ""} ~ ${program.endDate || ""}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-[128px_1fr] items-center border-b border-slate-300 pb-2">
+            <span class="text-sm font-semibold text-slate-800">교육시간</span>
+            <span class="text-sm text-slate-800">
+              ${program.time || ""}
+            </span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    programList.appendChild(article);
+  });
+}
+
