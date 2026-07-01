@@ -84,28 +84,63 @@ const ApplicationStatus = (() => {
             <td class="px-4 py-3 font-semibold text-slate-900">${escapeHtml(application.program)}</td>
             <td class="px-4 py-3 text-slate-700">${escapeHtml(application.status || "접수")}</td>
             <td class="px-4 py-3 text-slate-700">${formatTimestamp(application.timestamp)}</td>
-            <td class="px-4 py-3">
-              <button
-                class="inline-flex items-center justify-center bg-blue-900 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800"
-                type="button"
-                data-edit-id="${escapeHtml(application.application_id)}"
-              >
-                수정
-              </button>
-            </td>
+            <td class="px-4 py-3 flex gap-2">
+  ${application.status === "취소"
+            ? `
+        <span class="inline-flex items-center justify-center bg-slate-400 px-4 py-2 text-sm font-semibold text-white">
+          취소됨
+        </span>
+      `
+            : `
+        <button
+          class="inline-flex items-center justify-center bg-blue-900 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800"
+          type="button"
+          data-edit-id="${escapeHtml(application.application_id)}"
+        >
+          수정
+        </button>
+
+        <button
+          class="inline-flex items-center justify-center bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500"
+          type="button"
+          data-cancel-id="${escapeHtml(application.application_id)}"
+        >
+          취소
+        </button>
+      `
+          }
+</td>
           </tr>
         `
       )
       .join("");
   }
 
-  function handleListClick(event) {
-    const button = event.target.closest("[data-edit-id]");
-    if (!button) return;
+  async function handleListClick(event) {
 
-    const application = applications.find((item) => item.application_id === button.dataset.editId);
+    const cancelButton = event.target.closest("[data-cancel-id]");
+
+    if (cancelButton) {
+
+      const confirmed = confirm("해당 신청 내역을 취소하시겠습니까?");
+
+      if (confirmed) {
+        await cancelApplication(cancelButton.dataset.cancelId);
+      }
+
+      return;
+    }
+
+    const editButton = event.target.closest("[data-edit-id]");
+
+    if (!editButton) return;
+
+    const application = applications.find(
+      (item) => item.application_id === editButton.dataset.editId
+    );
+
     if (application) {
-      openEditModal(application, button);
+      openEditModal(application, editButton);
     }
   }
 
@@ -121,6 +156,7 @@ const ApplicationStatus = (() => {
     setFormValue("edit-program", application.program);
     setFormValue("edit-name", application.name);
     setFormValue("edit-student-id", application.student_id);
+    setFormValue("edit-grade", application.grade);
     setFormValue("edit-email", application.email);
     setFormValue("edit-organization", application.organization);
     setFormValue("edit-phone", application.phone);
@@ -204,12 +240,31 @@ const ApplicationStatus = (() => {
     renderApplications();
   }
 
+  async function cancelApplication(applicationId) {
+    const email = document.querySelector(SELECTORS.lookupEmail).value.trim();
+
+    const result = await postJson({
+      action: "cancel",
+      application_id: applicationId,
+      email
+    });
+
+    if (result.result !== "success") {
+      alert("접수 취소 중 오류가 발생했습니다.");
+      return;
+    }
+
+    alert("접수 취소가 완료되었습니다.");
+    await refreshApplications();
+  }
+
   function buildPayload(form) {
     const formData = new FormData(form);
     return {
       application_id: getField(formData, "application_id"),
       name: getField(formData, "name"),
       student_id: getField(formData, "student_id"),
+      grade: getField(formData, "grade"),
       email: getField(formData, "email"),
       organization: getField(formData, "organization"),
       phone: getField(formData, "phone"),

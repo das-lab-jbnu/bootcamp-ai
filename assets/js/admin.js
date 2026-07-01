@@ -1,3 +1,5 @@
+let selectedCalendarColor = "bg-blue-600";
+
 const ENDPOINT = window.getBootcampApiEndpoint();
 
 const PROGRAMS = [
@@ -103,7 +105,7 @@ const savedPrograms = {};
 const defaultPrograms = {
   "[사이버보안 Track] 방산 AI 보안": {
     name: "[사이버보안 Track] 방산 AI 보안",
-    track: "사이버보안 Track",
+    calendarName: "보안",
     description: "국방 AI 드론 Red Team / Blue Team 공격 방어 실습",
     startDate: "2026-06-29",
     endDate: "2026-07-16",
@@ -112,7 +114,7 @@ const defaultPrograms = {
   },
   "[사이버보안 Track] AI 기반 자율무인체계 공방 실습": {
     name: "[사이버보안 Track] AI 기반 자율무인체계 공방 실습",
-    track: "사이버보안 Track",
+    calendarName: "공방",
     description: "ROS2 · UAV/UGV Cyber Range 기반 공격·방어 실습",
     startDate: "",
     endDate: "",
@@ -121,7 +123,7 @@ const defaultPrograms = {
   },
   "[크라우드 아카데미] LLM 인스트럭션": {
     name: "[크라우드 아카데미] LLM 인스트럭션",
-    track: "크라우드 아카데미",
+    calendarName: "LLM",
     description: "LLM 인스트럭션 교육과정",
     startDate: "2026-08-17",
     endDate: "2026-08-28",
@@ -130,7 +132,7 @@ const defaultPrograms = {
   },
   "[자율이동체계 Track] 방산개방형아키텍처(MOSA SDK실습)": {
     name: "[자율이동체계 Track] 방산개방형아키텍처(MOSA SDK실습)",
-    track: "자율이동체계 Track",
+    calendarName: "MOSA",
     description: "MOSA SDK 실습 교육과정",
     startDate: "2026-06-29",
     endDate: "2026-07-17",
@@ -139,7 +141,7 @@ const defaultPrograms = {
   },
   "[자율이동체계 Track] 이동형 로봇 설계": {
     name: "[자율이동체계 Track] 이동형 로봇 설계",
-    track: "자율이동체계 Track",
+    calendarName: "로봇",
     description: "자율주행대회 참석까지 상시 운영",
     startDate: "",
     endDate: "",
@@ -148,7 +150,7 @@ const defaultPrograms = {
   },
   "[군수 AX 전환 Track] 첨단소재 군수 AX": {
     name: "[군수 AX 전환 Track] 첨단소재 군수 AX",
-    track: "군수 AX 전환 Track",
+    calendarName: "군수",
     description: "첨단소재 군수 AX 교육과정",
     startDate: "2026-07-06",
     endDate: "2026-07-10",
@@ -185,13 +187,53 @@ Object.keys(savedPrograms).forEach((title) => {
 function clearForm(title) {
   document.querySelector("#selected-program-title").textContent = title;
   document.querySelector("#program-name").value = "";
-  document.querySelector("#program-track").value = "";
+  document.querySelector("#program-calendar-name").value = "";
   document.querySelector("#program-description").value = "";
-  document.querySelector("#program-start-date").value = "";
-  document.querySelector("#program-end-date").value = "";
   document.querySelector("#program-time").value = "";
   document.querySelector("#program-location").value = "";
+  renderSchedulePeriods();
+  document.querySelector("#apply-start-date").value = "";
+  document.querySelector("#apply-end-date").value = "";
+  selectedCalendarColor = "bg-blue-600";
 
+  document.querySelectorAll(".calendar-color").forEach((button) => {
+
+    button.classList.toggle(
+      "active",
+      button.dataset.color === "bg-blue-600"
+    );
+
+  });
+}
+
+function renderSchedulePeriods(periods = []) {
+  const list = document.querySelector("#schedule-period-list");
+  list.innerHTML = "";
+
+  const targetPeriods = periods.length > 0 ? periods : [
+    { startDate: "", endDate: "" }
+  ];
+
+  targetPeriods.forEach((period) => {
+    const row = document.createElement("div");
+    row.className = "schedule-period";
+    row.style.display = "flex";
+    row.style.gap = "8px";
+    row.style.marginBottom = "8px";
+
+    row.innerHTML = `
+      <input class="period-start-date" type="date" value="${period.startDate || ""}">
+      <span>~</span>
+      <input class="period-end-date" type="date" value="${period.endDate || ""}">
+      <button class="remove-period-btn" type="button">삭제</button>
+    `;
+
+    row.querySelector(".remove-period-btn").addEventListener("click", () => {
+      row.remove();
+    });
+
+    list.appendChild(row);
+  });
 }
 
 
@@ -207,10 +249,15 @@ function loadProgram(title) {
   }
 
   document.querySelector("#program-name").value = data.name || "";
-  document.querySelector("#program-track").value = data.track || "";
+  document.querySelector("#program-calendar-name").value =
+    data.calendarName || data.track || "";
   document.querySelector("#program-description").value = data.description || "";
-  document.querySelector("#program-start-date").value = data.startDate || "";
-  document.querySelector("#program-end-date").value = data.endDate || "";
+  renderSchedulePeriods(data.schedulePeriods || [
+    {
+      startDate: data.startDate || "",
+      endDate: data.endDate || ""
+    }
+  ]);
   document.querySelector("#program-time").value = data.time || "";
   document.querySelector("#program-location").value = data.location || "";
 
@@ -218,23 +265,52 @@ function loadProgram(title) {
     data.isOpen !== false;
   document.querySelector("#program-visible").checked =
     data.isVisible !== false;
+  document.querySelector("#apply-start-date").value = data.applyStartDate || "";
+  document.querySelector("#apply-end-date").value = data.applyEndDate || "";
+  selectedCalendarColor =
+    data.calendarColor || "bg-blue-600";
+
+  document.querySelectorAll(".calendar-color").forEach((button) => {
+
+    button.classList.toggle(
+      "active",
+      button.dataset.color === selectedCalendarColor
+    );
+
+  });
+
 }
 
 let newProgramCount = 0;
 
 function saveCurrentProgram() {
+  
+  
+  const schedulePeriods = Array.from(document.querySelectorAll(".schedule-period"))
+    .map((row) => {
+      return {
+        startDate: row.querySelector(".period-start-date").value,
+        endDate: row.querySelector(".period-end-date").value
+      };
+    })
+    .filter((period) => period.startDate && period.endDate);
+
   const title = document.querySelector("#selected-program-title").textContent;
 
   savedPrograms[title] = {
     name: document.querySelector("#program-name").value,
-    track: document.querySelector("#program-track").value,
+    calendarName: document.querySelector("#program-calendar-name").value,
     description: document.querySelector("#program-description").value,
-    startDate: document.querySelector("#program-start-date").value,
-    endDate: document.querySelector("#program-end-date").value,
+    schedulePeriods,
+    startDate: schedulePeriods[0]?.startDate || "",
+    endDate: schedulePeriods[0]?.endDate || "",
     time: document.querySelector("#program-time").value,
     location: document.querySelector("#program-location").value,
     isOpen: document.querySelector("#program-open").checked,
-    isVisible: document.querySelector("#program-visible").checked
+    isVisible: document.querySelector("#program-visible").checked,
+    applyStartDate: document.querySelector("#apply-start-date").value,
+    applyEndDate: document.querySelector("#apply-end-date").value,
+    calendarColor: selectedCalendarColor,
   };
 
   localStorage.setItem("bootcampPrograms", JSON.stringify(savedPrograms));
@@ -251,7 +327,7 @@ document.querySelector("#add-program-btn").addEventListener("click", () => {
 
   savedPrograms[newProgramName] = {
     name: newProgramName,
-    track: "",
+    calendarName: "",
     description: "",
     startDate: "",
     endDate: "",
@@ -314,4 +390,37 @@ document.querySelectorAll(".tab-btn").forEach((button) => {
       selectedContent.hidden = false;
     }
   });
+});
+
+document.querySelector("#add-period-btn").addEventListener("click", () => {
+  const currentPeriods = Array.from(document.querySelectorAll(".schedule-period"))
+    .map((row) => {
+      return {
+        startDate: row.querySelector(".period-start-date").value,
+        endDate: row.querySelector(".period-end-date").value
+      };
+    });
+
+  currentPeriods.push({
+    startDate: "",
+    endDate: ""
+  });
+
+  renderSchedulePeriods(currentPeriods);
+});
+
+document.querySelectorAll(".calendar-color").forEach((button) => {
+
+  button.addEventListener("click", () => {
+
+    document.querySelectorAll(".calendar-color").forEach((c) => {
+      c.classList.remove("active");
+    });
+
+    button.classList.add("active");
+
+    selectedCalendarColor = button.dataset.color;
+
+  });
+
 });

@@ -4,6 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <title>관리자 페이지 | 방산 AI 부트캠프</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
   <script src="../assets/js/config.js"></script>
   <script defer src="../assets/js/admin.js"></script>
   <style>
@@ -103,8 +104,49 @@
           <label>교과목명</label><br>
           <input id="program-name" type="text" style="width:100%;"><br><br>
 
-          <label>트랙</label><br>
-          <input id="program-track" type="text" style="width:100%;"><br><br>
+          <label>달력 표시명</label><br>
+          <input id="program-calendar-name" type="text" placeholder="예: 보안, MOSA, LLM, 군수" style="width:100%;"><br><br>
+
+          <label>달력 표시 색상</label>
+
+          <div id="calendar-color-picker" class="calendar-color-picker">
+
+            <button type="button" class="calendar-color active" data-color="bg-blue-600"
+              style="background:#2563eb"></button>
+
+            <button type="button" class="calendar-color" data-color="bg-sky-500" style="background:#0ea5e9"></button>
+
+            <button type="button" class="calendar-color" data-color="bg-cyan-600" style="background:#0891b2"></button>
+
+            <button type="button" class="calendar-color" data-color="bg-emerald-600"
+              style="background:#059669"></button>
+
+            <button type="button" class="calendar-color" data-color="bg-lime-500" style="background:#84cc16"></button>
+
+            <button type="button" class="calendar-color" data-color="bg-yellow-400" style="background:#facc15"></button>
+
+            <button type="button" class="calendar-color" data-color="bg-amber-500" style="background:#f59e0b"></button>
+
+            <button type="button" class="calendar-color" data-color="bg-orange-500" style="background:#f97316"></button>
+
+            <button type="button" class="calendar-color" data-color="bg-red-600" style="background:#dc2626"></button>
+
+            <button type="button" class="calendar-color" data-color="bg-rose-500" style="background:#f43f5e"></button>
+
+            <button type="button" class="calendar-color" data-color="bg-pink-500" style="background:#ec4899"></button>
+
+            <button type="button" class="calendar-color" data-color="bg-violet-600" style="background:#7c3aed"></button>
+
+            <button type="button" class="calendar-color" data-color="bg-fuchsia-600"
+              style="background:#c026d3"></button>
+
+            <button type="button" class="calendar-color" data-color="bg-indigo-600" style="background:#4f46e5"></button>
+
+            <button type="button" class="calendar-color" data-color="bg-slate-600" style="background:#475569"></button>
+
+          </div>
+
+          <br>
 
           <label>교과목 설명</label><br>
           <textarea id="program-description" style="width:100%; height:80px;"></textarea><br><br>
@@ -123,11 +165,22 @@
         <section id="tab-schedule" class="tab-content" hidden>
           <h3>일정</h3>
 
-          <label>교육 시작일</label><br>
-          <input id="program-start-date" type="date"><br><br>
+          <label>교육기간</label><br>
 
-          <label>교육 종료일</label><br>
-          <input id="program-end-date" type="date"><br><br>
+          <div id="schedule-period-list">
+            <div class="schedule-period" style="display:flex; gap:8px; margin-bottom:8px;">
+              <input class="period-start-date" type="date">
+              <span>~</span>
+              <input class="period-end-date" type="date">
+              <button class="remove-period-btn" type="button">삭제</button>
+            </div>
+          </div>
+
+          <button id="add-period-btn" type="button">
+            + 교육기간 추가
+          </button>
+
+          <br><br>
 
           <label>교육시간</label><br>
           <input id="program-time" type="text" style="width:100%;"><br><br>
@@ -154,10 +207,10 @@
           <h3>접수설정</h3>
 
           <label>신청 시작일</label><br>
-          <input type="date" value="2026-06-01"><br><br>
+          <input id="apply-start-date" type="date" value="2026-06-01"><br><br>
 
           <label>신청 종료일</label><br>
-          <input type="date" value="2026-06-30"><br><br>
+          <input id="apply-end-date" type="date" value="2026-06-30"><br><br>
 
           <label style="display:flex; align-items:center; gap:12px;">
             <span>접수 상태</span>

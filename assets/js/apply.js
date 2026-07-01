@@ -129,6 +129,7 @@ const ApplyForm = (() => {
     const formData = new FormData(form);
     const name = getField(formData, "name");
     const studentId = getField(formData, "student_id");
+    const grade = getField(formData, "grade");
     const email = getField(formData, "email");
     const organization = getField(formData, "organization");
     const phone = getField(formData, "phone");
@@ -138,6 +139,7 @@ const ApplyForm = (() => {
     return {
       name,
       student_id: studentId,
+      grade,
       email,
       organization,
       phone,
@@ -147,24 +149,15 @@ const ApplyForm = (() => {
   }
 
   async function postJson(payload) {
-    const response = await fetch(ENDPOINT, {
+    await fetch(ENDPOINT, {
       method: "POST",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
+      mode: "no-cors",
       body: JSON.stringify(payload)
     });
 
-    if (!response.ok) {
-      throw new Error(`Request failed: ${response.status}`);
-    }
-
-    const text = await response.text();
-    try {
-      return JSON.parse(text);
-    } catch (error) {
-      throw new Error(`Invalid JSON response: ${text.slice(0, 120)}`);
-    }
+    return {
+      result: "success"
+    };
   }
 
   async function getJson(params) {
@@ -190,16 +183,7 @@ const ApplyForm = (() => {
   }
 
   async function wasApplicationSaved(payload) {
-    try {
-      const result = await getJson({ action: "status", email: payload.email });
-      const applications = Array.isArray(result.applications) ? result.applications : [];
-      return applications.some((application) => {
-        return normalizeValue(application.email) === normalizeValue(payload.email) && application.program === payload.program;
-      });
-    } catch (error) {
-      console.error("Application save verification failed:", error);
-      return false;
-    }
+    return false;
   }
 
   function getField(formData, name) {
@@ -262,56 +246,103 @@ function renderAdminProgramsOnApplyPage() {
 
   Object.keys(programs).forEach((key) => {
     const program = programs[key];
+
+    if (program.isVisible === false) {
+      return;
+    }
+
     const isOpen = program.isOpen !== false;
+    const programName = program.name || key;
+    const syllabusUrl = program.syllabusUrl || "#";
+
     const article = document.createElement("article");
-    article.className = "border-t-2 border-slate-500 bg-slate-50 px-4 py-5 md:px-6";
+    article.className =
+      "border-t-2 border-slate-500 bg-slate-50 px-4 py-5 md:px-6";
 
     article.innerHTML = `
-      <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div class="flex flex-col gap-3 md:flex-row md:items-center">
-          <span class="inline-flex w-fit items-center border border-slate-400 bg-white px-4 py-2 text-sm text-slate-700">
-            모집중
+      <div class="grid gap-6 md:grid-cols-[150px_minmax(0,1fr)_120px] md:items-start">
+
+        <div class="program-action-group">
+          <span class="program-action ${isOpen ? "bg-emerald-600" : "bg-slate-400"} text-white">
+            ${isOpen ? "모집중" : "접수종료"}
           </span>
-          <div>
-            <h3 class="text-2xl font-bold text-slate-900">
-              ${program.name || key}
-            </h3>
-            <p class="mt-1 text-lg font-bold text-slate-600">
-              ${program.description || ""}
-            </p>
-          </div>
-        </div>
-        <span class="inline-flex w-fit items-center ${isOpen ? "bg-blue-900" : "bg-slate-500"} px-5 py-2 text-sm font-semibold text-white">
-  ${isOpen ? "접수중" : "접수종료"}
-</span>
-      </div>
 
-      <div class="mt-6 grid gap-4 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
-        <button
+          <a
+            href="${syllabusUrl}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="program-action border border-blue-900 bg-white text-blue-900 hover:bg-blue-50"
+          >
+            강의계획서
+          </a>
+
           <button
-  class="${isOpen ? "apply-btn bg-blue-900 hover:bg-blue-800" : "bg-slate-400 cursor-not-allowed"} inline-flex w-fit items-center justify-center px-5 py-2 text-sm font-semibold text-white"
-  type="button"
-  data-program="${program.name || key}"
-  ${isOpen ? "" : "disabled"}
->
-  ${isOpen ? "신청하기" : "접수종료"}
-</button>
-
-        <div class="grid gap-3 md:max-w-xl">
-          <div class="grid grid-cols-[128px_1fr] items-center border-b border-slate-300 pb-2">
-            <span class="text-sm font-semibold text-slate-800">교육기간</span>
-            <span class="text-sm text-slate-800">
-              ${program.startDate || ""} ~ ${program.endDate || ""}
-            </span>
-          </div>
-
-          <div class="grid grid-cols-[128px_1fr] items-center border-b border-slate-300 pb-2">
-            <span class="text-sm font-semibold text-slate-800">교육시간</span>
-            <span class="text-sm text-slate-800">
-              ${program.time || ""}
-            </span>
-          </div>
+            class="program-action ${isOpen
+        ? "apply-btn bg-blue-900 hover:bg-blue-800"
+        : "bg-slate-400 cursor-not-allowed"
+      } text-white"
+            type="button"
+            data-program="${programName}"
+            ${isOpen ? "" : "disabled"}
+          >
+            ${isOpen ? "신청하기" : "접수종료"}
+          </button>
         </div>
+
+        <div>
+  <a
+    href="${syllabusUrl}"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="text-2xl font-bold text-slate-900 hover:text-blue-900"
+  >
+    ${programName}
+  </a>
+
+  <p class="mt-1 text-lg font-bold text-slate-600">
+    ${program.description || ""}
+  </p>
+
+  <div class="mt-6 grid gap-3 md:max-w-xl">
+    <div class="grid grid-cols-[120px_1fr] items-center border-b border-slate-300 pb-2">
+  <span class="text-sm font-semibold text-slate-800">
+    접수기간
+  </span>
+
+  <span class="text-sm text-slate-800 whitespace-nowrap">
+    ${program.applyStartDate || ""} ~ ${program.applyEndDate || ""}
+  </span>
+</div>
+
+    <div class="grid grid-cols-[120px_1fr] items-center border-b border-slate-300 pb-2">
+      <span class="text-sm font-semibold text-slate-800">
+        교육기간
+      </span>
+
+      <span class="text-sm text-slate-800">
+  ${Array.isArray(program.schedulePeriods) && program.schedulePeriods.length > 0
+        ? program.schedulePeriods
+          .map((period) => `${period.startDate || ""} ~ ${period.endDate || ""}`)
+          .join("<br>")
+        : `${program.startDate || ""} ~ ${program.endDate || ""}`
+      }
+</span>
+    </div>
+
+    <div class="grid grid-cols-[120px_1fr] items-center border-b border-slate-300 pb-2">
+      <span class="text-sm font-semibold text-slate-800">
+        교육시간
+      </span>
+
+      <span class="text-sm text-slate-800 whitespace-nowrap">
+        ${program.time || ""}
+      </span>
+    </div>
+
+  </div>
+
+</div>
+
       </div>
     `;
 
@@ -319,3 +350,130 @@ function renderAdminProgramsOnApplyPage() {
   });
 }
 
+let currentCalendarDate = new Date(2026, 6, 1); // 2026년 7월
+
+function formatDateKey(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function getDatesBetween(start, end) {
+  const dates = [];
+  const current = new Date(start);
+  const last = new Date(end);
+
+  while (current <= last) {
+    dates.push(formatDateKey(current));
+    current.setDate(current.getDate() + 1);
+  }
+
+  return dates;
+}
+
+function renderCalendar() {
+  const calendarArea = document.querySelector("#calendar-area");
+  const calendarTitle = document.querySelector("#calendar-title");
+
+  if (!calendarArea || !calendarTitle) return;
+
+  const year = currentCalendarDate.getFullYear();
+  const month = currentCalendarDate.getMonth();
+
+  calendarTitle.textContent = `${year}년 ${month + 1}월`;
+
+  const savedData = localStorage.getItem("bootcampPrograms");
+  const programs = savedData ? JSON.parse(savedData) : {};
+
+  const scheduleMap = {};
+
+  Object.keys(programs).forEach((key) => {
+    const program = programs[key];
+
+    if (program.isVisible === false) return;
+
+    const periods =
+      Array.isArray(program.schedulePeriods) && program.schedulePeriods.length > 0
+        ? program.schedulePeriods
+        : [
+          {
+            startDate: program.startDate,
+            endDate: program.endDate
+          }
+        ];
+
+    periods.forEach((period) => {
+      if (!period.startDate || !period.endDate) return;
+
+      getDatesBetween(period.startDate, period.endDate).forEach((dateKey) => {
+        if (!scheduleMap[dateKey]) {
+          scheduleMap[dateKey] = [];
+        }
+
+        scheduleMap[dateKey].push({
+          name: program.name || key,
+          shortName: program.calendarName || program.name || key,
+          color: program.calendarColor || "bg-slate-600"
+        });
+      });
+    });
+  });
+
+  const firstDay = new Date(year, month, 1);
+  const lastDate = new Date(year, month + 1, 0).getDate();
+  const startWeekDay = firstDay.getDay();
+
+  let html = `
+    <article class="border border-slate-200 bg-slate-50 p-4">
+      <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-500">
+        <div>일</div>
+        <div>월</div>
+        <div>화</div>
+        <div>수</div>
+        <div>목</div>
+        <div>금</div>
+        <div>토</div>
+      </div>
+
+      <div class="mt-1 grid grid-cols-7 gap-1 text-xs">
+  `;
+
+  for (let i = 0; i < startWeekDay; i++) {
+    html += `<div class="min-h-16 bg-transparent"></div>`;
+  }
+
+  for (let day = 1; day <= lastDate; day++) {
+    const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const schedules = scheduleMap[dateKey] || [];
+
+    html += `
+      <div class="min-h-16 border border-slate-200 bg-white p-1">
+        <div class="font-bold text-slate-900">${day}</div>
+        <div class="mt-1 space-y-1">
+          ${schedules.map((schedule) => `
+            <div class="${schedule.color} px-1 py-0.5 font-bold text-white">
+              ${schedule.shortName}
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  html += `
+      </div>
+    </article>
+  `;
+
+  calendarArea.innerHTML = html;
+}
+
+document.querySelector("#prev-month-btn")?.addEventListener("click", () => {
+  currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+  renderCalendar();
+});
+
+document.querySelector("#next-month-btn")?.addEventListener("click", () => {
+  currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+  renderCalendar();
+});
+
+renderCalendar();
