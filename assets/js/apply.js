@@ -253,7 +253,9 @@ function renderAdminProgramsOnApplyPage() {
 
     const isOpen = program.isOpen !== false;
     const programName = program.name || key;
-    const syllabusUrl = program.syllabusUrl || "#";
+    const syllabusUrl = program.syllabus
+      ? `../curriculum/syllabi/${program.syllabus}`
+      : "#";
 
     const article = document.createElement("article");
     article.className =

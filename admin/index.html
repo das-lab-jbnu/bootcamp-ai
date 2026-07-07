@@ -193,13 +193,23 @@
         <section id="tab-syllabus" class="tab-content" hidden>
           <h3>강의계획서</h3>
 
-          <p>현재 파일: MOSA_강의계획서.pdf</p>
+          <label>강의계획서 HTML 파일명</label><br>
+          <input id="program-syllabus" type="text" placeholder="예) defense-ai-autonomous-security.html"
+            style="width:100%;">
 
-          <label>파일 업로드</label><br>
-          <input type="file"><br><br>
+          <p style="margin-top:8px; font-size:13px; color:#666;">
+            ※ curriculum/syllabi 폴더에 업로드한 HTML 파일명을 입력하세요.
+          </p>
 
-          <label>강의계획서 링크</label><br>
-          <input type="text" placeholder="Google Drive 링크" style="width:100%;">
+          <button id="check-syllabus-btn" type="button" style="margin-top:8px;">
+            파일 연결 확인
+          </button>
+
+          <p id="syllabus-check-message" style="margin-top:8px; font-size:13px;"></p>
+
+          <p style="margin-top:8px; font-size:13px; color:#666;">
+            예) defense-ai-autonomous-security.html
+          </p>
         </section>
 
         <!-- 접수설정 -->

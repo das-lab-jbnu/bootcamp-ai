@@ -168,21 +168,7 @@ if (savedData) {
   localStorage.setItem("bootcampPrograms", JSON.stringify(savedPrograms));
 }
 
-Object.keys(savedPrograms).forEach((title) => {
-  const newButton = document.createElement("button");
-  newButton.className = "program-btn";
-  newButton.dataset.title = title;
-  newButton.type = "button";
-  newButton.style.width = "100%";
-  newButton.style.marginBottom = "8px";
-  newButton.textContent = title;
-
-  newButton.addEventListener("click", () => {
-    loadProgram(title);
-  });
-
-  document.querySelector("#program-menu").appendChild(newButton);
-});
+renderProgramList();
 
 function clearForm(title) {
   document.querySelector("#selected-program-title").textContent = title;
@@ -203,6 +189,31 @@ function clearForm(title) {
       button.dataset.color === "bg-blue-600"
     );
 
+  });
+
+  document.querySelector("#program-syllabus").value = "";
+  document.querySelector("#syllabus-check-message").textContent = "";
+}
+
+function renderProgramList() {
+  const menu = document.querySelector("#program-menu");
+  menu.innerHTML = "";
+
+  Object.keys(savedPrograms).forEach((title) => {
+    const newButton = document.createElement("button");
+
+    newButton.className = "program-btn";
+    newButton.dataset.title = title;
+    newButton.type = "button";
+    newButton.style.width = "100%";
+    newButton.style.marginBottom = "8px";
+    newButton.textContent = title;
+
+    newButton.addEventListener("click", () => {
+      loadProgram(title);
+    });
+
+    menu.appendChild(newButton);
   });
 }
 
@@ -279,13 +290,16 @@ function loadProgram(title) {
 
   });
 
+  document.querySelector("#program-syllabus").value = data.syllabus || "";
+  document.querySelector("#syllabus-check-message").textContent = "";
+
 }
 
 let newProgramCount = 0;
 
 function saveCurrentProgram() {
-  
-  
+
+
   const schedulePeriods = Array.from(document.querySelectorAll(".schedule-period"))
     .map((row) => {
       return {
@@ -296,8 +310,9 @@ function saveCurrentProgram() {
     .filter((period) => period.startDate && period.endDate);
 
   const title = document.querySelector("#selected-program-title").textContent;
+  const newTitle = document.querySelector("#program-name").value.trim() || title;
 
-  savedPrograms[title] = {
+  savedPrograms[newTitle] = {
     name: document.querySelector("#program-name").value,
     calendarName: document.querySelector("#program-calendar-name").value,
     description: document.querySelector("#program-description").value,
@@ -311,11 +326,22 @@ function saveCurrentProgram() {
     applyStartDate: document.querySelector("#apply-start-date").value,
     applyEndDate: document.querySelector("#apply-end-date").value,
     calendarColor: selectedCalendarColor,
+    syllabus: document.querySelector("#program-syllabus").value.trim(),
   };
 
+  if (newTitle !== title) {
+    delete savedPrograms[title];
+  }
+
   localStorage.setItem("bootcampPrograms", JSON.stringify(savedPrograms));
+  document.querySelector("#selected-program-title").textContent = newTitle;
+
+  renderProgramList();
+  loadProgram(newTitle);
 
   alert("저장되었습니다.");
+
+  
 }
 
 document.querySelector("#save-program-btn").addEventListener("click", saveCurrentProgram);
@@ -423,4 +449,32 @@ document.querySelectorAll(".calendar-color").forEach((button) => {
 
   });
 
+});
+
+document.querySelector("#check-syllabus-btn").addEventListener("click", async () => {
+  const filename = document.querySelector("#program-syllabus").value.trim();
+  const message = document.querySelector("#syllabus-check-message");
+
+  if (!filename) {
+    message.textContent = "파일명을 입력하세요.";
+    message.style.color = "#dc2626";
+    return;
+  }
+
+  const url = `../curriculum/syllabi/${filename}`;
+
+  try {
+    const response = await fetch(url, { method: "HEAD" });
+
+    if (response.ok) {
+      message.textContent = `연결 확인됨: ${url}`;
+      message.style.color = "#15803d";
+    } else {
+      message.textContent = `파일을 찾을 수 없습니다: ${url}`;
+      message.style.color = "#dc2626";
+    }
+  } catch (error) {
+    message.textContent = "파일 연결 확인 중 오류가 발생했습니다.";
+    message.style.color = "#dc2626";
+  }
 });

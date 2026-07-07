@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>항공기 개발/운용 프로세스와 첨단기술 융복합화 강의계획서</title>
+
+<style>
+    *{
+        box-sizing:border-box;
+    }
+
+    body{
+        margin:0;
+        font-family:"Pretendard","Noto Sans KR","Malgun Gothic",sans-serif;
+        background:#f3f6fb;
+        color:#1f2937;
+        line-height:1.7;
+    }
+
+    .container{
+        max-width:1100px;
+        margin:0 auto;
+        padding:40px 24px;
+    }
+
+    .hero{
+        background:linear-gradient(135deg,#0b132b,#1c2541,#3a506b);
+        color:white;
+        padding:56px 48px;
+        border-radius:28px;
+        box-shadow:0 20px 40px rgba(0,0,0,0.18);
+        position:relative;
+        overflow:hidden;
+    }
+
+    .hero::after{
+        content:"";
+        position:absolute;
+        width:260px;
+        height:260px;
+        border-radius:50%;
+        background:rgba(255,255,255,0.08);
+        top:-80px;
+        right:-80px;
+    }
+
+    .badge{
+        display:inline-block;
+        background:rgba(255,255,255,0.15);
+        border:1px solid rgba(255,255,255,0.3);
+        padding:6px 14px;
+        border-radius:999px;
+        font-size:14px;
+        margin-bottom:18px;
+    }
+
+    .hero h1{
+        margin:0 0 12px;
+        font-size:42px;
+        letter-spacing:-1px;
+    }
+
+    .hero p{
+        margin:0;
+        font-size:18px;
+        color:#dbeafe;
+    }
+
+    .summary-grid{
+        display:grid;
+        grid-template-columns:repeat(4,1fr);
+        gap:18px;
+        margin:28px 0;
+    }
+
+    .summary-card{
+        background:white;
+        border-radius:20px;
+        padding:22px;
+        box-shadow:0 10px 25px rgba(15,23,42,0.08);
+        border-top:5px solid #1c2541;
+    }
+
+    .summary-card .label{
+        color:#64748b;
+        font-size:14px;
+    }
+
+    .summary-card .value{
+        font-size:24px;
+        font-weight:800;
+        color:#1c2541;
+        margin-top:4px;
+    }
+
+    section{
+        background:white;
+        margin-top:26px;
+        padding:34px;
+        border-radius:24px;
+        box-shadow:0 10px 30px rgba(15,23,42,0.06);
+    }
+
+    h2{
+        margin-top:0;
+        font-size:25px;
+        color:#0f172a;
+        border-left:7px solid #1c2541;
+        padding-left:14px;
+    }
+
+    .lead{
+        font-size:17px;
+        color:#334155;
+    }
+
+    .keyword-box{
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+        margin-top:16px;
+    }
+
+    .keyword{
+        background:#e2e8f0;
+        color:#1e3a8a;
+        padding:8px 14px;
+        border-radius:999px;
+        font-weight:600;
+        font-size:14px;
+    }
+
+    .two-col{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:22px;
+    }
+
+    .box{
+        background:#f8fafc;
+        border:1px solid #e2e8f0;
+        border-radius:18px;
+        padding:22px;
+    }
+
+    .box h3{
+        margin-top:0;
+        color:#1c2541;
+    }
+
+    ul{
+        padding-left:22px;
+        margin-bottom:0;
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        overflow:hidden;
+        border-radius:16px;
+        margin-top:18px;
+    }
+
+    th{
+        background:#1c2541;
+        color:white;
+        padding:14px;
+        font-size:15px;
+    }
+
+    td{
+        border-bottom:1px solid #e5e7eb;
+        padding:14px;
+        vertical-align:top;
+        background:white;
+    }
+
+    tr:nth-child(even) td{
+        background:#f8fafc;
+    }
+
+    .tag-online{
+        display:inline-block;
+        background:#dbeafe;
+        color:#1d4ed8;
+        padding:5px 10px;
+        border-radius:999px;
+        font-weight:700;
+        font-size:13px;
+    }
+
+    .tag-offline{
+        display:inline-block;
+        background:#dcfce7;
+        color:#15803d;
+        padding:5px 10px;
+        border-radius:999px;
+        font-weight:700;
+        font-size:13px;
+    }
+
+    .timeline-title{
+        font-weight:800;
+        color:#0f172a;
+    }
+
+    .eval-grid{
+        display:grid;
+        grid-template-columns:repeat(4,1fr);
+        gap:16px;
+        margin-top:18px;
+    }
+
+    .eval-card{
+        background:linear-gradient(180deg,#ffffff,#f8fafc);
+        border:1px solid #e2e8f0;
+        border-radius:18px;
+        padding:22px;
+        text-align:center;
+    }
+
+    .eval-card strong{
+        display:block;
+        font-size:28px;
+        color:#1c2541;
+        margin-bottom:4px;
+    }
+
+    .footer{
+        text-align:center;
+        margin-top:36px;
+        color:#64748b;
+        font-size:14px;
+    }
+
+    @media(max-width:800px){
+        .summary-grid,
+        .two-col,
+        .eval-grid{
+            grid-template-columns:1fr;
+        }
+
+        .hero h1{
+            font-size:32px;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="hero">
+        <div class="badge">Aerospace AI Track</div>
+        <h1>항공기 개발/운용 프로세스와 첨단기술 융복합화</h1>
+        <p>
+            항공기 생애주기 · AI/DX 기반 첨단기술 · 미래 항공산업 융복합 기술 이해
+        </p>
+    </div>
+
+    <div class="summary-grid">
+
+        <div class="summary-card">
+            <div class="label">총 교육시간</div>
+            <div class="value">40H</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="label">온라인 실시간</div>
+            <div class="value">30H</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="label">오프라인 교육</div>
+            <div class="value">10H</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="label">운영기간</div>
+            <div class="value">06.22 ~ 07.10</div>
+        </div>
+
+    </div>
+
+    <section>
+        <h2>1. 교과목 개요</h2>
+
+        <p class="lead">
+            본 교과목은 항공기 개발 및 운용 프로세스 전반에 대한 이해를 바탕으로,
+            AI, IoT, DX(Digital Transformation), 디지털트윈 등 첨단기술과의
+            융복합 사례를 학습하는 과정이다.
+        </p>
+
+        <p class="lead">
+            항공기 개발, 생산, 시험평가, 운용 및 후속군수지원 단계별 핵심 프로세스를
+            이해하고, 미래 항공·방산 산업의 디지털 전환 방향과 첨단기술 적용 사례를
+            중심으로 학습한다.
+        </p>
+
+        <div class="keyword-box">
+            <span class="keyword">Aircraft Development</span>
+            <span class="keyword">Digital Twin</span>
+            <span class="keyword">AI</span>
+            <span class="keyword">DX</span>
+            <span class="keyword">Smart Factory</span>
+            <span class="keyword">MRO</span>
+            <span class="keyword">Aerospace Industry</span>
+        </div>
+
+    </section>
+
+    <section>
+
+        <h2>2. 교육 목표</h2>
+
+        <div class="two-col">
+
+            <div class="box">
+                <h3>산업 이해 역량</h3>
+
+                <ul>
+                    <li>항공기 개발 및 운용 프로세스 이해</li>
+                    <li>항공산업 글로벌 동향 분석</li>
+                    <li>항공기 생애주기 개념 이해</li>
+                    <li>미래 항공산업 발전 방향 이해</li>
+                </ul>
+            </div>
+
+            <div class="box">
+                <h3>첨단기술 융복합 역량</h3>
+
+                <ul>
+                    <li>AI 및 DX 기반 항공기술 이해</li>
+                    <li>디지털트윈 및 MBSE 이해</li>
+                    <li>스마트팩토리 및 자동화 생산기술 이해</li>
+                    <li>첨단 정비·후속군수지원 기술 이해</li>
+                </ul>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section>
+
+        <h2>3. 운영 방식</h2>
+
+        <table>
+
+            <tr>
+                <th>구분</th>
+                <th>시간</th>
+                <th>운영 내용</th>
+            </tr>
+
+            <tr>
+                <td><span class="tag-online">온라인</span></td>
+                <td>30시간</td>
+                <td>
+                    항공기 개발·운용 프로세스, AI·DX 융복합 기술,
+                    디지털트윈 및 스마트 항공산업 사례 중심 이론 강의
+                </td>
+            </tr>
+
+            <tr>
+                <td><span class="tag-offline">오프라인</span></td>
+                <td>10시간</td>
+                <td>
+                    산업 적용 사례 발표, 토론, 프로젝트 발표 및 실무 특강 운영
+                </td>
+            </tr>
+
+        </table>
+
+    </section>
+
+    <section>
+
+        <h2>4. 주차별 강의계획</h2>
+
+        <table>
+
+            <tr>
+                <th>주차</th>
+                <th>방식</th>
+                <th>주제</th>
+                <th>세부 내용</th>
+                <th>시간</th>
+            </tr>
+
+            <tr>
+                <td>1</td>
+                <td><span class="tag-online">온라인</span></td>
+                <td class="timeline-title">항공산업 및 항공기 개발 개요</td>
+                <td>
+                    항공산업 개요, 글로벌 항공시장 동향,
+                    항공기 개발 역사 및 미래 발전 방향
+                </td>
+                <td>5H</td>
+            </tr>
+
+            <tr>
+                <td>2</td>
+                <td><span class="tag-online">온라인</span></td>
+                <td class="timeline-title">항공기 개발 프로세스</td>
+                <td>
+                    민항기 및 군용기 개발 절차,
+                    요구도 분석, 체계개발 및 시험평가 개념
+                </td>
+                <td>5H</td>
+            </tr>
+
+            <tr>
+                <td>3</td>
+                <td><span class="tag-online">온라인</span></td>
+                <td class="timeline-title">디지털트윈 및 MBSE</td>
+                <td>
+                    디지털트윈 기반 설계,
+                    MBSE(Model-Based Systems Engineering) 적용 사례
+                </td>
+                <td>5H</td>
+            </tr>
+
+            <tr>
+                <td>4</td>
+                <td><span class="tag-online">온라인</span></td>
+                <td class="timeline-title">AI 기반 스마트 항공산업</td>
+                <td>
+                    AI 기반 생산 자동화,
+                    스마트팩토리 및 비전검사 시스템 사례
+                </td>
+                <td>5H</td>
+            </tr>
+
+            <tr>
+                <td>5</td>
+                <td><span class="tag-online">온라인</span></td>
+                <td class="timeline-title">항공기 운용 및 정비지원</td>
+                <td>
+                    예지정비, 빅데이터 기반 정비지원,
+                    친환경 연료 및 첨단 후속지원체계 이해
+                </td>
+                <td>5H</td>
+            </tr>
+
+            <tr>
+                <td>6</td>
+                <td><span class="tag-online">온라인</span></td>
+                <td class="timeline-title">첨단 후속군수지원체계</td>
+                <td>
+                    블록체인 기반 부품이력관리,
+                    공급망 관리 및 DX 기반 운영 혁신 사례
+                </td>
+                <td>5H</td>
+            </tr>
+
+            <tr>
+                <td>7</td>
+                <td><span class="tag-offline">오프라인</span></td>
+                <td class="timeline-title">산업 적용 사례 발표 및 토론</td>
+                <td>
+                    항공·방산 산업 최신 기술 사례 분석 및 발표·토론
+                </td>
+                <td>4H</td>
+            </tr>
+
+            <tr>
+                <td>8</td>
+                <td><span class="tag-offline">오프라인</span></td>
+                <td class="timeline-title">프로젝트 발표 및 종합 정리</td>
+                <td>
+                    팀 프로젝트 발표, 피드백 및 종합 정리
+                </td>
+                <td>6H</td>
+            </tr>
+
+        </table>
+
+    </section>
+
+    <section>
+
+        <h2>5. 평가 방법</h2>
+
+        <div class="eval-grid">
+
+            <div class="eval-card">
+                <strong>20%</strong>
+                출석 및 참여도
+            </div>
+
+            <div class="eval-card">
+                <strong>30%</strong>
+                과제 및 발표
+            </div>
+
+            <div class="eval-card">
+                <strong>30%</strong>
+                프로젝트 수행
+            </div>
+
+            <div class="eval-card">
+                <strong>20%</strong>
+                최종 발표
+            </div>
+
+        </div>
+
+    </section>
+
+    <section>
+
+        <h2>6. 기대 효과</h2>
+
+        <div class="two-col">
+
+            <div class="box">
+
+                <h3>학습자 역량</h3>
+
+                <ul>
+                    <li>항공기 생애주기 기반 산업 이해 확보</li>
+                    <li>AI·DX 기반 첨단 항공기술 이해</li>
+                    <li>미래 항공·방산 산업 변화 대응 역량 강화</li>
+                    <li>산업 현장 중심 문제 해결 역량 확보</li>
+                </ul>
+
+            </div>
+
+            <div class="box">
+
+                <h3>산업 연계성</h3>
+
+                <ul>
+                    <li>미래 항공모빌리티 및 방산 산업 연계</li>
+                    <li>디지털 기반 항공산업 혁신 이해</li>
+                    <li>스마트 생산 및 첨단 정비기술 이해</li>
+                    <li>산학연 프로젝트 수행 기반 마련</li>
+                </ul>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <div class="footer">
+        항공기 개발/운용 프로세스와 첨단기술 융복합화 |
+        Aerospace Development & Advanced Technology Convergence
+    </div>
+
+</div>
+
+</body>
+</html>
