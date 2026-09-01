@@ -1,6 +1,8 @@
 ﻿<!doctype html>
 <html lang="ko">
   <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>전북대 방산 AI 부트캠프</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="./assets/css/style.css" />
@@ -27,8 +29,56 @@
       <footer id="site-footer"></footer>
     </div>
 
+    <div
+      class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/80 p-3 backdrop-blur-sm md:p-6"
+      id="competition-popup"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="competition-popup-title"
+    >
+      <section class="flex max-h-[95vh] w-full max-w-[540px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <header class="flex shrink-0 items-center justify-between gap-4 border-b border-slate-200 px-4 py-3 md:px-5">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-wider text-blue-700">2026 JBNU Defense AI</p>
+            <h2 class="mt-0.5 text-base font-black text-slate-950 md:text-lg" id="competition-popup-title">방산 AI 아이디어 경진대회</h2>
+          </div>
+          <button
+            class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-3xl leading-none text-slate-600 hover:bg-slate-100 hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            id="competition-popup-close"
+            type="button"
+            aria-label="팝업 닫기"
+          >
+            &times;
+          </button>
+        </header>
+
+        <div class="min-h-0 overflow-y-auto bg-slate-950">
+          <a href="./apply/index.html" aria-label="방산 AI 아이디어 경진대회 접수 페이지로 이동">
+            <img
+              class="block h-auto w-full"
+              src="./assets/images/방산AI경진대회 포스터.png"
+              alt="2026 전북대학교 방산 AI 아이디어 경진대회 포스터"
+              width="1080"
+              height="1350"
+              decoding="async"
+            />
+          </a>
+        </div>
+
+        <footer class="flex shrink-0 items-center justify-between gap-3 border-t border-slate-200 bg-white px-4 py-3 md:px-5">
+          <button class="text-sm font-semibold text-slate-600 underline-offset-4 hover:text-slate-950 hover:underline" id="competition-popup-hide-today" type="button">
+            오늘 하루 보지 않기
+          </button>
+          <a class="inline-flex h-10 items-center justify-center rounded-lg bg-blue-800 px-5 text-sm font-bold text-white hover:bg-blue-900" href="./apply/index.html">
+            접수하러 가기
+          </a>
+        </footer>
+      </section>
+    </div>
+
     <script src="./assets/js/data.js"></script>
     <script src="./assets/js/common.js"></script>
+    <script src="./assets/js/competition-popup.js"></script>
     <script>
       const data = window.BOOTCAMP_DATA;
       document.getElementById("hero-message").textContent = data.heroMessage;
