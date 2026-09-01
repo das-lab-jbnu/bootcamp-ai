@@ -1,5 +1,6 @@
 const StudentBenefits = (() => {
   const ENDPOINT = window.getBenefitsApiEndpoint ? window.getBenefitsApiEndpoint() : "";
+  const BENEFITS_SERVICE_OPEN = false;
   const ENDPOINT_READY =
     /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(ENDPOINT) &&
     !ENDPOINT.includes("PASTE_");
@@ -60,6 +61,15 @@ const StudentBenefits = (() => {
     document.querySelector(SELECTORS.codeInput).addEventListener("input", keepDigitsOnly);
     document.querySelector(SELECTORS.accountNumber).addEventListener("input", keepAccountDigitsOnly);
     document.querySelector(SELECTORS.bankbookFile).addEventListener("change", validateSelectedFile);
+
+    if (!BENEFITS_SERVICE_OPEN) {
+      document.querySelector(SELECTORS.setupNotice).classList.remove("hidden");
+      document.querySelector("#benefits-setup-message").textContent =
+        "이수증 발급·장학금 접수 준비 중입니다. 서비스 활성화 전에는 이메일 인증과 신청을 이용할 수 없습니다.";
+      document.querySelector(SELECTORS.emailInput).disabled = true;
+      document.querySelector(SELECTORS.emailSubmit).disabled = true;
+      return;
+    }
 
     if (isLocalHost()) {
       document.querySelector(SELECTORS.setupNotice).classList.remove("hidden");

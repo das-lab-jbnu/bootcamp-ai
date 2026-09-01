@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>프로그램 접수 | 전북대 방산 AI 부트캠프</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body>
+    <div class="page-wrap">
+      <header id="site-header"></header>
+      <main class="mx-auto max-w-5xl px-4 py-10 md:py-14">
+        <a class="text-sm font-semibold text-blue-900 hover:underline" href="./index.html">← 프로그램 목록으로</a>
+
+        <section class="mt-5 overflow-hidden border border-slate-200 bg-white shadow-sm">
+          <div class="bg-gradient-to-r from-blue-950 to-slate-900 px-5 py-7 text-white md:px-8">
+            <p class="text-sm font-semibold text-cyan-200" id="application-type-label">프로그램 접수</p>
+            <h1 class="mt-2 text-2xl font-black md:text-3xl" id="application-title">신청 정보를 불러오는 중입니다.</h1>
+            <p class="mt-3 max-w-3xl text-sm leading-6 text-slate-200" id="application-description"></p>
+          </div>
+
+          <div class="border-b border-slate-200 bg-slate-50 px-5 py-4 text-sm leading-6 text-slate-700 md:px-8" id="application-guidance"></div>
+
+          <form class="grid gap-7 px-5 py-7 md:px-8" id="application-form" novalidate>
+            <input id="program-slug" name="program_slug" type="hidden" />
+            <div class="absolute -left-[9999px]" aria-hidden="true">
+              <label for="website">웹사이트</label>
+              <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
+            </div>
+
+            <section class="grid gap-5" aria-labelledby="common-info-title">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-blue-800">필수정보</p>
+                <h2 class="mt-1 text-xl font-bold text-slate-950" id="common-info-title">신청자 기본정보</h2>
+                <p class="mt-1 text-sm text-slate-600" id="applicant-role-help">신청자 본인의 정보를 입력해주세요.</p>
+              </div>
+
+              <div class="grid gap-4 md:grid-cols-2">
+                <div class="grid gap-2">
+                  <label class="text-sm font-semibold text-slate-800" for="student-id">학번</label>
+                  <input class="apply-field" id="student-id" name="student_id" type="text" autocomplete="off" required maxlength="20" />
+                </div>
+                <div class="grid gap-2">
+                  <label class="text-sm font-semibold text-slate-800" for="applicant-name">성명</label>
+                  <input class="apply-field" id="applicant-name" name="name" type="text" autocomplete="name" required maxlength="50" />
+                </div>
+                <div class="grid gap-2">
+                  <label class="text-sm font-semibold text-slate-800" for="phone">전화번호</label>
+                  <input class="apply-field" id="phone" name="phone" type="tel" autocomplete="tel" required maxlength="20" placeholder="010-0000-0000" />
+                </div>
+                <div class="grid gap-2">
+                  <label class="text-sm font-semibold text-slate-800" for="email">이메일</label>
+                  <input class="apply-field" id="email" name="email" type="email" autocomplete="email" required maxlength="254" />
+                </div>
+                <div class="grid gap-2">
+                  <label class="text-sm font-semibold text-slate-800" id="department-label" for="department">소속학과(전공)</label>
+                  <input class="apply-field" id="department" name="department" type="text" required maxlength="100" />
+                </div>
+              </div>
+            </section>
+
+            <section class="hidden grid gap-5 border-t border-slate-200 pt-7" id="contest-fields" aria-labelledby="contest-info-title">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">팀 참가정보</p>
+                <h2 class="mt-1 text-xl font-bold text-slate-950" id="contest-info-title">경진대회 추가정보</h2>
+                <p class="mt-1 text-sm text-slate-600">대표자를 포함해 3~5명으로 구성하며, 팀원별 학번·성명·전화번호·이메일·학과를 입력합니다.</p>
+              </div>
+
+              <div class="grid gap-4 md:grid-cols-2">
+                <div class="grid gap-2">
+                  <label class="text-sm font-semibold text-slate-800" for="team-name">팀명</label>
+                  <input class="apply-field" id="team-name" name="team_name" type="text" maxlength="60" />
+                </div>
+                <div class="grid gap-2 md:col-span-2">
+                  <label class="text-sm font-semibold text-slate-800" for="idea-topic">아이디어 주제 또는 관심 분야</label>
+                  <textarea class="apply-field min-h-28 resize-y" id="idea-topic" name="idea_topic" maxlength="600" placeholder="방산 분야에서 해결하고 싶은 문제와 AI 활용 방향을 한두 문장으로 작성해주세요."></textarea>
+                </div>
+              </div>
+
+              <div class="grid gap-4">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <h3 class="font-bold text-slate-950">팀원 정보</h3>
+                    <p class="mt-1 text-sm text-slate-600">최소 2명, 최대 4명의 팀원을 추가해주세요.</p>
+                  </div>
+                  <button class="inline-flex w-fit items-center justify-center border border-blue-900 px-4 py-2 text-sm font-semibold text-blue-900 hover:bg-blue-50" id="add-team-member" type="button">팀원 추가</button>
+                </div>
+                <div class="grid gap-5" id="team-members"></div>
+              </div>
+            </section>
+
+            <section class="hidden grid gap-5 border-t border-slate-200 pt-7" id="course-fields" aria-labelledby="course-info-title">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-blue-800">과정 신청정보</p>
+                <h2 class="mt-1 text-xl font-bold text-slate-950" id="course-info-title">교육프로그램 추가정보</h2>
+                <p class="mt-1 text-sm text-slate-600">경진대회 참가자도 팀 접수와 별도로 본인이 직접 신청해주세요.</p>
+              </div>
+              <div class="grid gap-4 md:grid-cols-2">
+                <div class="grid gap-2">
+                  <label class="text-sm font-semibold text-slate-800" for="gender">성별</label>
+                  <select class="apply-field" id="gender" name="gender">
+                    <option value="">선택</option>
+                    <option value="남성">남성</option>
+                    <option value="여성">여성</option>
+                    <option value="응답하지 않음">응답하지 않음</option>
+                  </select>
+                </div>
+                <div class="grid gap-2">
+                  <label class="text-sm font-semibold text-slate-800" for="birth-date">생년월일</label>
+                  <input class="apply-field" id="birth-date" name="birth_date" type="date" />
+                </div>
+                <div class="grid gap-2">
+                  <label class="text-sm font-semibold text-slate-800" for="university">대학명</label>
+                  <input class="apply-field" id="university" name="university" type="text" value="전북대학교" maxlength="100" />
+                </div>
+                <div class="grid gap-2">
+                  <label class="text-sm font-semibold text-slate-800" for="major-field">전공분야</label>
+                  <select class="apply-field" id="major-field" name="major_field">
+                    <option value="">선택</option>
+                    <option value="공학">공학</option>
+                    <option value="예체능">예체능</option>
+                    <option value="자연과학">자연과학</option>
+                    <option value="의학">의학</option>
+                    <option value="인문사회">인문사회</option>
+                  </select>
+                </div>
+                <div class="grid gap-2">
+                  <label class="text-sm font-semibold text-slate-800" for="course-years">수업연한</label>
+                  <select class="apply-field" id="course-years" name="course_years">
+                    <option value="">선택</option>
+                    <option value="2년">2년</option>
+                    <option value="3년">3년</option>
+                    <option value="4년">4년</option>
+                    <option value="5년">5년</option>
+                    <option value="6년">6년</option>
+                  </select>
+                </div>
+                <div class="grid gap-2">
+                  <label class="text-sm font-semibold text-slate-800" for="admission-month">입학연월</label>
+                  <input class="apply-field" id="admission-month" name="admission_month" type="month" />
+                </div>
+                <div class="grid gap-2">
+                  <label class="text-sm font-semibold text-slate-800" for="graduation-month">졸업연월(예정 포함)</label>
+                  <input class="apply-field" id="graduation-month" name="graduation_month" type="month" />
+                </div>
+              </div>
+              <div class="grid gap-4 border border-blue-100 bg-blue-50 p-4">
+                <div>
+                  <h3 class="font-bold text-blue-950">생성형 AI 서비스 지원</h3>
+                  <p class="mt-1 text-sm text-slate-600">교육에 사용할 생성형 AI 서비스 지원 희망 여부를 선택해주세요.</p>
+                </div>
+                <div class="grid gap-4 md:grid-cols-2">
+                  <div class="grid gap-2">
+                    <label class="text-sm font-semibold text-slate-800" for="course-ai-service">희망 AI 서비스</label>
+                    <select class="apply-field" id="course-ai-service" name="preferred_ai_service"></select>
+                  </div>
+                  <div class="grid gap-2">
+                    <label class="text-sm font-semibold text-slate-800" for="course-ai-email">AI 서비스 초대용 이메일</label>
+                    <input class="apply-field" id="course-ai-email" name="ai_invitation_email" type="email" maxlength="254" />
+                  </div>
+                </div>
+              </div>
+              <div class="grid gap-2">
+                <label class="text-sm font-semibold text-slate-800" for="application-motivation">수강 목적 및 학습 목표</label>
+                <textarea class="apply-field min-h-32 resize-y" id="application-motivation" name="application_motivation" maxlength="1000"></textarea>
+              </div>
+              <div class="grid gap-2">
+                <label class="text-sm font-semibold text-slate-800" for="ai-experience">AI·생성형 AI 활용 경험 <span class="font-normal text-slate-500">(선택)</span></label>
+                <textarea class="apply-field min-h-24 resize-y" id="ai-experience" name="ai_experience" maxlength="1000" placeholder="사용해 본 도구나 프로젝트 경험이 있다면 작성해주세요."></textarea>
+              </div>
+            </section>
+
+            <section class="grid gap-3 border-t border-slate-200 pt-7" aria-labelledby="consent-title">
+              <h2 class="text-xl font-bold text-slate-950" id="consent-title">동의 및 서약</h2>
+              <label class="benefit-consent">
+                <input id="privacy-consent" name="privacy_consent" type="checkbox" required />
+                <span>프로그램 운영, 참가자 확인 및 결과 안내를 위해 입력한 개인정보를 수집·이용하는 데 동의합니다. 개인정보는 관련 법령과 전북대학교 내부 기준에 따라 관리됩니다.</span>
+              </label>
+              <label class="benefit-consent hidden" id="security-pledge-wrap">
+                <input id="security-pledge" name="security_ethics_pledge" type="checkbox" />
+                <span>공개자료만 사용하고 개인정보·군사기밀·비공개 자료를 제출하지 않으며, 타인의 아이디어를 무단 사용하지 않고 생성형 AI 결과의 사실관계와 출처를 검증하겠습니다.</span>
+              </label>
+            </section>
+
+            <p class="hidden rounded-lg px-4 py-3 text-sm" id="application-message" role="status" aria-live="polite"></p>
+
+            <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">
+              <a class="inline-flex items-center justify-center border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100" href="./index.html">취소</a>
+              <button class="inline-flex min-w-36 items-center justify-center bg-blue-900 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400" id="application-submit" type="submit">
+                <span class="apply-spinner mr-2" aria-hidden="true"></span>
+                <span data-submit-text>접수하기</span>
+              </button>
+            </div>
+          </form>
+        </section>
+      </main>
+      <footer id="site-footer"></footer>
+    </div>
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/application.js"></script>
+  </body>
+</html>

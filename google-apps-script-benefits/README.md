@@ -10,7 +10,7 @@
 3. `Code.gs` 내용을 Apps Script 편집기에 붙여넣습니다.
 4. 프로젝트 설정에서 `appsscript.json` 표시를 활성화한 뒤 이 폴더의 manifest 내용으로 교체합니다.
 5. Apps Script 편집기에서 `setupBenefitsSheet` 함수를 한 번 실행하고 권한을 승인합니다.
-6. `runBenefitsSmokeTest` 함수를 실행해 헤더·샘플 조회·비공개 필드 검사를 통과하는지 확인합니다.
+6. `runBenefitsSmokeTest` 함수를 실행해 헤더·공개 응답·비공개 필드 검사를 통과하는지 확인합니다.
 
 manifest에는 고급 Drive 서비스와 `drive.file` 제한 권한이 포함됩니다. 이 권한은 전체 Drive를
 열람하는 권한이 아니라, 이 Apps Script가 직접 만든 웹신청 전용 폴더와 파일만 관리합니다.
@@ -70,6 +70,21 @@ internal_note
 장학금 신청 중복은 `email + scholarship_round` 기준으로 차단됩니다. 사업단이 이 탭의
 `application_status`를 변경하면 같은 회차의 `benefits` 상태에도 자동 반영됩니다.
 
+경진대회와 신규 초급과정 접수를 위해 아래 탭도 함께 사용합니다.
+
+- `idea_contest_teams`: 팀별 접수번호, 대표자, 팀명, 아이디어 주제, 접수 상태
+- `idea_contest_members`: 대표자와 팀원 3~5명의 학번, 성명, 전화번호, 이메일, 학과
+- `program_applications`: AI Agent·바이브코딩·생성형 AI 기본과정의 개인별 신청정보와 생성형 AI 서비스 지원 수요
+
+경진대회는 대표자 이메일 또는 팀명이 같으면 중복 접수를 차단합니다. 초급과정은
+`program + email` 또는 `program + student_id`가 같으면 중복 접수를 차단합니다.
+접수 시 대표자 또는 신청자 이메일로 접수번호가 발송됩니다.
+
+신규 접수 기능을 추가한 뒤에는 `setupBenefitsSheet`를 다시 실행하여 세 탭의 헤더와
+드롭다운을 확인하고, `runBenefitsSmokeTest`를 실행한 다음 웹앱을 새 버전으로 배포합니다.
+현재 신규 프로그램은 모집예정 상태이므로 `Code.gs`의 `APPLICATIONS_OPEN`이 `false`로
+설정되어 있습니다. 접수를 시작할 때는 이 값을 `true`로 변경하고 홈페이지 접수 버튼을 활성화합니다.
+
 ## 2. 이수증 파일
 
 `basic_certificate_url`, `intermediate_certificate_url`에는 HTTPS 이수증 링크를 입력합니다.
@@ -119,6 +134,8 @@ Google Drive를 사용하는 경우 파일을 `링크가 있는 모든 사용자
 - Google Sheet의 `웹에 게시` 기능을 사용하지 않습니다.
 - 시트 편집 권한은 실제 업무 담당자에게만 부여합니다.
 - 주민등록번호는 수집하지 않습니다.
+- 경진대회·교육 접수에는 생년월일과 학적정보가 포함되므로 시트 편집 권한을 최소화하고
+  개인정보 보유기간을 학생 동의문에 확정하여 안내한 뒤 기간 종료 시 삭제합니다.
 - 계좌정보와 통장사본은 장학금 지급·정산 목적에만 사용합니다.
 - 개인정보 처리방침과 동의문에 사업단의 정확한 보유기간을 명시하고, 기간 종료 후 삭제합니다.
 - Apps Script 웹앱 URL만으로 개인정보를 조회할 수 없으며 이메일 인증을 통과해야 합니다.
