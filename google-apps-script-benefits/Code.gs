@@ -1,18 +1,47 @@
 const BENEFITS_CONFIG = {
   SHEET_NAME: "benefits",
   APPLICATION_SHEET_NAME: "scholarship_applications",
+  CERTIFICATE_LOG_SHEET_NAME: "certificate_issuance_log",
   IDEA_CONTEST_TEAM_SHEET_NAME: "idea_contest_teams",
   IDEA_CONTEST_MEMBER_SHEET_NAME: "idea_contest_members",
   PROGRAM_APPLICATION_SHEET_NAME: "program_applications",
   UPLOAD_FOLDER_NAME: "[비공개] 학생 장학금 통장사본 (웹신청 전용)",
+  CERTIFICATE_TEMPLATE_ID: "19QCbrjGHuGVqJdfFldOcowVsEftsd_2y8qhFuB5NpmI",
+  CERTIFICATE_OUTPUT_FOLDER_NAME: "[비공개] 학생 이수증 PDF (웹발급 전용)",
   TIMEZONE: "Asia/Seoul",
   APPLICATIONS_OPEN: false,
+  SCHOLARSHIP_APPLICATIONS_OPEN: false,
   OTP_TTL_SECONDS: 600,
   OTP_RESEND_SECONDS: 60,
   SESSION_TTL_SECONDS: 900,
   MAX_OTP_ATTEMPTS: 5,
-  MAX_BANKBOOK_FILE_BYTES: 5 * 1024 * 1024
+  MAX_BANKBOOK_FILE_BYTES: 5 * 1024 * 1024,
+  MAX_CERTIFICATE_PDF_BYTES: 5 * 1024 * 1024
 };
+
+/**
+ * 사업단 직접 발급 설정
+ * 1) ROW_NUMBER에 benefits 시트의 학생 행 번호를 입력합니다.
+ * 2) LEVEL에 "초급" 또는 "중급"을 입력합니다.
+ * 3) Apps Script 함수 목록에서 issueCertificateForAdmin을 실행합니다.
+ * 사업단 직접 발급은 항상 내부 보관용으로 처리하며 학생에게 공유·알림하지 않습니다.
+ */
+const ADMIN_CERTIFICATE_ISSUE = {
+  ROW_NUMBER: 2,
+  LEVEL: "초급"
+};
+
+/**
+ * 사업단 중급 이수증 일괄 발급 대상
+ * benefits 시트 2행부터 50행까지 총 49명을 중급으로 발급합니다.
+ */
+const ADMIN_CERTIFICATE_ISSUE_LIST = Array.from(
+  { length: 49 },
+  (_, index) => ({
+    ROW_NUMBER: index + 2,
+    LEVEL: "중급"
+  })
+);
 
 const BANKBOOK_FILE_TYPES = {
   "application/pdf": { extension: "pdf", signature: [0x25, 0x50, 0x44, 0x46] },
@@ -36,6 +65,34 @@ const BENEFITS_HEADERS = [
   "scholarship_apply_end",
   "scholarship_applied_at",
   "updated_at",
+  "internal_note",
+  "affiliation",
+  "student_id",
+  "basic_course_name",
+  "basic_course_period",
+  "basic_certificate_number",
+  "basic_certificate_file_id",
+  "basic_certificate_issued_at",
+  "intermediate_course_name",
+  "intermediate_course_period",
+  "intermediate_certificate_number",
+  "intermediate_certificate_file_id",
+  "intermediate_certificate_issued_at"
+];
+
+const CERTIFICATE_ISSUANCE_HEADERS = [
+  "issued_at",
+  "certificate_number",
+  "email",
+  "name",
+  "level",
+  "course_name",
+  "course_period",
+  "template_file_id",
+  "presentation_file_id",
+  "pdf_file_id",
+  "pdf_url",
+  "status",
   "internal_note"
 ];
 
@@ -147,7 +204,14 @@ function doPost(e) {
       return jsonResponse_(getBenefitsBySession_(payload.session_token));
     }
 
+    if (action === "issueCertificate") {
+      return jsonResponse_(
+        issueCertificate_(payload.session_token, payload.level)
+      );
+    }
+
     if (action === "submitScholarshipApplication") {
+      ensureScholarshipApplicationsOpen_();
       return jsonResponse_(submitScholarshipApplication_(payload.session_token, payload));
     }
 
@@ -192,12 +256,38 @@ function setupBenefitsSheet() {
     sheet = spreadsheet.insertSheet(BENEFITS_CONFIG.SHEET_NAME);
   }
 
+  if (sheet.getMaxColumns() < BENEFITS_HEADERS.length) {
+    sheet.insertColumnsAfter(
+      sheet.getMaxColumns(),
+      BENEFITS_HEADERS.length - sheet.getMaxColumns()
+    );
+  }
+
   const headerRange = sheet.getRange(1, 1, 1, BENEFITS_HEADERS.length);
   const currentHeaders = headerRange.getValues()[0].map(String);
   const hasExistingHeaders = currentHeaders.some((value) => value.trim());
+  const legacyHeaders = BENEFITS_HEADERS.slice(0, 16);
+  const hasLegacyHeaders =
+    currentHeaders.slice(0, legacyHeaders.length).join("|") ===
+      legacyHeaders.join("|") &&
+    currentHeaders.slice(legacyHeaders.length).every((value) => !value.trim());
+  const hasCurrentHeaders =
+    currentHeaders.join("|") === BENEFITS_HEADERS.join("|");
+  const previousCertificateHeaders = BENEFITS_HEADERS.map((header) =>
+    header === "student_id" ? "birth_date" : header
+  );
+  const hasPreviousCertificateHeaders =
+    currentHeaders.join("|") === previousCertificateHeaders.join("|");
 
-  if (hasExistingHeaders && currentHeaders.join("|") !== BENEFITS_HEADERS.join("|")) {
-    throw new Error("benefits 시트의 첫 행이 비어 있지 않습니다. 새 빈 시트에서 다시 실행해주세요.");
+  if (
+    hasExistingHeaders &&
+    !hasLegacyHeaders &&
+    !hasCurrentHeaders &&
+    !hasPreviousCertificateHeaders
+  ) {
+    throw new Error(
+      "benefits 시트의 헤더 구조가 예상과 다릅니다. 첫 행을 확인해주세요."
+    );
   }
 
   headerRange.setValues([BENEFITS_HEADERS]);
@@ -211,7 +301,9 @@ function setupBenefitsSheet() {
   sheet.setRowHeight(1, 34);
   [
     220, 110, 140, 130, 240, 150, 130, 240,
-    140, 130, 170, 145, 145, 165, 165, 250
+    140, 130, 170, 145, 145, 165, 165, 250,
+    220, 130, 260, 240, 190, 220, 165,
+    260, 240, 190, 220, 165
   ].forEach((width, index) => sheet.setColumnWidth(index + 1, width));
 
   const editableRows = Math.max(sheet.getMaxRows() - 1, 1);
@@ -228,6 +320,8 @@ function setupBenefitsSheet() {
   [
     "basic_completion_date",
     "intermediate_completion_date",
+    "basic_certificate_issued_at",
+    "intermediate_certificate_issued_at",
     "scholarship_apply_start",
     "scholarship_apply_end",
     "scholarship_applied_at",
@@ -237,15 +331,44 @@ function setupBenefitsSheet() {
     sheet.getRange(2, column, editableRows, 1).setNumberFormat("yyyy-mm-dd hh:mm");
   });
 
-  if (!sheet.getFilter()) {
-    sheet.getRange(1, 1, sheet.getMaxRows(), BENEFITS_HEADERS.length).createFilter();
-  }
+  sheet
+    .getRange(2, BENEFITS_HEADERS.indexOf("student_id") + 1, editableRows, 1)
+    .setNumberFormat("@");
+
+  if (sheet.getFilter()) sheet.getFilter().remove();
+  sheet
+    .getRange(1, 1, sheet.getMaxRows(), BENEFITS_HEADERS.length)
+    .createFilter();
 
   setupScholarshipApplicationsSheet_(spreadsheet);
+  setupCertificateIssuanceLogSheet_(spreadsheet);
   setupIdeaContestSheets_(spreadsheet);
   setupProgramApplicationsSheet_(spreadsheet);
   const uploadFolder = getScholarshipUploadFolder_();
-  return `설정 완료: ${spreadsheet.getName()} / 학생지원·장학금·경진대회·초급과정 접수 탭 / ${uploadFolder.name}`;
+  const certificateFolder = getCertificateOutputFolder_();
+  return `설정 완료: ${spreadsheet.getName()} / 학생지원·이수증·장학금·경진대회·초급과정 접수 탭 / ${uploadFolder.name} / ${certificateFolder.name}`;
+}
+
+function setupCertificateIssuanceLogSheet_(spreadsheet) {
+  const sheet = prepareApplicationSheet_(
+    spreadsheet,
+    BENEFITS_CONFIG.CERTIFICATE_LOG_SHEET_NAME,
+    CERTIFICATE_ISSUANCE_HEADERS,
+    [165, 190, 220, 120, 100, 280, 240, 220, 220, 220, 260, 130, 260]
+  );
+  const rows = Math.max(sheet.getMaxRows() - 1, 1);
+  const headerMap = getHeaderMap_(CERTIFICATE_ISSUANCE_HEADERS);
+  sheet
+    .getRange(2, headerMap.issued_at + 1, rows, 1)
+    .setNumberFormat("yyyy-mm-dd hh:mm");
+  setSheetListValidation_(
+    sheet,
+    CERTIFICATE_ISSUANCE_HEADERS,
+    "status",
+    ["발급완료", "폐기"],
+    rows
+  );
+  return sheet;
 }
 
 function setupScholarshipApplicationsSheet_(spreadsheet) {
@@ -442,7 +565,11 @@ function runBenefitsSmokeTest() {
 
   const smokeValues = {
     name: "스모크 테스트",
+    affiliation: "전북대학교 테스트학과",
+    student_id: "202600001",
     basic_completion_status: "이수",
+    basic_course_name: "방산AI부트캠프사업단 초급프로그램",
+    basic_course_period: "2026. 06. 29. ~ 07. 17. (총 40시간)",
     intermediate_completion_status: "심사중",
     scholarship_eligibility: "대상",
     scholarship_application_status: "신청 전",
@@ -468,8 +595,15 @@ function runBenefitsSmokeTest() {
     .getRange(1, 1, 1, PROGRAM_APPLICATION_HEADERS.length)
     .getValues()[0]
     .map(String);
+  const certificateLogHeaders = getCertificateIssuanceLogSheet_()
+    .getRange(1, 1, 1, CERTIFICATE_ISSUANCE_HEADERS.length)
+    .getValues()[0]
+    .map(String);
   const uploadFolder = getScholarshipUploadFolder_();
+  const certificateFolder = getCertificateOutputFolder_();
+  const templateCheck = validateCertificateTemplate_();
   const expectedCanApply =
+    BENEFITS_CONFIG.SCHOLARSHIP_APPLICATIONS_OPEN &&
     normalizeText_(smokeValues.scholarship_eligibility) === "대상" &&
     !isScholarshipSubmitted_(smokeValues.scholarship_application_status) &&
     isScholarshipWindowOpen_(smokeValues);
@@ -478,6 +612,7 @@ function runBenefitsSmokeTest() {
     basic_completion_status_valid: ["심사중", "이수", "미이수"].includes(
       benefits.basic.status
     ),
+    basic_certificate_can_issue: benefits.basic.can_issue === true,
     intermediate_completion_status_valid: ["심사중", "이수", "미이수"].includes(
       benefits.intermediate.status
     ),
@@ -495,9 +630,16 @@ function runBenefitsSmokeTest() {
       contestMemberHeaders.join("|") === IDEA_CONTEST_MEMBER_HEADERS.join("|"),
     program_application_sheet_ready:
       programApplicationHeaders.join("|") === PROGRAM_APPLICATION_HEADERS.join("|"),
+    certificate_log_sheet_ready:
+      certificateLogHeaders.join("|") ===
+      CERTIFICATE_ISSUANCE_HEADERS.join("|"),
+    certificate_template_ready: templateCheck.missing.length === 0,
     upload_folder_ready:
       uploadFolder.id ===
-      PropertiesService.getScriptProperties().getProperty("SCHOLARSHIP_UPLOAD_FOLDER_ID")
+      PropertiesService.getScriptProperties().getProperty("SCHOLARSHIP_UPLOAD_FOLDER_ID"),
+    certificate_folder_ready:
+      certificateFolder.id ===
+      PropertiesService.getScriptProperties().getProperty("CERTIFICATE_OUTPUT_FOLDER_ID")
   };
   const failed = Object.keys(checks).filter((key) => !checks[key]);
   if (failed.length) {
@@ -717,6 +859,611 @@ function getBenefitsBySession_(sessionTokenValue) {
     result: "success",
     benefits: toPublicBenefits_(record.values)
   };
+}
+
+function issueCertificate_(sessionTokenValue, levelValue) {
+  const email = getSessionEmail_(sessionTokenValue);
+  const levelConfig = getCertificateLevelConfig_(levelValue);
+  const issueResult = issueCertificateForRecord_(email, levelConfig.level, null);
+  const record = findBenefitRecordByEmail_(email);
+  if (!record) {
+    throwPublicError_("session_expired", "인증 시간이 만료되었습니다.");
+  }
+
+  const certificateNumber = displayValue_(
+    record.values[levelConfig.numberHeader],
+    issueResult.certificate.number
+  );
+  const download = buildCertificateDownloadPayload_(
+    record.values[levelConfig.fileIdHeader],
+    certificateNumber,
+    record.values.name
+  );
+
+  return {
+    result: "success",
+    reused: issueResult.reused,
+    certificate: {
+      level: levelConfig.level,
+      number: certificateNumber,
+      file_name: download.fileName,
+      mime_type: download.mimeType,
+      byte_size: download.byteSize,
+      base64: download.base64
+    },
+    benefits: toPublicBenefits_(record.values)
+  };
+}
+
+/**
+ * 사업단이 이메일 인증 없이 시트의 특정 행을 직접 발급하는 전용 함수입니다.
+ * 위 ADMIN_CERTIFICATE_ISSUE의 ROW_NUMBER와 LEVEL을 수정한 뒤,
+ * Apps Script 함수 목록에서 이 함수를 선택해 실행하세요.
+ */
+function issueCertificateForAdmin() {
+  const rowNumber = Number(ADMIN_CERTIFICATE_ISSUE.ROW_NUMBER);
+  if (!Number.isInteger(rowNumber) || rowNumber < 2) {
+    throw new Error("발급할 학생의 benefits 시트 행 번호를 2 이상으로 입력해주세요.");
+  }
+
+  const level = normalizeAdminCertificateLevel_(ADMIN_CERTIFICATE_ISSUE.LEVEL);
+  const record = findBenefitRecordByRow_(rowNumber);
+  if (!record) {
+    throw new Error(`benefits 시트 ${rowNumber}행에 발급할 학생 정보가 없습니다.`);
+  }
+
+  const email = normalizeEmail_(record.values.email);
+  if (!isValidEmail_(email)) {
+    throw new Error(`benefits 시트 ${rowNumber}행의 email을 확인해주세요.`);
+  }
+
+  const result = issueCertificateForRecord_(email, level, rowNumber);
+  const actionText = result.reused ? "기존 PDF 확인" : "새 PDF 발급";
+  const message = `${rowNumber}행 ${getCertificateLevelConfig_(level).label} 이수증 ${actionText} 완료: ${result.certificate.number}`;
+  console.log(`${message}\n${result.certificate.url}`);
+  getBenefitsSpreadsheet_().toast(message, "이수증 발급", 8);
+  return result;
+}
+
+/**
+ * ADMIN_CERTIFICATE_ISSUE_LIST의 이수증을 사업단 보관용으로 일괄 발급합니다.
+ * 학생에게 Drive 공유 권한이나 이메일 알림을 보내지 않습니다.
+ * 이미 발급된 PDF가 있으면 기존 PDF를 재사용합니다.
+ */
+function issueCertificatesForAdmin() {
+  const summary = {
+    newlyIssued: 0,
+    reused: 0,
+    failed: 0,
+    failures: []
+  };
+
+  ADMIN_CERTIFICATE_ISSUE_LIST.forEach((item) => {
+    const rowNumber = Number(item.ROW_NUMBER);
+
+    try {
+      if (!Number.isInteger(rowNumber) || rowNumber < 2) {
+        throw new Error("행 번호는 2 이상의 정수여야 합니다.");
+      }
+
+      const level = normalizeAdminCertificateLevel_(item.LEVEL);
+      const record = findBenefitRecordByRow_(rowNumber);
+      if (!record) {
+        throw new Error(`benefits 시트 ${rowNumber}행에 학생 정보가 없습니다.`);
+      }
+
+      const email = normalizeEmail_(record.values.email);
+      if (!isValidEmail_(email)) {
+        throw new Error(`benefits 시트 ${rowNumber}행의 email을 확인해주세요.`);
+      }
+
+      const result = issueCertificateForRecord_(email, level, rowNumber);
+      if (result.reused) {
+        summary.reused += 1;
+      } else {
+        summary.newlyIssued += 1;
+      }
+
+      console.log(
+        `${rowNumber}행 발급 완료: ${result.certificate.number}` +
+          ` (${result.reused ? "기존 PDF 재사용" : "새 PDF 발급"})`
+      );
+    } catch (error) {
+      const message = error && error.message ? error.message : String(error);
+      summary.failed += 1;
+      summary.failures.push({ rowNumber, message });
+      console.error(`${rowNumber}행 발급 실패: ${message}`);
+    }
+  });
+
+  const succeeded = summary.newlyIssued + summary.reused;
+  const message =
+    `중급 이수증 일괄 발급 완료: 성공 ${succeeded}명` +
+    ` (신규 ${summary.newlyIssued}명, 기존 ${summary.reused}명), ` +
+    `실패 ${summary.failed}명`;
+
+  console.log(message);
+  if (summary.failures.length) {
+    console.log(`실패 내역: ${JSON.stringify(summary.failures)}`);
+  }
+  getBenefitsSpreadsheet_().toast(message, "이수증 일괄 발급", 10);
+  return summary;
+}
+
+function normalizeAdminCertificateLevel_(levelValue) {
+  const level = String(levelValue || "").trim().toLowerCase();
+  const aliases = {
+    "초급": "basic",
+    basic: "basic",
+    "중급": "intermediate",
+    intermediate: "intermediate"
+  };
+  if (!aliases[level]) {
+    throw new Error('ADMIN_CERTIFICATE_ISSUE.LEVEL에 "초급" 또는 "중급"을 입력해주세요.');
+  }
+  return aliases[level];
+}
+
+function issueCertificateForRecord_(
+  email,
+  levelValue,
+  rowNumberValue
+) {
+  const levelConfig = getCertificateLevelConfig_(levelValue);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+
+  let generatedFile = null;
+  let benefitRecord = null;
+  let previousValues = null;
+  let logRowNumber = 0;
+
+  try {
+    benefitRecord = rowNumberValue
+      ? findBenefitRecordByRow_(rowNumberValue)
+      : findBenefitRecordByEmail_(email);
+    if (!benefitRecord) {
+      if (rowNumberValue) {
+        throwPublicError_("certificate_not_ready", "발급할 학생 정보를 찾을 수 없습니다.");
+      }
+      throwPublicError_("session_expired", "인증 시간이 만료되었습니다.");
+    }
+
+    const status = normalizeText_(
+      benefitRecord.values[levelConfig.statusHeader]
+    );
+    if (!isCompletedStatus_(status)) {
+      throwPublicError_(
+        "completion_not_confirmed",
+        "사업단의 이수 확인이 완료된 학생만 이수증을 발급할 수 있습니다."
+      );
+    }
+
+    const certificateData = getCertificateData_(
+      benefitRecord.values,
+      levelConfig
+    );
+    const existingFile = getExistingCertificateFile_(
+      benefitRecord.values[levelConfig.fileIdHeader]
+    );
+
+    if (existingFile) {
+      const existingUrl =
+        safeHttpsUrl_(benefitRecord.values[levelConfig.urlHeader]) ||
+        existingFile.webViewLink ||
+        buildDriveFileUrl_(existingFile.id);
+      benefitRecord.values[levelConfig.urlHeader] = existingUrl;
+      return {
+        result: "success",
+        reused: true,
+        certificate: {
+          level: levelConfig.level,
+          number: displayValue_(
+            benefitRecord.values[levelConfig.numberHeader],
+            "-"
+          ),
+          url: existingUrl
+        },
+        benefits: toPublicBenefits_(benefitRecord.values)
+      };
+    }
+
+    const hadDeletedCertificate = Boolean(
+      String(benefitRecord.values[levelConfig.numberHeader] || "").trim() ||
+        String(benefitRecord.values[levelConfig.fileIdHeader] || "").trim() ||
+        safeHttpsUrl_(benefitRecord.values[levelConfig.urlHeader])
+    );
+    const certificateNumber =
+      normalizeSingleLine_(benefitRecord.values[levelConfig.numberHeader]) ||
+      generateCertificateNumber_(levelConfig);
+    const issuedAt = new Date();
+    generatedFile = createCertificatePdf_({
+      email,
+      name: certificateData.name,
+      affiliation: certificateData.affiliation,
+      studentId: certificateData.studentId,
+      courseName: certificateData.courseName,
+      coursePeriod: certificateData.coursePeriod,
+      certificateNumber,
+      issuedAt
+    });
+
+    const updates = {};
+    updates[levelConfig.numberHeader] = certificateNumber;
+    updates[levelConfig.fileIdHeader] = generatedFile.pdfFileId;
+    updates[levelConfig.urlHeader] = generatedFile.pdfUrl;
+    updates[levelConfig.issuedAtHeader] = issuedAt;
+    updates.updated_at = issuedAt;
+
+    previousValues = {};
+    Object.keys(updates).forEach((header) => {
+      previousValues[header] = benefitRecord.values[header] || "";
+    });
+    setBenefitRecordValues_(benefitRecord, updates);
+
+    const logSheet = getCertificateIssuanceLogSheet_();
+    logSheet.appendRow([
+      issuedAt,
+      certificateNumber,
+      email,
+      certificateData.name,
+      levelConfig.label,
+      certificateData.courseName,
+      certificateData.coursePeriod,
+      BENEFITS_CONFIG.CERTIFICATE_TEMPLATE_ID,
+      generatedFile.presentationFileId,
+      generatedFile.pdfFileId,
+      generatedFile.pdfUrl,
+      "발급완료",
+      hadDeletedCertificate ? "기존 PDF 파일 삭제·유실 후 새 PDF 생성" : ""
+    ]);
+    logRowNumber = logSheet.getLastRow();
+
+    const updatedRecord = rowNumberValue
+      ? findBenefitRecordByRow_(rowNumberValue)
+      : findBenefitRecordByEmail_(email);
+    return {
+      result: "success",
+      reused: false,
+      certificate: {
+        level: levelConfig.level,
+        number: certificateNumber,
+        url: generatedFile.pdfUrl
+      },
+      benefits: toPublicBenefits_(updatedRecord.values)
+    };
+  } catch (error) {
+    if (benefitRecord && previousValues) {
+      try {
+        setBenefitRecordValues_(benefitRecord, previousValues);
+      } catch (rollbackError) {
+        console.error(rollbackError && rollbackError.stack ? rollbackError.stack : rollbackError);
+      }
+    }
+    if (logRowNumber > 1) {
+      try {
+        getCertificateIssuanceLogSheet_().deleteRow(logRowNumber);
+      } catch (rollbackError) {
+        console.error(rollbackError && rollbackError.stack ? rollbackError.stack : rollbackError);
+      }
+    }
+    if (generatedFile && generatedFile.pdfFileId) {
+      trashDriveFileQuietly_(generatedFile.pdfFileId);
+    }
+    if (error && error.publicCode) throw error;
+    console.error(error && error.stack ? error.stack : error);
+    throwPublicError_(
+      "certificate_generation_failed",
+      "이수증 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+    );
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function getCertificateLevelConfig_(levelValue) {
+  const level = String(levelValue || "").trim().toLowerCase();
+  const configs = {
+    basic: {
+      level: "basic",
+      label: "초급",
+      statusHeader: "basic_completion_status",
+      courseNameHeader: "basic_course_name",
+      coursePeriodHeader: "basic_course_period",
+      numberHeader: "basic_certificate_number",
+      fileIdHeader: "basic_certificate_file_id",
+      urlHeader: "basic_certificate_url",
+      issuedAtHeader: "basic_certificate_issued_at"
+    },
+    intermediate: {
+      level: "intermediate",
+      label: "중급",
+      statusHeader: "intermediate_completion_status",
+      courseNameHeader: "intermediate_course_name",
+      coursePeriodHeader: "intermediate_course_period",
+      numberHeader: "intermediate_certificate_number",
+      fileIdHeader: "intermediate_certificate_file_id",
+      urlHeader: "intermediate_certificate_url",
+      issuedAtHeader: "intermediate_certificate_issued_at"
+    }
+  };
+  if (!configs[level]) {
+    throwPublicError_("invalid_request", "이수증 과정 구분이 올바르지 않습니다.");
+  }
+  return configs[level];
+}
+
+function getCertificateData_(values, levelConfig) {
+  const data = {
+    name: normalizeSingleLine_(values.name),
+    affiliation: normalizeSingleLine_(values.affiliation),
+    studentId: normalizeSingleLine_(values.student_id),
+    courseName: normalizeSingleLine_(values[levelConfig.courseNameHeader]),
+    coursePeriod: normalizeSingleLine_(values[levelConfig.coursePeriodHeader])
+  };
+  const missing = [];
+  if (!data.name) missing.push("성명");
+  if (!data.affiliation) missing.push("소속");
+  if (!data.studentId) missing.push("학번");
+  if (!data.courseName) missing.push("교육과정명");
+  if (!data.coursePeriod) missing.push("교육기간");
+  if (missing.length) {
+    throwPublicError_(
+      "certificate_not_ready",
+      `이수증 발급 정보가 준비되지 않았습니다: ${missing.join(", ")}`
+    );
+  }
+  return data;
+}
+
+function createCertificatePdf_(data) {
+  let presentationCopy = null;
+  let pdfFile = null;
+
+  try {
+    const templateCheck = validateCertificateTemplate_();
+    if (templateCheck.missing.length) {
+      throwPublicError_(
+        "certificate_template_missing",
+        `이수증 양식 치환문구를 확인해주세요: ${templateCheck.missing.join(", ")}`
+      );
+    }
+    const outputFolder = getCertificateOutputFolder_();
+    const safeName = sanitizeDriveFileName_(data.name) || "학생";
+    const baseName = `${data.certificateNumber}_${safeName}_이수증`;
+    presentationCopy = Drive.Files.copy(
+      {
+        name: `${baseName}_생성원본`,
+        parents: [outputFolder.id]
+      },
+      BENEFITS_CONFIG.CERTIFICATE_TEMPLATE_ID,
+      { fields: "id,name,mimeType" }
+    );
+
+    const presentation = SlidesApp.openById(presentationCopy.id);
+    const replacements = {
+      "{{CERT_NO}}": data.certificateNumber,
+      "{{NAME}}": data.name,
+      "{{AFFILIATION}}": data.affiliation,
+      "{{STUDENT_ID}}": data.studentId,
+      "{{COURSE_NAME}}": data.courseName,
+      "{{COURSE_PERIOD}}": data.coursePeriod,
+      "{{ISSUE_DATE_KR}}": formatKoreanIssueDate_(data.issuedAt)
+    };
+    presentation.getSlides().forEach((slide) => {
+      Object.keys(replacements).forEach((token) => {
+        slide.replaceAllText(token, replacements[token]);
+      });
+    });
+    presentation.saveAndClose();
+
+    const pdfBlob = DriveApp.getFileById(presentationCopy.id)
+      .getAs(MimeType.PDF)
+      .setName(`${baseName}.pdf`);
+    pdfFile = Drive.Files.create(
+      {
+        name: `${baseName}.pdf`,
+        parents: [outputFolder.id],
+        mimeType: MimeType.PDF,
+        description: `학생 이수증 / 발급번호 ${data.certificateNumber}`,
+        appProperties: {
+          certificateNumber: data.certificateNumber,
+          studentEmail: data.email
+        }
+      },
+      pdfBlob,
+      { fields: "id,name,mimeType,webViewLink" }
+    );
+    return {
+      presentationFileId: presentationCopy.id,
+      pdfFileId: pdfFile.id,
+      pdfUrl: pdfFile.webViewLink || buildDriveFileUrl_(pdfFile.id)
+    };
+  } catch (error) {
+    if (pdfFile) trashDriveFileQuietly_(pdfFile.id);
+    throw error;
+  } finally {
+    if (presentationCopy) trashDriveFileQuietly_(presentationCopy.id);
+  }
+}
+
+function validateCertificateTemplate_() {
+  const requiredTokens = [
+    "{{CERT_NO}}",
+    "{{NAME}}",
+    "{{AFFILIATION}}",
+    "{{STUDENT_ID}}",
+    "{{COURSE_NAME}}",
+    "{{COURSE_PERIOD}}",
+    "{{ISSUE_DATE_KR}}"
+  ];
+  let templateText = "";
+  try {
+    const presentation = SlidesApp.openById(
+      BENEFITS_CONFIG.CERTIFICATE_TEMPLATE_ID
+    );
+    templateText = presentation
+      .getSlides()
+      .map((slide) =>
+        slide
+          .getShapes()
+          .map((shape) => shape.getText().asString())
+          .join("\n")
+      )
+      .join("\n");
+  } catch (error) {
+    throw new Error(
+      `이수증 Google 슬라이드 양식에 접근할 수 없습니다: ${error.message}`
+    );
+  }
+  return {
+    template_id: BENEFITS_CONFIG.CERTIFICATE_TEMPLATE_ID,
+    missing: requiredTokens.filter((token) => !templateText.includes(token))
+  };
+}
+
+function generateCertificateNumber_(levelConfig) {
+  const year = Utilities.formatDate(new Date(), BENEFITS_CONFIG.TIMEZONE, "yyyy");
+  const prefix = `${year}-${levelConfig.label}-`;
+  const pattern = new RegExp(`^${escapeRegex_(prefix)}(\\d{4})$`);
+  const numbers = [];
+  const logSheet = getCertificateIssuanceLogSheet_();
+  const logLastRow = logSheet.getLastRow();
+  if (logLastRow >= 2) {
+    const logColumn = CERTIFICATE_ISSUANCE_HEADERS.indexOf("certificate_number") + 1;
+    numbers.push(
+      ...logSheet.getRange(2, logColumn, logLastRow - 1, 1).getValues().flat()
+    );
+  }
+
+  const benefitsSheet = getBenefitsSheet_();
+  const benefitsLastRow = benefitsSheet.getLastRow();
+  if (benefitsLastRow >= 2) {
+    ["basic_certificate_number", "intermediate_certificate_number"].forEach(
+      (header) => {
+        const column = BENEFITS_HEADERS.indexOf(header) + 1;
+        numbers.push(
+          ...benefitsSheet
+            .getRange(2, column, benefitsLastRow - 1, 1)
+            .getValues()
+            .flat()
+        );
+      }
+    );
+  }
+
+  const maxNumber = numbers.reduce((max, value) => {
+    const match = String(value || "").trim().match(pattern);
+    return match ? Math.max(max, Number(match[1])) : max;
+  }, 0);
+  return `${prefix}${String(maxNumber + 1).padStart(4, "0")}`;
+}
+
+function getExistingCertificateFile_(fileIdValue) {
+  const fileId = String(fileIdValue || "").trim();
+  if (!fileId) return null;
+  try {
+    const file = Drive.Files.get(fileId, {
+      fields: "id,name,mimeType,trashed,webViewLink"
+    });
+    if (file.trashed || file.mimeType !== MimeType.PDF) return null;
+    return file;
+  } catch (error) {
+    console.warn(`기존 이수증 파일을 찾지 못했습니다: ${fileId}`);
+    return null;
+  }
+}
+
+function buildCertificateDownloadPayload_(fileIdValue, certificateNumber, studentName) {
+  const fileId = String(fileIdValue || "").trim();
+  if (!fileId) {
+    throwPublicError_(
+      "certificate_generation_failed",
+      "발급된 이수증 PDF를 찾을 수 없습니다."
+    );
+  }
+
+  try {
+    const file = DriveApp.getFileById(fileId);
+    const blob = file.getBlob();
+    const bytes = blob.getBytes();
+    if (!bytes.length) {
+      throwPublicError_(
+        "certificate_generation_failed",
+        "발급된 이수증 PDF가 비어 있습니다."
+      );
+    }
+    if (bytes.length > BENEFITS_CONFIG.MAX_CERTIFICATE_PDF_BYTES) {
+      throwPublicError_(
+        "certificate_file_too_large",
+        "이수증 PDF 용량이 너무 커서 홈페이지에서 전달할 수 없습니다."
+      );
+    }
+
+    const safeName = sanitizeDriveFileName_(studentName) || "학생";
+    const fallbackFileName = `${certificateNumber}_${safeName}_이수증.pdf`;
+    return {
+      fileName: sanitizeDriveFileName_(file.getName()) || fallbackFileName,
+      mimeType: MimeType.PDF,
+      byteSize: bytes.length,
+      base64: Utilities.base64Encode(bytes)
+    };
+  } catch (error) {
+    if (error && error.publicCode) throw error;
+    console.error(error && error.stack ? error.stack : error);
+    throwPublicError_(
+      "certificate_generation_failed",
+      "발급된 이수증 PDF를 불러오지 못했습니다."
+    );
+  }
+}
+
+function setBenefitRecordValues_(record, values) {
+  Object.keys(values).forEach((header) => {
+    if (record.headerMap[header] === undefined) {
+      throw new Error(`benefits 시트 헤더 누락: ${header}`);
+    }
+    record.sheet
+      .getRange(record.rowNumber, record.headerMap[header] + 1)
+      .setValue(values[header]);
+    record.values[header] = values[header];
+  });
+}
+
+function formatKoreanIssueDate_(value) {
+  return Utilities.formatDate(
+    value,
+    BENEFITS_CONFIG.TIMEZONE,
+    "yyyy년 M월 d일"
+  );
+}
+
+function buildDriveFileUrl_(fileId) {
+  return `https://drive.google.com/file/d/${fileId}/view`;
+}
+
+function sanitizeDriveFileName_(value) {
+  return normalizeSingleLine_(value)
+    .replace(/[\\/:*?"<>|]+/g, "_")
+    .slice(0, 80);
+}
+
+function escapeRegex_(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function isCompletedStatus_(statusValue) {
+  return ["이수", "이수완료"].includes(normalizeText_(statusValue));
+}
+
+function trashDriveFileQuietly_(fileId) {
+  try {
+    Drive.Files.update({ trashed: true }, fileId, null, {
+      fields: "id,trashed"
+    });
+  } catch (error) {
+    console.error(error && error.stack ? error.stack : error);
+  }
 }
 
 function submitScholarshipApplication_(sessionTokenValue, payloadValue) {
@@ -953,6 +1700,15 @@ function submitIdeaContestApplication_(payloadValue) {
 function ensureApplicationsOpen_() {
   if (!BENEFITS_CONFIG.APPLICATIONS_OPEN) {
     throwPublicError_("applications_not_open", "현재 모집예정 상태입니다. 접수 일정 확정 후 신청해주세요.");
+  }
+}
+
+function ensureScholarshipApplicationsOpen_() {
+  if (!BENEFITS_CONFIG.SCHOLARSHIP_APPLICATIONS_OPEN) {
+    throwPublicError_(
+      "scholarship_applications_closed",
+      "현재 장학금 접수 준비 중입니다."
+    );
   }
 }
 
@@ -1421,6 +2177,7 @@ function toPublicBenefits_(values) {
     application_status: displayValue_(values.scholarship_application_status, "신청 전")
   };
   scholarship.can_apply =
+    BENEFITS_CONFIG.SCHOLARSHIP_APPLICATIONS_OPEN &&
     normalizeText_(scholarship.eligibility) === "대상" &&
     !isScholarshipSubmitted_(scholarship.application_status) &&
     isScholarshipWindowOpen_(values);
@@ -1428,21 +2185,52 @@ function toPublicBenefits_(values) {
 
   return {
     name: displayValue_(values.name, "학생"),
-    basic: {
-      status: displayValue_(values.basic_completion_status, "정보 없음"),
-      date: formatDate_(values.basic_completion_date, "yyyy-MM-dd"),
-      certificate_url: safeHttpsUrl_(values.basic_certificate_url)
-    },
-    intermediate: {
-      status: displayValue_(values.intermediate_completion_status, "정보 없음"),
-      date: formatDate_(values.intermediate_completion_date, "yyyy-MM-dd"),
-      certificate_url: safeHttpsUrl_(values.intermediate_certificate_url)
-    },
+    basic: toPublicCompletion_(values, "basic"),
+    intermediate: toPublicCompletion_(values, "intermediate"),
     scholarship
   };
 }
 
+function toPublicCompletion_(values, level) {
+  const config = getCertificateLevelConfig_(level);
+  const status = displayValue_(values[config.statusHeader], "정보 없음");
+  const fileId = String(values[config.fileIdHeader] || "").trim();
+  const certificateFile = fileId ? getExistingCertificateFile_(fileId) : null;
+  const hasMissingManagedFile = Boolean(fileId && !certificateFile);
+  return {
+    status,
+    date: formatDate_(
+      values[`${config.level}_completion_date`],
+      "yyyy-MM-dd"
+    ),
+    // Drive URL과 파일 ID는 학생 브라우저에 전달하지 않습니다.
+    certificate_url: "",
+    certificate_number: hasMissingManagedFile
+      ? ""
+      : displayValue_(values[config.numberHeader], ""),
+    issued_at: hasMissingManagedFile
+      ? "-"
+      : formatDate_(values[config.issuedAtHeader], "yyyy-MM-dd HH:mm"),
+    can_issue:
+      isCompletedStatus_(status) &&
+      isCertificateDataReady_(values, config)
+  };
+}
+
+function isCertificateDataReady_(values, config) {
+  return Boolean(
+    normalizeSingleLine_(values.name) &&
+      normalizeSingleLine_(values.affiliation) &&
+      normalizeSingleLine_(values.student_id) &&
+      normalizeSingleLine_(values[config.courseNameHeader]) &&
+      normalizeSingleLine_(values[config.coursePeriodHeader])
+  );
+}
+
 function getScholarshipGuidance_(scholarship, values) {
+  if (!BENEFITS_CONFIG.SCHOLARSHIP_APPLICATIONS_OPEN) {
+    return "현재 장학금 접수 준비 중입니다.";
+  }
   if (scholarship.can_apply) {
     return "장학금 대상자로 확인되었습니다. 계좌정보와 통장사본을 제출해주세요.";
   }
@@ -1489,6 +2277,39 @@ function findBenefitRecordByEmail_(email, sheetValue) {
   return null;
 }
 
+function findBenefitRecordByRow_(rowNumberValue, sheetValue) {
+  const rowNumber = Number(rowNumberValue);
+  const sheet = sheetValue || getBenefitsSheet_();
+  if (!Number.isInteger(rowNumber) || rowNumber < 2 || rowNumber > sheet.getLastRow()) {
+    return null;
+  }
+
+  const headers = sheet
+    .getRange(1, 1, 1, BENEFITS_HEADERS.length)
+    .getValues()[0];
+  const headerMap = getHeaderMap_(headers);
+  const missingHeaders = BENEFITS_HEADERS.filter((header) => headerMap[header] === undefined);
+  if (missingHeaders.length) {
+    throw new Error(`benefits 시트 헤더 누락: ${missingHeaders.join(", ")}`);
+  }
+
+  const row = sheet
+    .getRange(rowNumber, 1, 1, BENEFITS_HEADERS.length)
+    .getValues()[0];
+  if (!row.some((value) => String(value || "").trim())) return null;
+
+  const values = {};
+  BENEFITS_HEADERS.forEach((header) => {
+    values[header] = row[headerMap[header]];
+  });
+  return {
+    sheet,
+    headerMap,
+    rowNumber,
+    values
+  };
+}
+
 function getBenefitsSheet_() {
   const spreadsheet = getBenefitsSpreadsheet_();
   const sheet = spreadsheet.getSheetByName(BENEFITS_CONFIG.SHEET_NAME);
@@ -1503,6 +2324,20 @@ function getScholarshipApplicationsSheet_() {
   const sheet = spreadsheet.getSheetByName(BENEFITS_CONFIG.APPLICATION_SHEET_NAME);
   if (!sheet) {
     throwPublicError_("not_configured", "장학금 신청 시트를 찾을 수 없습니다.");
+  }
+  return sheet;
+}
+
+function getCertificateIssuanceLogSheet_() {
+  const spreadsheet = getBenefitsSpreadsheet_();
+  const sheet = spreadsheet.getSheetByName(
+    BENEFITS_CONFIG.CERTIFICATE_LOG_SHEET_NAME
+  );
+  if (!sheet) {
+    throwPublicError_(
+      "not_configured",
+      "이수증 발급 이력 시트를 찾을 수 없습니다."
+    );
   }
   return sheet;
 }
@@ -1575,6 +2410,44 @@ function getScholarshipUploadFolder_() {
     return folder;
   } catch (error) {
     throwPublicError_("not_configured", "통장사본 보관 폴더에 접근할 수 없습니다.");
+  }
+}
+
+function getCertificateOutputFolder_() {
+  const properties = PropertiesService.getScriptProperties();
+  const existingId = properties.getProperty("CERTIFICATE_OUTPUT_FOLDER_ID");
+  if (existingId) {
+    try {
+      const folder = Drive.Files.get(existingId, {
+        fields: "id,name,mimeType,trashed"
+      });
+      if (
+        !folder.trashed &&
+        folder.mimeType === "application/vnd.google-apps.folder"
+      ) {
+        return folder;
+      }
+    } catch (error) {
+      console.warn("기존 이수증 폴더를 찾지 못해 새 폴더를 생성합니다.");
+    }
+    properties.deleteProperty("CERTIFICATE_OUTPUT_FOLDER_ID");
+  }
+
+  try {
+    const folder = Drive.Files.create({
+      name: BENEFITS_CONFIG.CERTIFICATE_OUTPUT_FOLDER_NAME,
+      mimeType: "application/vnd.google-apps.folder",
+      description: "학생별 자동 생성 이수증 PDF 비공개 보관 폴더",
+      appProperties: { purpose: "bootcamp-certificate-pdf-output" }
+    });
+    properties.setProperty("CERTIFICATE_OUTPUT_FOLDER_ID", folder.id);
+    return folder;
+  } catch (error) {
+    console.error(error && error.stack ? error.stack : error);
+    throwPublicError_(
+      "not_configured",
+      `이수증 보관 폴더에 접근할 수 없습니다: ${error && error.message ? error.message : error}`
+    );
   }
 }
 

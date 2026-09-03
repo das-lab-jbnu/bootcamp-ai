@@ -12,8 +12,10 @@
 5. Apps Script 편집기에서 `setupBenefitsSheet` 함수를 한 번 실행하고 권한을 승인합니다.
 6. `runBenefitsSmokeTest` 함수를 실행해 헤더·공개 응답·비공개 필드 검사를 통과하는지 확인합니다.
 
-manifest에는 고급 Drive 서비스와 `drive.file` 제한 권한이 포함됩니다. 이 권한은 전체 Drive를
-열람하는 권한이 아니라, 이 Apps Script가 직접 만든 웹신청 전용 폴더와 파일만 관리합니다.
+자동 이수증 발급은 세로형 Google Slides 원본을 복사하고 비공개 PDF를 생성하므로
+고급 Drive 서비스, `drive`, `presentations` 권한이 필요합니다. `drive`는 배포
+실행 계정의 전체 Drive 파일을 다룰 수 있는 민감한 권한입니다. Apps Script 편집 권한은
+사업단의 최소 담당자에게만 부여하고, 템플릿·발급 폴더 ID를 외부에 공개하지 않습니다.
 
 `benefits` 탭과 아래 헤더가 자동 생성됩니다.
 
@@ -34,6 +36,18 @@ scholarship_apply_end
 scholarship_applied_at
 updated_at
 internal_note
+affiliation
+student_id
+basic_course_name
+basic_course_period
+basic_certificate_number
+basic_certificate_file_id
+basic_certificate_issued_at
+intermediate_course_name
+intermediate_course_period
+intermediate_certificate_number
+intermediate_certificate_file_id
+intermediate_certificate_issued_at
 ```
 
 학생 한 명당 한 행을 사용합니다. 이메일은 프로그램 신청 당시 이메일과 정확히 일치해야 하며,
@@ -84,12 +98,59 @@ internal_note
 드롭다운을 확인하고, `runBenefitsSmokeTest`를 실행한 다음 웹앱을 새 버전으로 배포합니다.
 현재 신규 프로그램은 모집예정 상태이므로 `Code.gs`의 `APPLICATIONS_OPEN`이 `false`로
 설정되어 있습니다. 접수를 시작할 때는 이 값을 `true`로 변경하고 홈페이지 접수 버튼을 활성화합니다.
+장학금 접수는 `SCHOLARSHIP_APPLICATIONS_OPEN`으로 별도 관리합니다. `false`인 동안에는
+홈페이지에서 장학금 인증 입력을 비활성화하고 Apps Script도 장학금 신청서 제출을 거부합니다.
+이수증 발급은 이 설정과 관계없이 이용할 수 있습니다.
 
-## 2. 이수증 파일
+## 2. 이수증 자동 발급
 
-`basic_certificate_url`, `intermediate_certificate_url`에는 HTTPS 이수증 링크를 입력합니다.
-Google Drive를 사용하는 경우 파일을 `링크가 있는 모든 사용자`에게 공개하지 말고 해당 학생 이메일에만 공유하는 것을 권장합니다.
-학생 화면에서는 이수 상태가 `이수`이고 URL이 입력된 경우에만 발급 버튼이 나타납니다.
+템플릿은 Google Slides 파일 `19QCbrjGHuGVqJdfFldOcowVsEftsd_2y8qhFuB5NpmI`을 사용합니다.
+아래 치환문구를 슬라이드에서 임의로 바꾸거나 삭제하지 않습니다.
+
+```text
+{{CERT_NO}}
+{{NAME}}
+{{AFFILIATION}}
+{{STUDENT_ID}}
+{{COURSE_NAME}}
+{{COURSE_PERIOD}}
+{{ISSUE_DATE_KR}}
+```
+
+사업단은 `benefits`에서 학생별로 다음 값을 입력합니다.
+
+- 공통: `email`, `name`, `affiliation`, `student_id`
+- 초급: `basic_completion_status`, `basic_completion_date`, `basic_course_name`, `basic_course_period`
+- 중급: `intermediate_completion_status`, `intermediate_completion_date`, `intermediate_course_name`, `intermediate_course_period`
+
+이수 상태가 `이수`이고 필수 정보가 모두 입력되면 학생 화면에 `이수증 발급` 버튼이 나타납니다.
+사업단이 `basic_certificate_number` 또는 `intermediate_certificate_number`를 입력하면 그 번호를
+그대로 사용합니다. 번호가 비어 있을 때만 `연도-초/중-4자리 일련번호` 형식으로 자동 생성합니다.
+학생이 버튼을 누르면 Slides 치환문구를 학생 정보로 바꾼 PDF를
+`[비공개] 학생 이수증 PDF (웹발급 전용)` 폴더에 저장합니다.
+PDF는 Drive 링크나 파일 ID를 공개하지 않습니다. Apps Script가 홈페이지 이메일 인증
+세션을 다시 확인한 후 PDF 데이터를 직접 전달하며, 브라우저가 받은 데이터를 PDF로
+복원합니다. 학생은 Google 계정 로그인이나 Drive 방문자 초대 없이 PDF를 열거나
+다운로드할 수 있습니다. 직접 전달 가능한 PDF는 최대 5MB입니다.
+
+발급 결과는 해당 학생 행의 URL·번호·파일 ID·발급일시에 기록하며,
+`certificate_issuance_log` 탭에도 발급 이력을 추가합니다. 이미 유효한 PDF가 있으면
+새 번호를 만들지 않고 기존 파일을 다시 제공합니다.
+
+사업단이 홈페이지 이메일 인증 없이 직접 발급할 때는 별도 관리 메뉴 대신
+`Code.gs` 상단의 `ADMIN_CERTIFICATE_ISSUE`를 사용합니다.
+
+1. `ROW_NUMBER`에 `benefits` 시트의 학생 행 번호를 입력합니다. 첫 학생이 있는 2행은 `2`입니다.
+2. `LEVEL`에 `"초급"` 또는 `"중급"`을 입력하고 저장합니다.
+3. Apps Script 함수 목록에서 `issueCertificateForAdmin`을 선택하고 `실행`합니다.
+4. `benefits` 행의 발급 결과와 `certificate_issuance_log`, Drive PDF를 확인합니다.
+
+직접 발급도 이수 상태가 `이수`이고 필수 항목이 모두 입력된 행만 처리합니다.
+이 함수로 생성한 PDF는 항상 사업단만 보관하며, 학생에게 Drive 권한을 부여하거나
+알림 메일을 보내지 않습니다. 학생 발급은 홈페이지의 이메일 인증 절차로만 처리합니다.
+사업단 보관용 PDF가 이미 있는 경우에도 학생 화면에서는 권한 없는 링크를 숨기고,
+학생이 `이수증 발급` 버튼을 누르면 인증 세션을 확인한 뒤 기존 PDF 데이터를 직접
+전달합니다. 학생 이메일에 Drive 권한이나 알림 메일을 보내지 않습니다.
 
 ## 3. 장학금 계좌정보와 통장사본
 
@@ -119,10 +180,10 @@ Google Drive를 사용하는 경우 파일을 `링크가 있는 모든 사용자
 
 ## 5. 학생 이용 흐름
 
-1. 신청 이메일 입력
+1. 이수증 또는 장학금 탭에서 신청 이메일 입력
 2. 이메일로 받은 6자리 인증번호 입력
-3. 초급·중급 이수 현황과 이수증 확인
-4. 장학금 대상자인 경우 은행·예금주·계좌번호 입력
+3. 이수증 탭에서 초급·중급 이수 현황 확인 후 이수증 PDF 발급
+4. 장학금 탭에서 대상 여부 확인 후 은행·예금주·계좌번호 입력
 5. 통장사본 첨부 및 개인정보 수집·이용 동의 후 제출
 
 인증번호는 10분, 인증 세션은 마지막 요청으로부터 15분 동안 유효합니다.
@@ -139,4 +200,5 @@ Google Drive를 사용하는 경우 파일을 `링크가 있는 모든 사용자
 - 계좌정보와 통장사본은 장학금 지급·정산 목적에만 사용합니다.
 - 개인정보 처리방침과 동의문에 사업단의 정확한 보유기간을 명시하고, 기간 종료 후 삭제합니다.
 - Apps Script 웹앱 URL만으로 개인정보를 조회할 수 없으며 이메일 인증을 통과해야 합니다.
+- 발급된 이수증 PDF는 `링크가 있는 모든 사용자`로 공유하지 않고 해당 학생 이메일에만 공유합니다.
 - 최종 배포 전 테스트용 학생 이메일과 가상 계좌·가상 통장사본으로 인증·조회·장학금 신청을 모두 확인합니다.

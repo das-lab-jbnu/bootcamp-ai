@@ -15,313 +15,173 @@
           <p class="text-sm font-bold tracking-[0.18em] text-blue-200">STUDENT BENEFITS</p>
           <h1 class="mt-3 text-3xl font-bold tracking-tight md:text-4xl">학생 지원 혜택</h1>
           <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-200 md:text-base">
-            프로그램 신청 시 사용한 이메일을 인증하고 초급·중급 이수 현황과 이수증,
-            장학금 대상 여부 및 신청 상태를 한곳에서 확인하세요.
+            이수증 발급과 장학금 신청 서비스를 탭별로 이용할 수 있습니다.
+            각 서비스에서 프로그램 신청 시 사용한 이메일로 본인 인증을 진행해주세요.
           </p>
         </section>
 
         <section class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-5 text-amber-950 md:px-7" aria-labelledby="benefits-preparing-title" role="status">
-          <p class="text-xs font-bold tracking-[0.16em] text-amber-700">서비스 준비 안내</p>
-          <h2 class="mt-2 text-xl font-bold" id="benefits-preparing-title">이수증 발급·장학금 접수 준비 중</h2>
+          <p class="text-xs font-bold tracking-[0.16em] text-amber-700">서비스 이용 안내</p>
+          <h2 class="mt-2 text-xl font-bold" id="benefits-preparing-title">이수증 발급 운영 중 · 장학금 신청 준비 중</h2>
           <p class="mt-2 text-sm leading-6 text-amber-900">
-            학생별 이수 및 장학금 정보 정비 후 서비스를 활성화할 예정입니다. 이용 가능 시 홈페이지를 통해 안내드리겠습니다.
+            이수증은 프로그램 신청 이메일 인증 후 발급할 수 있습니다. 장학금 신청은 대상자 정보와 접수 일정 정비 후 활성화할 예정입니다.
           </p>
         </section>
 
-        <section class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="학생 지원 서비스 안내">
-          <article class="card p-5">
-            <p class="text-xs font-bold text-blue-800">01</p>
-            <h2 class="mt-2 font-bold text-slate-950">초급·중급 이수 확인</h2>
-            <p class="mt-2 text-sm leading-6 text-slate-600">과정별 이수 심사 결과와 이수일을 확인합니다.</p>
-          </article>
-          <article class="card p-5">
-            <p class="text-xs font-bold text-blue-800">02</p>
-            <h2 class="mt-2 font-bold text-slate-950">이수증 발급</h2>
-            <p class="mt-2 text-sm leading-6 text-slate-600">발급이 완료된 이수증을 내려받습니다.</p>
-          </article>
-          <article class="card p-5">
-            <p class="text-xs font-bold text-blue-800">03</p>
-            <h2 class="mt-2 font-bold text-slate-950">장학금 대상 확인</h2>
-            <p class="mt-2 text-sm leading-6 text-slate-600">선발 회차와 장학금 대상 여부를 확인합니다.</p>
-          </article>
-          <article class="card p-5">
-            <p class="text-xs font-bold text-blue-800">04</p>
-            <h2 class="mt-2 font-bold text-slate-950">장학금 신청</h2>
-            <p class="mt-2 text-sm leading-6 text-slate-600">대상자로 확인되면 계좌정보와 통장사본을 제출합니다.</p>
-          </article>
+        <nav class="benefit-service-tabs mt-8" aria-label="학생 지원 혜택 서비스" role="tablist">
+          <button class="benefit-service-tab is-active" id="student-benefits-tab-certificate" type="button" role="tab" aria-selected="true" aria-controls="certificate-service-panel" data-benefits-tab="certificate">
+            <span class="benefit-service-tab-number" aria-hidden="true">01</span>
+            <span><strong>이수증 발급</strong><small>초급·중급 이수 결과 확인 및 이수증 내려받기</small></span>
+          </button>
+          <button class="benefit-service-tab" id="student-benefits-tab-scholarship" type="button" role="tab" aria-selected="false" aria-controls="scholarship-service-panel" tabindex="-1" data-benefits-tab="scholarship">
+            <span class="benefit-service-tab-number" aria-hidden="true">02</span>
+            <span><strong>장학금 신청</strong><small>장학금 접수 준비 중</small></span>
+          </button>
+        </nav>
+
+        <section class="mt-8" id="certificate-service-panel" role="tabpanel" aria-labelledby="student-benefits-tab-certificate" data-benefits-panel="certificate" tabindex="0">
+          <div class="grid gap-6 lg:grid-cols-[0.78fr_1.5fr]">
+            <aside class="card p-6 md:p-7">
+              <p class="text-sm font-bold text-blue-900">이수증 발급 이용 방법</p>
+              <ol class="mt-5 space-y-5">
+                <li class="flex gap-3"><span class="benefit-step">1</span><div><p class="font-semibold text-slate-900">신청 이메일 입력</p><p class="mt-1 text-sm leading-6 text-slate-600">프로그램 신청 당시 입력한 이메일을 사용합니다.</p></div></li>
+                <li class="flex gap-3"><span class="benefit-step">2</span><div><p class="font-semibold text-slate-900">인증번호 확인</p><p class="mt-1 text-sm leading-6 text-slate-600">이메일로 받은 6자리 번호를 입력합니다.</p></div></li>
+                <li class="flex gap-3"><span class="benefit-step">3</span><div><p class="font-semibold text-slate-900">이수 결과·이수증 확인</p><p class="mt-1 text-sm leading-6 text-slate-600">초급·중급 이수 상태와 발급 가능한 이수증을 확인합니다.</p></div></li>
+              </ol>
+              <div class="mt-6 rounded-xl bg-slate-50 p-4 text-xs leading-6 text-slate-600">인증번호는 10분 동안 유효합니다. 이메일이 도착하지 않으면 스팸함을 확인하거나 사업단에 문의해주세요.</div>
+            </aside>
+
+            <section class="card p-6 md:p-8" aria-labelledby="certificate-lookup-title">
+              <div>
+                <p class="text-sm font-bold text-blue-900">이수증 발급 본인 인증</p>
+                <h2 class="mt-2 text-2xl font-bold text-slate-950" id="certificate-lookup-title">나의 이수 및 이수증</h2>
+                <p class="mt-2 text-sm leading-6 text-slate-600">이 탭에서 별도로 이메일 인증을 완료하면 이수 정보만 표시됩니다.</p>
+              </div>
+              <div class="mt-6 hidden rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900" id="certificate-setup-notice" role="status">
+                <p id="certificate-setup-message">이수증 발급 서비스 연결을 준비 중입니다.</p>
+                <button class="benefit-secondary-button mt-3 hidden" id="certificate-preview-button" type="button">샘플 이수증 화면 미리보기</button>
+              </div>
+              <div class="mt-7" id="certificate-auth-panel">
+                <form id="certificate-email-form" novalidate>
+                  <label class="text-sm font-semibold text-slate-800" for="certificate-email">프로그램 신청 이메일</label>
+                  <div class="mt-2 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                    <input class="apply-field rounded-lg" id="certificate-email" name="email" type="email" autocomplete="email" placeholder="student@jbnu.ac.kr" required />
+                    <button class="benefit-primary-button" id="certificate-email-submit" type="submit"><span class="apply-spinner" aria-hidden="true"></span><span data-button-text>인증번호 받기</span></button>
+                  </div>
+                </form>
+                <form class="mt-6 hidden" id="certificate-code-form" novalidate>
+                  <div class="flex flex-wrap items-end justify-between gap-2"><label class="text-sm font-semibold text-slate-800" for="certificate-code">이메일 인증번호</label><button class="text-sm font-semibold text-blue-900 underline underline-offset-4" id="certificate-change-email" type="button">이메일 다시 입력</button></div>
+                  <div class="mt-2 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                    <input class="apply-field rounded-lg tracking-[0.35em]" id="certificate-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required />
+                    <button class="benefit-primary-button" id="certificate-code-submit" type="submit"><span class="apply-spinner" aria-hidden="true"></span><span data-button-text>인증하고 조회</span></button>
+                  </div>
+                </form>
+                <p class="mt-4 hidden text-sm leading-6" id="certificate-auth-message" role="status" aria-live="polite"></p>
+              </div>
+              <section class="mt-7 hidden" id="certificate-dashboard" aria-live="polite">
+                <div class="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center sm:justify-between">
+                  <div><p class="text-sm text-slate-500">이수증 발급 인증 완료</p><h3 class="mt-1 text-xl font-bold text-slate-950"><span id="certificate-student-name">학생</span>님의 이수 현황</h3><p class="mt-1 text-sm text-slate-500" id="certificate-session-email"></p></div>
+                  <button class="benefit-secondary-button" id="certificate-reset" type="button">조회 종료</button>
+                </div>
+                <div class="mt-6 grid gap-4 md:grid-cols-2">
+                  <article class="benefit-result-card">
+                    <div class="flex items-start justify-between gap-3"><div><p class="text-xs font-bold text-blue-800">기초 역량 과정</p><h4 class="mt-1 text-lg font-bold text-slate-950">초급 이수</h4></div><span class="benefit-badge" id="basic-completion-status">정보 없음</span></div>
+                    <dl class="mt-5 space-y-3 text-sm"><div class="flex justify-between gap-4"><dt class="text-slate-500">이수일</dt><dd class="font-semibold text-slate-800" id="basic-completion-date">-</dd></div><div class="flex justify-between gap-4"><dt class="text-slate-500">이수증 번호</dt><dd class="font-semibold text-slate-800" id="basic-certificate-number">-</dd></div></dl>
+                    <button class="benefit-certificate-button mt-5 hidden" id="basic-certificate-issue" type="button"><span class="apply-spinner" aria-hidden="true"></span><span data-button-text>초급 이수증 발급</span></button>
+                    <a class="benefit-certificate-button mt-5 hidden" id="basic-certificate-link" href="#" target="_blank" rel="noopener noreferrer">초급 이수증 PDF 열기</a>
+                    <a class="benefit-certificate-button mt-3 hidden" id="basic-certificate-download" href="#" download>초급 이수증 PDF 다운로드</a>
+                    <p class="mt-5 text-sm text-slate-500" id="basic-certificate-empty">발급 가능한 이수증이 없습니다.</p>
+                  </article>
+                  <article class="benefit-result-card">
+                    <div class="flex items-start justify-between gap-3"><div><p class="text-xs font-bold text-indigo-800">심화 역량 과정</p><h4 class="mt-1 text-lg font-bold text-slate-950">중급 이수</h4></div><span class="benefit-badge" id="intermediate-completion-status">정보 없음</span></div>
+                    <dl class="mt-5 space-y-3 text-sm"><div class="flex justify-between gap-4"><dt class="text-slate-500">이수일</dt><dd class="font-semibold text-slate-800" id="intermediate-completion-date">-</dd></div><div class="flex justify-between gap-4"><dt class="text-slate-500">이수증 번호</dt><dd class="font-semibold text-slate-800" id="intermediate-certificate-number">-</dd></div></dl>
+                    <button class="benefit-certificate-button mt-5 hidden" id="intermediate-certificate-issue" type="button"><span class="apply-spinner" aria-hidden="true"></span><span data-button-text>중급 이수증 발급</span></button>
+                    <a class="benefit-certificate-button mt-5 hidden" id="intermediate-certificate-link" href="#" target="_blank" rel="noopener noreferrer">중급 이수증 PDF 열기</a>
+                    <a class="benefit-certificate-button mt-3 hidden" id="intermediate-certificate-download" href="#" download>중급 이수증 PDF 다운로드</a>
+                    <p class="mt-5 text-sm text-slate-500" id="intermediate-certificate-empty">발급 가능한 이수증이 없습니다.</p>
+                  </article>
+                </div>
+                <p class="mt-4 hidden text-sm leading-6" id="certificate-action-message" role="status" aria-live="polite"></p>
+                <p class="mt-5 text-xs leading-5 text-slate-500">표시된 이수 결과나 이수증 발급 상태가 실제 내용과 다른 경우 사업단 담당자에게 문의해주세요.</p>
+              </section>
+            </section>
+          </div>
         </section>
 
-        <section class="mt-10 grid gap-6 lg:grid-cols-[0.78fr_1.5fr]" aria-labelledby="benefits-lookup-title">
-          <aside class="card p-6 md:p-7">
-            <p class="text-sm font-bold text-blue-900">이용 방법</p>
-            <ol class="mt-5 space-y-5">
-              <li class="flex gap-3">
-                <span class="benefit-step">1</span>
-                <div>
-                  <p class="font-semibold text-slate-900">신청 이메일 입력</p>
-                  <p class="mt-1 text-sm leading-6 text-slate-600">프로그램 신청 당시 입력한 이메일을 사용합니다.</p>
-                </div>
-              </li>
-              <li class="flex gap-3">
-                <span class="benefit-step">2</span>
-                <div>
-                  <p class="font-semibold text-slate-900">인증번호 확인</p>
-                  <p class="mt-1 text-sm leading-6 text-slate-600">이메일로 받은 6자리 번호를 입력합니다.</p>
-                </div>
-              </li>
-              <li class="flex gap-3">
-                <span class="benefit-step">3</span>
-                <div>
-                  <p class="font-semibold text-slate-900">지원 현황 조회</p>
-                  <p class="mt-1 text-sm leading-6 text-slate-600">본인의 이수·이수증·장학금 정보만 표시됩니다.</p>
-                </div>
-              </li>
-            </ol>
-            <div class="mt-6 rounded-xl bg-slate-50 p-4 text-xs leading-6 text-slate-600">
-              인증번호는 10분 동안 유효합니다. 이메일이 도착하지 않으면 스팸함을 확인하거나 사업단에 문의해주세요.
-            </div>
-          </aside>
+        <section class="mt-8 hidden" id="scholarship-service-panel" role="tabpanel" aria-labelledby="student-benefits-tab-scholarship" data-benefits-panel="scholarship" tabindex="0">
+          <div class="grid gap-6 lg:grid-cols-[0.78fr_1.5fr]">
+            <aside class="card p-6 md:p-7">
+              <p class="text-sm font-bold text-emerald-800">장학금 신청 이용 방법</p>
+              <ol class="mt-5 space-y-5">
+                <li class="flex gap-3"><span class="benefit-step">1</span><div><p class="font-semibold text-slate-900">신청 이메일 입력</p><p class="mt-1 text-sm leading-6 text-slate-600">장학금 확인을 위해 이 탭에서 별도로 인증합니다.</p></div></li>
+                <li class="flex gap-3"><span class="benefit-step">2</span><div><p class="font-semibold text-slate-900">장학금 대상 확인</p><p class="mt-1 text-sm leading-6 text-slate-600">인증 후 대상 여부와 선발 회차를 확인합니다.</p></div></li>
+                <li class="flex gap-3"><span class="benefit-step">3</span><div><p class="font-semibold text-slate-900">신청정보 제출</p><p class="mt-1 text-sm leading-6 text-slate-600">대상자는 계좌정보와 통장사본을 제출합니다.</p></div></li>
+              </ol>
+              <div class="mt-6 rounded-xl bg-slate-50 p-4 text-xs leading-6 text-slate-600">통장사본은 PDF, JPG, PNG 형식으로 최대 5MB까지 제출할 수 있습니다.</div>
+            </aside>
 
-          <section class="card p-6 md:p-8">
-            <div>
-              <p class="text-sm font-bold text-blue-900">본인 인증 조회</p>
-              <h2 id="benefits-lookup-title" class="mt-2 text-2xl font-bold text-slate-950">나의 지원 현황</h2>
-              <p class="mt-2 text-sm leading-6 text-slate-600">이메일 인증을 완료하면 개인정보가 포함된 결과가 표시됩니다.</p>
-            </div>
-
-            <div id="benefits-setup-notice" class="mt-6 hidden rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900" role="status">
-              <p id="benefits-setup-message">학생 지원 조회 서비스 연결을 준비 중입니다. 관리자 설정 후 이용할 수 있습니다.</p>
-              <button class="benefit-secondary-button mt-3 hidden" id="benefits-preview-button" type="button">
-                샘플 결과 화면 미리보기
-              </button>
-            </div>
-
-            <div id="benefits-auth-panel" class="mt-7">
-              <form id="benefits-email-form" novalidate>
-                <label class="text-sm font-semibold text-slate-800" for="benefits-email">프로그램 신청 이메일</label>
-                <div class="mt-2 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-                  <input
-                    class="apply-field rounded-lg"
-                    id="benefits-email"
-                    name="email"
-                    type="email"
-                    autocomplete="email"
-                    placeholder="student@jbnu.ac.kr"
-                    required
-                  />
-                  <button class="benefit-primary-button" id="benefits-email-submit" type="submit">
-                    <span class="apply-spinner" aria-hidden="true"></span>
-                    <span data-button-text>인증번호 받기</span>
-                  </button>
-                </div>
-              </form>
-
-              <form id="benefits-code-form" class="mt-6 hidden" novalidate>
-                <div class="flex flex-wrap items-end justify-between gap-2">
-                  <label class="text-sm font-semibold text-slate-800" for="benefits-code">이메일 인증번호</label>
-                  <button class="text-sm font-semibold text-blue-900 underline underline-offset-4" id="benefits-change-email" type="button">
-                    이메일 다시 입력
-                  </button>
-                </div>
-                <div class="mt-2 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-                  <input
-                    class="apply-field rounded-lg tracking-[0.35em]"
-                    id="benefits-code"
-                    name="code"
-                    type="text"
-                    inputmode="numeric"
-                    autocomplete="one-time-code"
-                    pattern="[0-9]{6}"
-                    maxlength="6"
-                    placeholder="000000"
-                    required
-                  />
-                  <button class="benefit-primary-button" id="benefits-code-submit" type="submit">
-                    <span class="apply-spinner" aria-hidden="true"></span>
-                    <span data-button-text>인증하고 조회</span>
-                  </button>
-                </div>
-              </form>
-              <p id="benefits-auth-message" class="mt-4 hidden text-sm leading-6" role="status" aria-live="polite"></p>
-            </div>
-
-            <section id="benefits-dashboard" class="mt-7 hidden" aria-live="polite">
-              <div class="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p class="text-sm text-slate-500">인증 완료</p>
-                  <h3 class="mt-1 text-xl font-bold text-slate-950"><span id="benefits-student-name">학생</span>님의 지원 현황</h3>
-                  <p class="mt-1 text-sm text-slate-500" id="benefits-session-email"></p>
-                </div>
-                <button class="benefit-secondary-button" id="benefits-reset" type="button">조회 종료</button>
+            <section class="card p-6 md:p-8" aria-labelledby="scholarship-lookup-title">
+              <div>
+                <p class="text-sm font-bold text-emerald-800">장학금 신청 본인 인증</p>
+                <h2 class="mt-2 text-2xl font-bold text-slate-950" id="scholarship-lookup-title">나의 장학금 신청</h2>
+                <p class="mt-2 text-sm leading-6 text-slate-600">이 탭에서 별도로 이메일 인증을 완료하면 장학금 정보만 표시됩니다.</p>
               </div>
-
-              <div class="mt-6 grid gap-4 md:grid-cols-2">
-                <article class="benefit-result-card">
-                  <div class="flex items-start justify-between gap-3">
-                    <div>
-                      <p class="text-xs font-bold text-blue-800">기초 역량 과정</p>
-                      <h4 class="mt-1 text-lg font-bold text-slate-950">초급 이수</h4>
-                    </div>
-                    <span class="benefit-badge" id="basic-completion-status">정보 없음</span>
-                  </div>
-                  <dl class="mt-5 space-y-3 text-sm">
-                    <div class="flex justify-between gap-4">
-                      <dt class="text-slate-500">이수일</dt>
-                      <dd class="font-semibold text-slate-800" id="basic-completion-date">-</dd>
-                    </div>
-                  </dl>
-                  <a class="benefit-certificate-button mt-5 hidden" id="basic-certificate-link" href="#" target="_blank" rel="noopener noreferrer">초급 이수증 발급</a>
-                  <p class="mt-5 text-sm text-slate-500" id="basic-certificate-empty">발급 가능한 이수증이 없습니다.</p>
-                </article>
-
-                <article class="benefit-result-card">
-                  <div class="flex items-start justify-between gap-3">
-                    <div>
-                      <p class="text-xs font-bold text-indigo-800">심화 역량 과정</p>
-                      <h4 class="mt-1 text-lg font-bold text-slate-950">중급 이수</h4>
-                    </div>
-                    <span class="benefit-badge" id="intermediate-completion-status">정보 없음</span>
-                  </div>
-                  <dl class="mt-5 space-y-3 text-sm">
-                    <div class="flex justify-between gap-4">
-                      <dt class="text-slate-500">이수일</dt>
-                      <dd class="font-semibold text-slate-800" id="intermediate-completion-date">-</dd>
-                    </div>
-                  </dl>
-                  <a class="benefit-certificate-button mt-5 hidden" id="intermediate-certificate-link" href="#" target="_blank" rel="noopener noreferrer">중급 이수증 발급</a>
-                  <p class="mt-5 text-sm text-slate-500" id="intermediate-certificate-empty">발급 가능한 이수증이 없습니다.</p>
-                </article>
+              <div class="mt-6 hidden rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900" id="scholarship-setup-notice" role="status">
+                <p id="scholarship-setup-message">장학금 신청 서비스 연결을 준비 중입니다.</p>
+                <button class="benefit-secondary-button mt-3 hidden" id="scholarship-preview-button" type="button">샘플 장학금 화면 미리보기</button>
               </div>
-
-              <article class="benefit-scholarship-card mt-4">
-                <div class="grid gap-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-                  <div>
-                    <p class="text-xs font-bold text-emerald-800">SCHOLARSHIP</p>
-                    <div class="mt-2 flex flex-wrap items-center gap-3">
-                      <h4 class="text-lg font-bold text-slate-950">장학금 지원</h4>
-                      <span class="benefit-badge" id="scholarship-eligibility">정보 없음</span>
-                    </div>
-                    <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-                      <div>
-                        <dt class="text-slate-500">선발 회차</dt>
-                        <dd class="mt-1 font-semibold text-slate-800" id="scholarship-round">-</dd>
-                      </div>
-                      <div>
-                        <dt class="text-slate-500">신청 상태</dt>
-                        <dd class="mt-1 font-semibold text-slate-800" id="scholarship-application-status">-</dd>
-                      </div>
-                    </dl>
+              <div class="mt-7" id="scholarship-auth-panel">
+                <form id="scholarship-email-form" novalidate>
+                  <label class="text-sm font-semibold text-slate-800" for="scholarship-email">프로그램 신청 이메일</label>
+                  <div class="mt-2 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                    <input class="apply-field rounded-lg" id="scholarship-email" name="email" type="email" autocomplete="email" placeholder="student@jbnu.ac.kr" required />
+                    <button class="benefit-primary-button" id="scholarship-email-submit" type="submit"><span class="apply-spinner" aria-hidden="true"></span><span data-button-text>인증번호 받기</span></button>
                   </div>
-                  <button class="benefit-primary-button hidden" id="scholarship-apply-button" type="button">장학금 신청</button>
-                </div>
-                <p class="mt-4 text-sm leading-6 text-slate-600" id="scholarship-guidance">장학금 대상 여부를 확인해주세요.</p>
-
-                <form class="benefit-application-form mt-5 hidden" id="scholarship-application-form" novalidate>
-                  <fieldset>
-                    <legend class="text-base font-bold text-slate-950">장학금 지급 계좌 제출</legend>
-                    <p class="mt-2 text-sm leading-6 text-slate-600">
-                      반드시 본인 명의 계좌를 입력하고 계좌번호와 예금주를 확인할 수 있는 통장사본을 첨부해주세요.
-                    </p>
-
-                    <div class="mt-5 grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <label class="text-sm font-semibold text-slate-800" for="scholarship-bank-name">은행</label>
-                        <input
-                          class="apply-field mt-2 rounded-lg"
-                          id="scholarship-bank-name"
-                          name="bank_name"
-                          type="text"
-                          list="scholarship-bank-options"
-                          maxlength="40"
-                          autocomplete="off"
-                          placeholder="예: 전북은행"
-                          required
-                        />
-                        <datalist id="scholarship-bank-options">
-                          <option value="전북은행"></option>
-                          <option value="KB국민은행"></option>
-                          <option value="신한은행"></option>
-                          <option value="하나은행"></option>
-                          <option value="우리은행"></option>
-                          <option value="NH농협은행"></option>
-                          <option value="IBK기업은행"></option>
-                          <option value="카카오뱅크"></option>
-                          <option value="토스뱅크"></option>
-                          <option value="케이뱅크"></option>
-                          <option value="우체국"></option>
-                          <option value="새마을금고"></option>
-                          <option value="신협"></option>
-                        </datalist>
-                      </div>
-                      <div>
-                        <label class="text-sm font-semibold text-slate-800" for="scholarship-account-holder">예금주</label>
-                        <input
-                          class="apply-field mt-2 rounded-lg"
-                          id="scholarship-account-holder"
-                          name="account_holder"
-                          type="text"
-                          maxlength="40"
-                          autocomplete="off"
-                          placeholder="예: 김학생"
-                          required
-                        />
-                      </div>
-                      <div class="sm:col-span-2">
-                        <label class="text-sm font-semibold text-slate-800" for="scholarship-account-number">계좌번호</label>
-                        <input
-                          class="apply-field mt-2 rounded-lg"
-                          id="scholarship-account-number"
-                          name="account_number"
-                          type="text"
-                          inputmode="numeric"
-                          minlength="8"
-                          maxlength="24"
-                          autocomplete="off"
-                          placeholder="숫자만 입력"
-                          required
-                        />
-                      </div>
-                      <div class="sm:col-span-2">
-                        <label class="text-sm font-semibold text-slate-800" for="scholarship-bankbook-file">통장사본</label>
-                        <input
-                          class="benefit-file-field mt-2"
-                          id="scholarship-bankbook-file"
-                          name="bankbook_file"
-                          type="file"
-                          accept="application/pdf,image/jpeg,image/png,.pdf,.jpg,.jpeg,.png"
-                          required
-                        />
-                        <p class="mt-2 text-xs leading-5 text-slate-500" id="scholarship-file-guidance">
-                          PDF, JPG, PNG 파일만 가능하며 최대 5MB까지 제출할 수 있습니다.
-                        </p>
-                      </div>
-                    </div>
-
-                    <label class="benefit-consent mt-5" for="scholarship-privacy-consent">
-                      <input id="scholarship-privacy-consent" name="privacy_consent" type="checkbox" required />
-                      <span>
-                        장학금 지급·정산을 위해 은행명, 예금주, 계좌번호, 통장사본을 수집·이용하는 데 동의합니다.
-                        수집자료는 관련 회계자료 보존기간 종료 후 지체 없이 파기합니다.
-                      </span>
-                    </label>
-
-                    <div class="mt-5 flex flex-wrap justify-end gap-3">
-                      <button class="benefit-secondary-button" id="scholarship-application-cancel" type="button">취소</button>
-                      <button class="benefit-primary-button" id="scholarship-application-submit" type="submit">
-                        <span class="apply-spinner" aria-hidden="true"></span>
-                        <span data-button-text>신청서 제출</span>
-                      </button>
-                    </div>
-                  </fieldset>
                 </form>
-                <p class="mt-3 hidden text-sm leading-6" id="scholarship-apply-message" role="status" aria-live="polite"></p>
-              </article>
-
-              <p class="mt-5 text-xs leading-5 text-slate-500">
-                표시된 정보가 실제 이수·선발 결과와 다른 경우 사업단 담당자에게 문의해주세요.
-              </p>
+                <form class="mt-6 hidden" id="scholarship-code-form" novalidate>
+                  <div class="flex flex-wrap items-end justify-between gap-2"><label class="text-sm font-semibold text-slate-800" for="scholarship-code">이메일 인증번호</label><button class="text-sm font-semibold text-blue-900 underline underline-offset-4" id="scholarship-change-email" type="button">이메일 다시 입력</button></div>
+                  <div class="mt-2 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                    <input class="apply-field rounded-lg tracking-[0.35em]" id="scholarship-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required />
+                    <button class="benefit-primary-button" id="scholarship-code-submit" type="submit"><span class="apply-spinner" aria-hidden="true"></span><span data-button-text>인증하고 조회</span></button>
+                  </div>
+                </form>
+                <p class="mt-4 hidden text-sm leading-6" id="scholarship-auth-message" role="status" aria-live="polite"></p>
+              </div>
+              <section class="mt-7 hidden" id="scholarship-dashboard" aria-live="polite">
+                <div class="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center sm:justify-between">
+                  <div><p class="text-sm text-slate-500">장학금 신청 인증 완료</p><h3 class="mt-1 text-xl font-bold text-slate-950"><span id="scholarship-student-name">학생</span>님의 장학금 현황</h3><p class="mt-1 text-sm text-slate-500" id="scholarship-session-email"></p></div>
+                  <button class="benefit-secondary-button" id="scholarship-reset" type="button">조회 종료</button>
+                </div>
+                <article class="benefit-scholarship-card mt-6">
+                  <div class="grid gap-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+                    <div>
+                      <p class="text-xs font-bold text-emerald-800">SCHOLARSHIP</p>
+                      <div class="mt-2 flex flex-wrap items-center gap-3"><h4 class="text-lg font-bold text-slate-950">장학금 지원</h4><span class="benefit-badge" id="scholarship-eligibility">정보 없음</span></div>
+                      <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-2"><div><dt class="text-slate-500">선발 회차</dt><dd class="mt-1 font-semibold text-slate-800" id="scholarship-round">-</dd></div><div><dt class="text-slate-500">신청 상태</dt><dd class="mt-1 font-semibold text-slate-800" id="scholarship-application-status">-</dd></div></dl>
+                    </div>
+                    <button class="benefit-primary-button hidden" id="scholarship-apply-button" type="button">장학금 신청</button>
+                  </div>
+                  <p class="mt-4 text-sm leading-6 text-slate-600" id="scholarship-guidance">장학금 대상 여부를 확인해주세요.</p>
+                  <form class="benefit-application-form mt-5 hidden" id="scholarship-application-form" novalidate>
+                    <fieldset>
+                      <legend class="text-base font-bold text-slate-950">장학금 지급 계좌 제출</legend>
+                      <p class="mt-2 text-sm leading-6 text-slate-600">반드시 본인 명의 계좌를 입력하고 계좌번호와 예금주를 확인할 수 있는 통장사본을 첨부해주세요.</p>
+                      <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                        <div><label class="text-sm font-semibold text-slate-800" for="scholarship-bank-name">은행</label><input class="apply-field mt-2 rounded-lg" id="scholarship-bank-name" name="bank_name" type="text" list="scholarship-bank-options" maxlength="40" autocomplete="off" placeholder="예: 전북은행" required /><datalist id="scholarship-bank-options"><option value="전북은행"></option><option value="KB국민은행"></option><option value="신한은행"></option><option value="하나은행"></option><option value="우리은행"></option><option value="NH농협은행"></option><option value="IBK기업은행"></option><option value="카카오뱅크"></option><option value="토스뱅크"></option><option value="케이뱅크"></option><option value="우체국"></option><option value="새마을금고"></option><option value="신협"></option></datalist></div>
+                        <div><label class="text-sm font-semibold text-slate-800" for="scholarship-account-holder">예금주</label><input class="apply-field mt-2 rounded-lg" id="scholarship-account-holder" name="account_holder" type="text" maxlength="40" autocomplete="off" placeholder="예: 김학생" required /></div>
+                        <div class="sm:col-span-2"><label class="text-sm font-semibold text-slate-800" for="scholarship-account-number">계좌번호</label><input class="apply-field mt-2 rounded-lg" id="scholarship-account-number" name="account_number" type="text" inputmode="numeric" minlength="8" maxlength="24" autocomplete="off" placeholder="숫자만 입력" required /></div>
+                        <div class="sm:col-span-2"><label class="text-sm font-semibold text-slate-800" for="scholarship-bankbook-file">통장사본</label><input class="benefit-file-field mt-2" id="scholarship-bankbook-file" name="bankbook_file" type="file" accept="application/pdf,image/jpeg,image/png,.pdf,.jpg,.jpeg,.png" required /><p class="mt-2 text-xs leading-5 text-slate-500" id="scholarship-file-guidance">PDF, JPG, PNG 파일만 가능하며 최대 5MB까지 제출할 수 있습니다.</p></div>
+                      </div>
+                      <label class="benefit-consent mt-5" for="scholarship-privacy-consent"><input id="scholarship-privacy-consent" name="privacy_consent" type="checkbox" required /><span>장학금 지급·정산을 위해 은행명, 예금주, 계좌번호, 통장사본을 수집·이용하는 데 동의합니다. 수집자료는 관련 회계자료 보존기간 종료 후 지체 없이 파기합니다.</span></label>
+                      <div class="mt-5 flex flex-wrap justify-end gap-3"><button class="benefit-secondary-button" id="scholarship-application-cancel" type="button">취소</button><button class="benefit-primary-button" id="scholarship-application-submit" type="submit"><span class="apply-spinner" aria-hidden="true"></span><span data-button-text>신청서 제출</span></button></div>
+                    </fieldset>
+                  </form>
+                  <p class="mt-3 hidden text-sm leading-6" id="scholarship-apply-message" role="status" aria-live="polite"></p>
+                </article>
+                <p class="mt-5 text-xs leading-5 text-slate-500">표시된 장학금 대상·신청 상태가 실제 선발 결과와 다른 경우 사업단 담당자에게 문의해주세요.</p>
+              </section>
             </section>
-          </section>
+          </div>
         </section>
       </main>
       <footer id="site-footer"></footer>
