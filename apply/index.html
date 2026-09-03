@@ -17,14 +17,14 @@
             class="inline-flex w-fit items-center justify-center border border-blue-900 px-5 py-2 text-sm font-semibold text-blue-900 hover:bg-blue-50"
             href="./status.html"
           >
-            기존 프로그램 신청 내역 조회
+            신청 확인/변경/취소
           </a>
         </div>
 
         <section class="mt-10 space-y-6" aria-labelledby="new-programs-title">
           <div>
             <h2 class="mt-1 text-2xl font-black text-slate-950" id="new-programs-title">2026년 2학기 신규 프로그램</h2>
-            <p class="mt-2 text-sm text-slate-600">접수 일정이 확정되면 프로그램별 접수 화면이 활성화됩니다.</p>
+            <p class="mt-2 text-sm text-slate-600" id="new-programs-guidance">접수 일정이 확정되면 프로그램별 접수 화면이 활성화됩니다.</p>
           </div>
 
           <article class="border-t-2 border-emerald-600 bg-emerald-50 px-4 py-5 md:px-6">
@@ -36,10 +36,10 @@
                   <p class="mt-1 text-base font-semibold text-slate-600">Defense AI Idea Challenge · 3~5명 팀 참가</p>
                 </div>
               </div>
-              <span class="inline-flex w-fit items-center bg-slate-500 px-5 py-2 text-sm font-semibold text-white">모집예정</span>
+              <span class="inline-flex w-fit items-center bg-slate-500 px-5 py-2 text-sm font-semibold text-white" data-local-application-status>모집예정</span>
             </div>
             <div class="mt-6 grid gap-4 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
-              <button class="inline-flex h-10 w-28 cursor-not-allowed items-center justify-center bg-slate-400 px-4 text-sm font-semibold text-white" type="button" disabled aria-disabled="true">접수예정</button>
+              <button class="inline-flex h-10 w-28 cursor-not-allowed items-center justify-center bg-slate-400 px-4 text-sm font-semibold text-white" type="button" disabled aria-disabled="true" data-local-application-link="./application.html?program=idea-contest">접수예정</button>
               <div class="grid gap-3 md:max-w-xl">
                 <div class="grid grid-cols-[128px_1fr] items-center border-b border-emerald-200 pb-2">
                   <span class="text-sm font-semibold text-slate-800">접수기간</span>
@@ -61,18 +61,39 @@
             <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div class="flex flex-col gap-3 md:flex-row md:items-center">
                 <span class="inline-flex h-10 w-28 items-center justify-center border border-blue-500 bg-white px-4 text-sm font-semibold text-blue-800">초급과정</span>
-                <h3 class="text-2xl font-bold text-slate-950">AI Agent 마스터</h3>
+                <h3 class="text-2xl font-bold text-slate-950">생성형 AI 첫걸음: 원리부터 실전 활용까지</h3>
               </div>
-              <span class="inline-flex w-fit items-center bg-slate-500 px-5 py-2 text-sm font-semibold text-white">모집예정</span>
+              <span class="inline-flex w-fit items-center bg-slate-500 px-5 py-2 text-sm font-semibold text-white" data-local-application-status>모집예정</span>
             </div>
             <div class="mt-6 grid gap-4 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
               <div class="flex w-28 flex-col gap-2">
-                <button class="inline-flex h-10 w-full cursor-not-allowed items-center justify-center bg-slate-400 px-4 text-sm font-semibold text-white" type="button" disabled aria-disabled="true">접수예정</button>
+                <button class="inline-flex h-10 w-full cursor-not-allowed items-center justify-center bg-slate-400 px-4 text-sm font-semibold text-white" type="button" disabled aria-disabled="true" data-local-application-link="./application.html?program=generative-ai">접수예정</button>
+                <a class="inline-flex h-10 w-full items-center justify-center border border-blue-900 bg-white px-4 text-sm font-semibold text-blue-900 hover:bg-blue-50" href="../curriculum/syllabi/초급프로그램_LLM_생성형AI_강의계획서.html" target="_blank" rel="noopener noreferrer" aria-label="생성형 AI 첫걸음: 원리부터 실전 활용까지 강의계획서">강의계획서</a>
+              </div>
+              <div class="grid gap-3 md:max-w-xl">
+                <div class="grid grid-cols-[128px_1fr] items-center border-b border-blue-200 pb-2"><span class="text-sm font-semibold text-slate-800">교육시간</span><span class="text-sm text-slate-800">60시간 (필수 42시간·선택 18시간)</span></div>
+                <div class="grid grid-cols-[128px_1fr] items-center border-b border-blue-200 pb-2"><span class="text-sm font-semibold text-slate-800">수료기준</span><span class="text-sm text-slate-800">전체 진도율 80% 이상</span></div>
+                <div class="grid grid-cols-[128px_1fr] items-center border-b border-blue-200 pb-2"><span class="text-sm font-semibold text-slate-800">교육일정</span><span class="text-sm text-slate-800">추후 공지</span></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="border-t-2 border-blue-700 bg-blue-50 px-4 py-5 md:px-6">
+            <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div class="flex flex-col gap-3 md:flex-row md:items-center">
+                <span class="inline-flex h-10 w-28 items-center justify-center border border-blue-500 bg-white px-4 text-sm font-semibold text-blue-800">초급과정</span>
+                <h3 class="text-2xl font-bold text-slate-950">AI Agent 마스터</h3>
+              </div>
+              <span class="inline-flex w-fit items-center bg-slate-500 px-5 py-2 text-sm font-semibold text-white" data-local-application-status>모집예정</span>
+            </div>
+            <div class="mt-6 grid gap-4 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
+              <div class="flex w-28 flex-col gap-2">
+                <button class="inline-flex h-10 w-full cursor-not-allowed items-center justify-center bg-slate-400 px-4 text-sm font-semibold text-white" type="button" disabled aria-disabled="true" data-local-application-link="./application.html?program=ai-agent">접수예정</button>
                 <a class="inline-flex h-10 w-full items-center justify-center border border-blue-900 bg-white px-4 text-sm font-semibold text-blue-900 hover:bg-blue-50" href="../curriculum/syllabi/AI_Agent_마스터_강의계획서.html" target="_blank" rel="noopener noreferrer" aria-label="AI Agent 마스터 강의계획서">강의계획서</a>
               </div>
               <div class="grid gap-3 md:max-w-xl">
                 <div class="grid grid-cols-[128px_1fr] items-center border-b border-blue-200 pb-2"><span class="text-sm font-semibold text-slate-800">교육시간</span><span class="text-sm text-slate-800">40시간</span></div>
-                <div class="grid grid-cols-[128px_1fr] items-center border-b border-blue-200 pb-2"><span class="text-sm font-semibold text-slate-800">수료기준</span><span class="text-sm text-slate-800">전체 진도율 80% 이상</span></div>
+                <div class="grid grid-cols-[128px_1fr] items-center border-b border-blue-200 pb-2"><span class="text-sm font-semibold text-slate-800">수료기준</span><span class="text-sm text-slate-800">출석 80% 이상 및 미니프로젝트 제출</span></div>
                 <div class="grid grid-cols-[128px_1fr] items-center border-b border-blue-200 pb-2"><span class="text-sm font-semibold text-slate-800">교육일정</span><span class="text-sm text-slate-800">추후 공지</span></div>
               </div>
             </div>
@@ -84,37 +105,16 @@
                 <span class="inline-flex h-10 w-28 items-center justify-center border border-blue-500 bg-white px-4 text-sm font-semibold text-blue-800">초급과정</span>
                 <h3 class="text-2xl font-bold text-slate-950">바이브코딩 입문</h3>
               </div>
-              <span class="inline-flex w-fit items-center bg-slate-500 px-5 py-2 text-sm font-semibold text-white">모집예정</span>
+              <span class="inline-flex w-fit items-center bg-slate-500 px-5 py-2 text-sm font-semibold text-white" data-local-application-status>모집예정</span>
             </div>
             <div class="mt-6 grid gap-4 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
               <div class="flex w-28 flex-col gap-2">
-                <button class="inline-flex h-10 w-full cursor-not-allowed items-center justify-center bg-slate-400 px-4 text-sm font-semibold text-white" type="button" disabled aria-disabled="true">접수예정</button>
+                <button class="inline-flex h-10 w-full cursor-not-allowed items-center justify-center bg-slate-400 px-4 text-sm font-semibold text-white" type="button" disabled aria-disabled="true" data-local-application-link="./application.html?program=vibe-coding">접수예정</button>
                 <a class="inline-flex h-10 w-full items-center justify-center border border-blue-900 bg-white px-4 text-sm font-semibold text-blue-900 hover:bg-blue-50" href="../curriculum/syllabi/바이브코딩_입문_강의계획서.html" target="_blank" rel="noopener noreferrer" aria-label="바이브코딩 입문 강의계획서">강의계획서</a>
               </div>
               <div class="grid gap-3 md:max-w-xl">
                 <div class="grid grid-cols-[128px_1fr] items-center border-b border-blue-200 pb-2"><span class="text-sm font-semibold text-slate-800">교육시간</span><span class="text-sm text-slate-800">40시간</span></div>
-                <div class="grid grid-cols-[128px_1fr] items-center border-b border-blue-200 pb-2"><span class="text-sm font-semibold text-slate-800">수료기준</span><span class="text-sm text-slate-800">전체 진도율 80% 이상</span></div>
-                <div class="grid grid-cols-[128px_1fr] items-center border-b border-blue-200 pb-2"><span class="text-sm font-semibold text-slate-800">교육일정</span><span class="text-sm text-slate-800">추후 공지</span></div>
-              </div>
-            </div>
-          </article>
-
-          <article class="border-t-2 border-blue-700 bg-blue-50 px-4 py-5 md:px-6">
-            <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div class="flex flex-col gap-3 md:flex-row md:items-center">
-                <span class="inline-flex h-10 w-28 items-center justify-center border border-blue-500 bg-white px-4 text-sm font-semibold text-blue-800">초급과정</span>
-                <h3 class="text-2xl font-bold text-slate-950">생성형 AI의 기본 개념·작동 원리·활용 사례</h3>
-              </div>
-              <span class="inline-flex w-fit items-center bg-slate-500 px-5 py-2 text-sm font-semibold text-white">모집예정</span>
-            </div>
-            <div class="mt-6 grid gap-4 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
-              <div class="flex w-28 flex-col gap-2">
-                <button class="inline-flex h-10 w-full cursor-not-allowed items-center justify-center bg-slate-400 px-4 text-sm font-semibold text-white" type="button" disabled aria-disabled="true">접수예정</button>
-                <a class="inline-flex h-10 w-full items-center justify-center border border-blue-900 bg-white px-4 text-sm font-semibold text-blue-900 hover:bg-blue-50" href="../curriculum/syllabi/초급프로그램_LLM_생성형AI_강의계획서.html" target="_blank" rel="noopener noreferrer" aria-label="생성형 AI의 기본 개념·작동 원리·활용 사례 강의계획서">강의계획서</a>
-              </div>
-              <div class="grid gap-3 md:max-w-xl">
-                <div class="grid grid-cols-[128px_1fr] items-center border-b border-blue-200 pb-2"><span class="text-sm font-semibold text-slate-800">교육시간</span><span class="text-sm text-slate-800">40시간</span></div>
-                <div class="grid grid-cols-[128px_1fr] items-center border-b border-blue-200 pb-2"><span class="text-sm font-semibold text-slate-800">수료기준</span><span class="text-sm text-slate-800">전체 진도율 80% 이상</span></div>
+                <div class="grid grid-cols-[128px_1fr] items-center border-b border-blue-200 pb-2"><span class="text-sm font-semibold text-slate-800">수료기준</span><span class="text-sm text-slate-800">출석 80% 이상 및 미니프로젝트 제출</span></div>
                 <div class="grid grid-cols-[128px_1fr] items-center border-b border-blue-200 pb-2"><span class="text-sm font-semibold text-slate-800">교육일정</span><span class="text-sm text-slate-800">추후 공지</span></div>
               </div>
             </div>
@@ -477,5 +477,7 @@
       <footer id="site-footer"></footer>
     </div>
     <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/application-list.js"></script>
   </body>
 </html>

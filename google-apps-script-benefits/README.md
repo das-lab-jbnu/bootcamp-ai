@@ -84,23 +84,53 @@ internal_note
 장학금 신청 중복은 `email + scholarship_round` 기준으로 차단됩니다. 사업단이 이 탭의
 `application_status`를 변경하면 같은 회차의 `benefits` 상태에도 자동 반영됩니다.
 
-경진대회와 신규 초급과정 접수를 위해 아래 탭도 함께 사용합니다.
+경진대회와 신규 초급과정 접수는 학생지원 관리대장과 분리된
+`2026 경진대회·초급과정 신청 접수 관리대장`에서 아래 다섯 탭을 사용합니다.
 
-- `idea_contest_teams`: 팀별 접수번호, 대표자, 팀명, 아이디어 주제, 접수 상태
-- `idea_contest_members`: 대표자와 팀원 3~5명의 학번, 성명, 전화번호, 이메일, 학과
+- 스프레드시트 ID: `1aRNgmAqS6IbRbn5Q-PBqnticH1gJ45c_-sahOs9nDRc`
+
+- `idea_contest_teams`: 팀별 접수번호, 대표자, 팀명, 아이디어 주제, 접수 상태와 팀 전체 방위산업육성개론 수강 현황 요약
+- `idea_contest_members`: 대표자와 팀원 3~5명의 학번, 성명, 전화번호, 이메일, 학과, 방위산업육성개론 수강 여부
+- `idea_contest_individuals`: 팀 미편성 학생의 학번, 성명, 전화번호, 이메일, 학과, 방위산업육성개론 수강 여부, 관심 아이디어 분야와 팀 매칭 상태
 - `program_applications`: AI Agent·바이브코딩·생성형 AI 기본과정의 개인별 신청정보와 생성형 AI 서비스 지원 수요
+- `application_change_log`: 신규 신청의 온라인 변경·취소 시각과 접수번호, 처리 구분, 상태 이력
 
-경진대회는 대표자 이메일 또는 팀명이 같으면 중복 접수를 차단합니다. 초급과정은
+경진대회는 대표자 이메일·팀명 또는 다른 활성 팀에 이미 등록된 팀원의 이메일·학번이
+같으면 중복 접수를 차단합니다. 초급과정은
 `program + email` 또는 `program + student_id`가 같으면 중복 접수를 차단합니다.
 접수 시 대표자 또는 신청자 이메일로 접수번호가 발송됩니다.
+팀 미편성 개인 접수는 이메일 또는 학번이 같으면 중복 접수를 차단하고,
+`idea_contest_individuals`의 `application_status`와 `matched_team_name`으로 매칭 진행 상황을 관리합니다.
+관심 아이디어 분야는 1~2개를 선택해 `idea_interest_fields`에 쉼표로 구분하여 저장하며,
+`아직 정하지 못함`은 다른 분야와 함께 선택할 수 없습니다.
+신청 확인·변경·취소는 이 관리대장에 저장된 신규 신청만 대상으로 합니다. 신청 이메일로
+인증번호를 받은 뒤 15분 동안 이용할 수 있으며, 상태가 `접수`인 신청만 변경·취소할 수 있습니다.
+팀 신청은 대표자 이메일로만 관리하고 온라인 변경 시 기존 팀원 수는 유지합니다.
+취소된 행은 삭제하지 않으며 상태와 `application_change_log` 이력을 보존합니다. 취소 후에는
+같은 학생이 같은 과정이나 경진대회에 다시 신청할 수 있습니다.
 
-신규 접수 기능을 추가한 뒤에는 `setupBenefitsSheet`를 다시 실행하여 세 탭의 헤더와
-드롭다운을 확인하고, `runBenefitsSmokeTest`를 실행한 다음 웹앱을 새 버전으로 배포합니다.
-현재 신규 프로그램은 모집예정 상태이므로 `Code.gs`의 `APPLICATIONS_OPEN`이 `false`로
-설정되어 있습니다. 접수를 시작할 때는 이 값을 `true`로 변경하고 홈페이지 접수 버튼을 활성화합니다.
+신규 접수 기능을 추가한 뒤에는 `setupApplicationSheets`를 실행하여 다섯 탭의 헤더와
+드롭다운 및 별도 관리대장 편집 트리거를 확인하고, `runBenefitsSmokeTest`를 실행한 다음
+웹앱을 새 버전으로 배포합니다. `setupBenefitsSheet`를 실행해도 별도 관리대장 설정이 함께 실행됩니다.
+현재 신규 프로그램의 실제 접수를 위해 `Code.gs`의 `APPLICATIONS_OPEN`과
+`assets/js/config.js`의 `applicationsOpen`이 모두 `true`로 설정되어 있습니다. 접수를 마감할
+때는 두 값을 모두 `false`로 변경합니다. 홈페이지 목록과 신청 화면은 이 프런트엔드 설정을 함께
+사용하므로 별도의 버튼 마크업 수정은 필요하지 않습니다.
 장학금 접수는 `SCHOLARSHIP_APPLICATIONS_OPEN`으로 별도 관리합니다. `false`인 동안에는
 홈페이지에서 장학금 인증 입력을 비활성화하고 Apps Script도 장학금 신청서 제출을 거부합니다.
 이수증 발급은 이 설정과 관계없이 이용할 수 있습니다.
+
+실제 홈페이지 접수를 열지 않고 로컬에서 Google Sheet 저장과 확인 메일까지 테스트하려면 다음 순서로 진행합니다.
+
+1. 최신 `Code.gs`와 `appsscript.json`을 저장하고 `setupApplicationSheets`를 실행합니다.
+2. `createApplicationTestKey`를 실행하고 실행 로그에 표시된 테스트 키를 복사합니다.
+3. Apps Script 웹 앱을 새 버전으로 배포합니다.
+4. `http://127.0.0.1:5500/apply/?liveTest=1&testKey=발급받은키`로 접속합니다.
+5. 프로그램의 `접수하기`를 눌러 샘플 정보를 제출하고 시트·메일을 확인합니다.
+6. 테스트를 마치면 `clearApplicationTestKey`를 실행하여 테스트 키를 즉시 폐기합니다.
+
+실제 접수를 열기 전 테스트할 때는 `APPLICATIONS_OPEN`을 `false`로 유지합니다. 테스트 키가
+없거나 일치하지 않으면 공개 API는 신청을 거부하며, 키가 포함된 URL은 공유하지 않습니다.
 
 ## 2. 이수증 자동 발급
 

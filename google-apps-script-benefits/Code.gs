@@ -4,12 +4,15 @@ const BENEFITS_CONFIG = {
   CERTIFICATE_LOG_SHEET_NAME: "certificate_issuance_log",
   IDEA_CONTEST_TEAM_SHEET_NAME: "idea_contest_teams",
   IDEA_CONTEST_MEMBER_SHEET_NAME: "idea_contest_members",
+  IDEA_CONTEST_INDIVIDUAL_SHEET_NAME: "idea_contest_individuals",
   PROGRAM_APPLICATION_SHEET_NAME: "program_applications",
+  APPLICATION_CHANGE_LOG_SHEET_NAME: "application_change_log",
+  APPLICATION_SPREADSHEET_ID: "1aRNgmAqS6IbRbn5Q-PBqnticH1gJ45c_-sahOs9nDRc",
   UPLOAD_FOLDER_NAME: "[비공개] 학생 장학금 통장사본 (웹신청 전용)",
   CERTIFICATE_TEMPLATE_ID: "19QCbrjGHuGVqJdfFldOcowVsEftsd_2y8qhFuB5NpmI",
   CERTIFICATE_OUTPUT_FOLDER_NAME: "[비공개] 학생 이수증 PDF (웹발급 전용)",
   TIMEZONE: "Asia/Seoul",
-  APPLICATIONS_OPEN: false,
+  APPLICATIONS_OPEN: true,
   SCHOLARSHIP_APPLICATIONS_OPEN: false,
   OTP_TTL_SECONDS: 600,
   OTP_RESEND_SECONDS: 60,
@@ -129,7 +132,8 @@ const IDEA_CONTEST_TEAM_HEADERS = [
   "security_ethics_pledge",
   "application_status",
   "reviewed_at",
-  "internal_note"
+  "internal_note",
+  "defense_industry_course_summary"
 ];
 
 const IDEA_CONTEST_MEMBER_HEADERS = [
@@ -140,7 +144,25 @@ const IDEA_CONTEST_MEMBER_HEADERS = [
   "student_id",
   "department",
   "phone",
-  "email"
+  "email",
+  "defense_industry_course_status"
+];
+
+const IDEA_CONTEST_INDIVIDUAL_HEADERS = [
+  "submitted_at",
+  "application_id",
+  "name",
+  "student_id",
+  "department",
+  "phone",
+  "email",
+  "privacy_consent",
+  "application_status",
+  "reviewed_at",
+  "matched_team_name",
+  "internal_note",
+  "defense_industry_course_status",
+  "idea_interest_fields"
 ];
 
 const PROGRAM_APPLICATION_HEADERS = [
@@ -169,16 +191,37 @@ const PROGRAM_APPLICATION_HEADERS = [
   "internal_note"
 ];
 
+const APPLICATION_CHANGE_LOG_HEADERS = [
+  "changed_at",
+  "application_id",
+  "application_type",
+  "email",
+  "action",
+  "changed_fields",
+  "status_before",
+  "status_after"
+];
+
 const BEGINNER_PROGRAMS = [
   "[초급프로그램] AI Agent 마스터",
   "[초급프로그램] 바이브코딩 입문",
-  "[초급프로그램] 생성형 AI의 기본 개념·작동 원리·활용"
+  "[초급프로그램] 생성형 AI 첫걸음: 원리부터 실전 활용까지"
 ];
 
-const GENDER_OPTIONS = ["남성", "여성", "응답하지 않음"];
+const GENDER_OPTIONS = ["남성", "여성"];
 const MAJOR_FIELD_OPTIONS = ["공학", "예체능", "자연과학", "의학", "인문사회"];
 const COURSE_YEAR_OPTIONS = ["2년", "3년", "4년", "5년", "6년"];
-const AI_SERVICE_OPTIONS = ["ChatGPT", "Claude", "Gemini", "서비스 종류 무관", "신청하지 않음"];
+const AI_SERVICE_OPTIONS = ["ChatGPT", "Claude", "신청하지 않음"];
+const DEFENSE_INDUSTRY_COURSE_STATUS_OPTIONS = ["수강완료", "수강중", "미수강"];
+const IDEA_INTEREST_FIELD_OPTIONS = [
+  "방산 제조 및 품질관리",
+  "정비 및 군수지원",
+  "공급망 및 산업 생태계",
+  "안전 및 위험관리",
+  "교육훈련 및 지식관리",
+  "정보보안 및 AI 신뢰성",
+  "아직 정하지 못함"
+];
 
 function doGet() {
   return jsonResponse_({
@@ -216,13 +259,46 @@ function doPost(e) {
     }
 
     if (action === "submitIdeaContestApplication") {
-      ensureApplicationsOpen_();
+      ensureApplicationsOpen_(payload);
       return jsonResponse_(submitIdeaContestApplication_(payload));
     }
 
+    if (action === "submitIdeaContestIndividualApplication") {
+      ensureApplicationsOpen_(payload);
+      return jsonResponse_(submitIdeaContestIndividualApplication_(payload));
+    }
+
     if (action === "submitProgramApplication") {
-      ensureApplicationsOpen_();
+      ensureApplicationsOpen_(payload);
       return jsonResponse_(submitProgramApplication_(payload));
+    }
+
+    if (action === "sendApplicationCode") {
+      return jsonResponse_(sendApplicationVerificationCode_(payload.email));
+    }
+
+    if (action === "verifyApplicationCode") {
+      return jsonResponse_(
+        verifyApplicationCode_(payload.email, payload.code)
+      );
+    }
+
+    if (action === "getApplications") {
+      return jsonResponse_(
+        getManagedApplicationsBySession_(payload.session_token)
+      );
+    }
+
+    if (action === "updateApplication") {
+      return jsonResponse_(
+        updateManagedApplication_(payload.session_token, payload)
+      );
+    }
+
+    if (action === "cancelApplication") {
+      return jsonResponse_(
+        cancelManagedApplication_(payload.session_token, payload.application_id)
+      );
     }
 
     throwPublicError_("invalid_request", "지원하지 않는 요청입니다.");
@@ -342,11 +418,47 @@ function setupBenefitsSheet() {
 
   setupScholarshipApplicationsSheet_(spreadsheet);
   setupCertificateIssuanceLogSheet_(spreadsheet);
-  setupIdeaContestSheets_(spreadsheet);
-  setupProgramApplicationsSheet_(spreadsheet);
+  setupApplicationSheets();
   const uploadFolder = getScholarshipUploadFolder_();
   const certificateFolder = getCertificateOutputFolder_();
-  return `설정 완료: ${spreadsheet.getName()} / 학생지원·이수증·장학금·경진대회·초급과정 접수 탭 / ${uploadFolder.name} / ${certificateFolder.name}`;
+  return `설정 완료: ${spreadsheet.getName()} / 학생지원·이수증·장학금 탭 / 별도 경진대회·초급과정 접수 관리대장 / ${uploadFolder.name} / ${certificateFolder.name}`;
+}
+
+/** 별도 경진대회·초급과정 접수 관리대장의 탭과 편집 트리거를 설정합니다. */
+function setupApplicationSheets() {
+  const spreadsheet = getApplicationSpreadsheet_();
+  setupIdeaContestSheets_(spreadsheet);
+  setupProgramApplicationsSheet_(spreadsheet);
+  setupApplicationChangeLogSheet_(spreadsheet);
+  ensureApplicationEditTrigger_(spreadsheet);
+  return `설정 완료: ${spreadsheet.getName()} / 경진대회·초급과정 접수 탭`;
+}
+
+function setupApplicationChangeLogSheet_(spreadsheet) {
+  const sheet = prepareApplicationSheet_(
+    spreadsheet,
+    BENEFITS_CONFIG.APPLICATION_CHANGE_LOG_SHEET_NAME,
+    APPLICATION_CHANGE_LOG_HEADERS,
+    [170, 200, 150, 220, 110, 320, 130, 130]
+  );
+  const rows = Math.max(sheet.getMaxRows() - 1, 1);
+  sheet.getRange(2, 1, rows, 1).setNumberFormat("yyyy-mm-dd hh:mm");
+  return sheet;
+}
+
+function ensureApplicationEditTrigger_(spreadsheet) {
+  const handlerName = "onApplicationSpreadsheetEdit";
+  const spreadsheetId = spreadsheet.getId();
+  const exists = ScriptApp.getProjectTriggers().some((trigger) =>
+    trigger.getHandlerFunction() === handlerName &&
+    trigger.getTriggerSourceId() === spreadsheetId
+  );
+  if (!exists) {
+    ScriptApp.newTrigger(handlerName)
+      .forSpreadsheet(spreadsheet)
+      .onEdit()
+      .create();
+  }
 }
 
 function setupCertificateIssuanceLogSheet_(spreadsheet) {
@@ -447,17 +559,32 @@ function setupIdeaContestSheets_(spreadsheet) {
     spreadsheet,
     BENEFITS_CONFIG.IDEA_CONTEST_TEAM_SHEET_NAME,
     IDEA_CONTEST_TEAM_HEADERS,
-    [170, 190, 160, 130, 170, 180, 150, 210, 320, 110, 130, 160, 150, 160, 260]
+    [170, 190, 160, 130, 170, 180, 150, 210, 320, 110, 130, 160, 150, 160, 260, 420],
+    [IDEA_CONTEST_TEAM_HEADERS.slice(0, -1)]
   );
   const memberSheet = prepareApplicationSheet_(
     spreadsheet,
     BENEFITS_CONFIG.IDEA_CONTEST_MEMBER_SHEET_NAME,
     IDEA_CONTEST_MEMBER_HEADERS,
-    [190, 160, 100, 120, 140, 180, 150, 210]
+    [190, 160, 100, 120, 140, 180, 150, 210, 190],
+    [IDEA_CONTEST_MEMBER_HEADERS.slice(0, -1)]
+  );
+  const individualSheet = prepareApplicationSheet_(
+    spreadsheet,
+    BENEFITS_CONFIG.IDEA_CONTEST_INDIVIDUAL_SHEET_NAME,
+    IDEA_CONTEST_INDIVIDUAL_HEADERS,
+    [170, 190, 120, 140, 180, 150, 210, 130, 160, 160, 180, 260, 190, 320],
+    [
+      IDEA_CONTEST_INDIVIDUAL_HEADERS.slice(0, -1),
+      IDEA_CONTEST_INDIVIDUAL_HEADERS.slice(0, -2)
+    ]
   );
 
   const teamRows = Math.max(teamSheet.getMaxRows() - 1, 1);
   const teamMap = getHeaderMap_(IDEA_CONTEST_TEAM_HEADERS);
+  ["representative_student_id", "representative_phone"].forEach((header) => {
+    teamSheet.getRange(2, teamMap[header] + 1, teamRows, 1).setNumberFormat("@");
+  });
   ["submitted_at", "reviewed_at"].forEach((header) => {
     teamSheet.getRange(2, teamMap[header] + 1, teamRows, 1).setNumberFormat("yyyy-mm-dd hh:mm");
   });
@@ -475,7 +602,64 @@ function setupIdeaContestSheets_(spreadsheet) {
     memberSheet.getRange(2, column, memberRows, 1).setNumberFormat("@");
   });
   setSheetListValidation_(memberSheet, IDEA_CONTEST_MEMBER_HEADERS, "member_role", ["대표자", "팀원"], memberRows);
-  return { teamSheet, memberSheet };
+  setSheetListValidation_(
+    memberSheet,
+    IDEA_CONTEST_MEMBER_HEADERS,
+    "defense_industry_course_status",
+    DEFENSE_INDUSTRY_COURSE_STATUS_OPTIONS,
+    memberRows
+  );
+
+  const individualRows = Math.max(individualSheet.getMaxRows() - 1, 1);
+  const individualMap = getHeaderMap_(IDEA_CONTEST_INDIVIDUAL_HEADERS);
+  ["student_id", "phone"].forEach((header) => {
+    individualSheet.getRange(2, individualMap[header] + 1, individualRows, 1).setNumberFormat("@");
+  });
+  ["submitted_at", "reviewed_at"].forEach((header) => {
+    individualSheet
+      .getRange(2, individualMap[header] + 1, individualRows, 1)
+      .setNumberFormat("yyyy-mm-dd hh:mm");
+  });
+  setSheetListValidation_(
+    individualSheet,
+    IDEA_CONTEST_INDIVIDUAL_HEADERS,
+    "application_status",
+    ["접수", "매칭검토중", "팀매칭완료", "취소"],
+    individualRows
+  );
+  setSheetListValidation_(
+    individualSheet,
+    IDEA_CONTEST_INDIVIDUAL_HEADERS,
+    "defense_industry_course_status",
+    DEFENSE_INDUSTRY_COURSE_STATUS_OPTIONS,
+    individualRows
+  );
+  return { teamSheet, memberSheet, individualSheet };
+}
+
+/**
+ * 실제 홈페이지 접수는 닫아둔 채 로컬 실전 테스트에 사용할 임시 키를 생성합니다.
+ * 실행 로그에 표시된 키를 로컬 URL의 testKey 값으로 사용하세요.
+ */
+function createApplicationTestKey() {
+  const testKey =
+    Utilities.getUuid().replace(/-/g, "") +
+    Utilities.getUuid().replace(/-/g, "");
+  PropertiesService.getScriptProperties().setProperty(
+    "APPLICATION_TEST_KEY",
+    testKey
+  );
+  console.log(`로컬 접수 테스트 키: ${testKey}`);
+  return testKey;
+}
+
+/** 로컬 실전 테스트가 끝난 뒤 실행하여 임시 키를 폐기합니다. */
+function clearApplicationTestKey() {
+  PropertiesService.getScriptProperties().deleteProperty(
+    "APPLICATION_TEST_KEY"
+  );
+  console.log("로컬 접수 테스트 키를 삭제했습니다.");
+  return true;
 }
 
 function setupProgramApplicationsSheet_(spreadsheet) {
@@ -508,7 +692,7 @@ function setupProgramApplicationsSheet_(spreadsheet) {
   return sheet;
 }
 
-function prepareApplicationSheet_(spreadsheet, sheetName, headers, widths) {
+function prepareApplicationSheet_(spreadsheet, sheetName, headers, widths, compatibleHeaderSets) {
   let sheet = spreadsheet.getSheetByName(sheetName);
   if (!sheet) {
     sheet = spreadsheet.insertSheet(sheetName);
@@ -520,7 +704,16 @@ function prepareApplicationSheet_(spreadsheet, sheetName, headers, widths) {
   const headerRange = sheet.getRange(1, 1, 1, headers.length);
   const currentHeaders = headerRange.getValues()[0].map(String);
   const hasExistingHeaders = currentHeaders.some((value) => value.trim());
-  if (hasExistingHeaders && currentHeaders.join("|") !== headers.join("|")) {
+  const hasCompatibleHeaders = (compatibleHeaderSets || []).some((compatibleHeaders) =>
+    currentHeaders.slice(0, compatibleHeaders.length).join("|") ===
+      compatibleHeaders.join("|") &&
+    currentHeaders.slice(compatibleHeaders.length).every((value) => !value.trim())
+  );
+  if (
+    hasExistingHeaders &&
+    currentHeaders.join("|") !== headers.join("|") &&
+    !hasCompatibleHeaders
+  ) {
     throw new Error(`${sheetName} 시트의 첫 행 구조가 다릅니다. 헤더를 확인해주세요.`);
   }
 
@@ -591,8 +784,23 @@ function runBenefitsSmokeTest() {
     .getRange(1, 1, 1, IDEA_CONTEST_MEMBER_HEADERS.length)
     .getValues()[0]
     .map(String);
+  const contestTeamHeaderMap = getHeaderMap_(contestTeamHeaders);
+  const contestTeamPhoneFormat = getIdeaContestTeamSheet_()
+    .getRange(2, contestTeamHeaderMap.representative_phone + 1)
+    .getNumberFormat();
+  const contestTeamStudentIdFormat = getIdeaContestTeamSheet_()
+    .getRange(2, contestTeamHeaderMap.representative_student_id + 1)
+    .getNumberFormat();
+  const contestIndividualHeaders = getIdeaContestIndividualSheet_()
+    .getRange(1, 1, 1, IDEA_CONTEST_INDIVIDUAL_HEADERS.length)
+    .getValues()[0]
+    .map(String);
   const programApplicationHeaders = getProgramApplicationsSheet_()
     .getRange(1, 1, 1, PROGRAM_APPLICATION_HEADERS.length)
+    .getValues()[0]
+    .map(String);
+  const applicationChangeLogHeaders = getApplicationChangeLogSheet_()
+    .getRange(1, 1, 1, APPLICATION_CHANGE_LOG_HEADERS.length)
     .getValues()[0]
     .map(String);
   const certificateLogHeaders = getCertificateIssuanceLogSheet_()
@@ -626,10 +834,18 @@ function runBenefitsSmokeTest() {
       applicationHeaders.join("|") === SCHOLARSHIP_APPLICATION_HEADERS.join("|"),
     idea_contest_team_sheet_ready:
       contestTeamHeaders.join("|") === IDEA_CONTEST_TEAM_HEADERS.join("|"),
+    idea_contest_team_identity_text_format:
+      contestTeamPhoneFormat === "@" && contestTeamStudentIdFormat === "@",
     idea_contest_member_sheet_ready:
       contestMemberHeaders.join("|") === IDEA_CONTEST_MEMBER_HEADERS.join("|"),
+    idea_contest_individual_sheet_ready:
+      contestIndividualHeaders.join("|") ===
+      IDEA_CONTEST_INDIVIDUAL_HEADERS.join("|"),
     program_application_sheet_ready:
       programApplicationHeaders.join("|") === PROGRAM_APPLICATION_HEADERS.join("|"),
+    application_change_log_sheet_ready:
+      applicationChangeLogHeaders.join("|") ===
+      APPLICATION_CHANGE_LOG_HEADERS.join("|"),
     certificate_log_sheet_ready:
       certificateLogHeaders.join("|") ===
       CERTIFICATE_ISSUANCE_HEADERS.join("|"),
@@ -668,6 +884,11 @@ function onEdit(e) {
 
   if (sheet.getName() === BENEFITS_CONFIG.IDEA_CONTEST_TEAM_SHEET_NAME) {
     handleApplicationReviewEdit_(e, IDEA_CONTEST_TEAM_HEADERS);
+    return;
+  }
+
+  if (sheet.getName() === BENEFITS_CONFIG.IDEA_CONTEST_INDIVIDUAL_SHEET_NAME) {
+    handleApplicationReviewEdit_(e, IDEA_CONTEST_INDIVIDUAL_HEADERS);
     return;
   }
 
@@ -1629,6 +1850,12 @@ function submitIdeaContestApplication_(payloadValue) {
     if (findIdeaContestApplication_(representative.email, teamName)) {
       throwPublicError_("duplicate", "이미 접수된 대표자 이메일 또는 팀명입니다.");
     }
+    if (findActiveIdeaContestParticipantConflict_(participants, "")) {
+      throwPublicError_(
+        "duplicate",
+        "대표자 또는 팀원 중 이미 다른 팀에 접수된 학생이 있습니다."
+      );
+    }
 
     const now = new Date();
     applicationId = createPublicApplicationId_("IDEA", now);
@@ -1651,7 +1878,8 @@ function submitIdeaContestApplication_(payloadValue) {
       "동의",
       "접수",
       "",
-      ""
+      "",
+      formatDefenseIndustryCourseSummary_(participants)
     ]]);
 
     const participantRows = participants.map((participant, index) => [
@@ -1662,7 +1890,8 @@ function submitIdeaContestApplication_(payloadValue) {
       participant.studentId,
       participant.department,
       participant.phone,
-      participant.email
+      participant.email,
+      participant.defenseIndustryCourseStatus
     ]);
     memberStartRow = memberSheet.getLastRow() + 1;
     memberSheet
@@ -1697,10 +1926,99 @@ function submitIdeaContestApplication_(payloadValue) {
   }
 }
 
-function ensureApplicationsOpen_() {
-  if (!BENEFITS_CONFIG.APPLICATIONS_OPEN) {
-    throwPublicError_("applications_not_open", "현재 모집예정 상태입니다. 접수 일정 확정 후 신청해주세요.");
+/** 별도 접수 관리대장에서 실행되는 설치형 편집 트리거입니다. */
+function onApplicationSpreadsheetEdit(e) {
+  onEdit(e);
+}
+
+function submitIdeaContestIndividualApplication_(payloadValue) {
+  const payload = payloadValue || {};
+  rejectBotSubmission_(payload);
+  if (payload.privacy_consent !== true) {
+    throwPublicError_("consent_required", "개인정보 수집·이용 동의가 필요합니다.");
   }
+
+  const applicant = validateContestParticipant_(payload.applicant, "신청자");
+  const ideaInterestFields = validateIdeaInterestFields_(payload.idea_interest_fields);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  let sheet = null;
+  let rowNumber = 0;
+  let applicationId = "";
+  try {
+    if (findIdeaContestIndividualApplication_(applicant.email, applicant.studentId)) {
+      throwPublicError_("duplicate", "이미 팀 매칭을 신청하셨습니다.");
+    }
+
+    const now = new Date();
+    applicationId = createPublicApplicationId_("MATCH", now);
+    sheet = getIdeaContestIndividualSheet_();
+    rowNumber = sheet.getLastRow() + 1;
+    sheet
+      .getRange(rowNumber, 1, 1, IDEA_CONTEST_INDIVIDUAL_HEADERS.length)
+      .setValues([[
+        now,
+        applicationId,
+        applicant.name,
+        applicant.studentId,
+        applicant.department,
+        applicant.phone,
+        applicant.email,
+        "동의",
+        "접수",
+        "",
+        "",
+        "",
+        applicant.defenseIndustryCourseStatus,
+        ideaInterestFields.join(", ")
+      ]]);
+
+    try {
+      sendIdeaContestIndividualConfirmation_(applicant.email, applicant.name, {
+        applicationId,
+        ideaInterestFields,
+        submittedAt: now
+      });
+    } catch (mailError) {
+      console.error(mailError && mailError.stack ? mailError.stack : mailError);
+    }
+
+    return {
+      result: "success",
+      application_id: applicationId,
+      application_type: "individual_matching",
+      application_status: "접수",
+      submitted_at: formatDate_(now, "yyyy-MM-dd HH:mm")
+    };
+  } catch (error) {
+    rollbackApplicationRows_(sheet, rowNumber, 1, applicationId, 2);
+    throw error;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function ensureApplicationsOpen_(payloadValue) {
+  if (BENEFITS_CONFIG.APPLICATIONS_OPEN) return;
+
+  const payload = payloadValue || {};
+  const configuredTestKey = String(
+    PropertiesService.getScriptProperties().getProperty(
+      "APPLICATION_TEST_KEY"
+    ) || ""
+  );
+  const suppliedTestKey = String(payload.test_key || "");
+  const validTestRequest =
+    payload.test_mode === true &&
+    configuredTestKey.length >= 20 &&
+    suppliedTestKey.length >= 20 &&
+    hashKey_(configuredTestKey) === hashKey_(suppliedTestKey);
+  if (validTestRequest) return;
+
+  throwPublicError_(
+    "applications_not_open",
+    "현재 모집예정 상태입니다. 접수 일정 확정 후 신청해주세요."
+  );
 }
 
 function ensureScholarshipApplicationsOpen_() {
@@ -1794,15 +2112,687 @@ function submitProgramApplication_(payloadValue) {
   }
 }
 
+function sendApplicationVerificationCode_(emailValue) {
+  const email = normalizeEmail_(emailValue);
+  if (!isValidEmail_(email)) {
+    throwPublicError_("invalid_request", "이메일 형식을 확인해주세요.");
+  }
+
+  const cache = CacheService.getScriptCache();
+  const emailKey = hashKey_(email);
+  const resendKey = `application_resend_${emailKey}`;
+  const standardResponse = {
+    result: "success",
+    message: "신청 내역이 있는 이메일인 경우 인증번호가 발송되었습니다."
+  };
+  if (cache.get(resendKey)) return standardResponse;
+  cache.put(resendKey, "1", BENEFITS_CONFIG.OTP_RESEND_SECONDS);
+
+  const applications = collectManagedApplicationsByEmail_(email);
+  if (!applications.length) return standardResponse;
+
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  cache.put(
+    `application_otp_${emailKey}`,
+    JSON.stringify({ code, attempts: 0 }),
+    BENEFITS_CONFIG.OTP_TTL_SECONDS
+  );
+  MailApp.sendEmail({
+    to: email,
+    subject: "[전북대 방산 AI 부트캠프] 신청 확인 인증번호",
+    body: [
+      "안녕하세요.",
+      "",
+      `프로그램 신청 확인 인증번호는 ${code}입니다.`,
+      `인증번호는 ${Math.floor(BENEFITS_CONFIG.OTP_TTL_SECONDS / 60)}분 동안 유효합니다.`,
+      "",
+      "본인이 요청하지 않았다면 이 메일을 무시해주세요."
+    ].join("\n"),
+    name: "전북대 방산 AI 부트캠프"
+  });
+  return standardResponse;
+}
+
+function verifyApplicationCode_(emailValue, codeValue) {
+  const email = normalizeEmail_(emailValue);
+  const code = String(codeValue || "").trim();
+  if (!isValidEmail_(email) || !/^\d{6}$/.test(code)) {
+    throwPublicError_("invalid_code", "인증번호가 올바르지 않거나 만료되었습니다.");
+  }
+
+  const cache = CacheService.getScriptCache();
+  const otpKey = `application_otp_${hashKey_(email)}`;
+  const cachedValue = cache.get(otpKey);
+  if (!cachedValue) {
+    throwPublicError_("invalid_code", "인증번호가 올바르지 않거나 만료되었습니다.");
+  }
+
+  const otp = JSON.parse(cachedValue);
+  if (otp.attempts >= BENEFITS_CONFIG.MAX_OTP_ATTEMPTS || otp.code !== code) {
+    otp.attempts += 1;
+    if (otp.attempts >= BENEFITS_CONFIG.MAX_OTP_ATTEMPTS) {
+      cache.remove(otpKey);
+    } else {
+      cache.put(otpKey, JSON.stringify(otp), BENEFITS_CONFIG.OTP_TTL_SECONDS);
+    }
+    throwPublicError_("invalid_code", "인증번호가 올바르지 않거나 만료되었습니다.");
+  }
+
+  const applications = collectManagedApplicationsByEmail_(email);
+  if (!applications.length) {
+    cache.remove(otpKey);
+    throwPublicError_("invalid_code", "인증번호가 올바르지 않거나 만료되었습니다.");
+  }
+
+  cache.remove(otpKey);
+  const sessionToken =
+    Utilities.getUuid().replace(/-/g, "") +
+    Utilities.getUuid().replace(/-/g, "");
+  cache.put(
+    `application_session_${sessionToken}`,
+    email,
+    BENEFITS_CONFIG.SESSION_TTL_SECONDS
+  );
+  return {
+    result: "success",
+    session_token: sessionToken,
+    expires_in: BENEFITS_CONFIG.SESSION_TTL_SECONDS,
+    applications
+  };
+}
+
+function getManagedApplicationsBySession_(sessionTokenValue) {
+  const email = getApplicationSessionEmail_(sessionTokenValue);
+  return {
+    result: "success",
+    applications: collectManagedApplicationsByEmail_(email)
+  };
+}
+
+function collectManagedApplicationsByEmail_(emailValue) {
+  const email = normalizeEmail_(emailValue);
+  const applications = [];
+
+  const teamSheet = getIdeaContestTeamSheet_();
+  const teamData = teamSheet.getDataRange().getValues();
+  if (teamData.length > 1) {
+    const teamMap = getHeaderMap_(teamData[0]);
+    teamData.slice(1).forEach((values) => {
+      if (normalizeEmail_(values[teamMap.representative_email]) !== email) return;
+      applications.push(toPublicManagedTeamApplication_(values, teamMap));
+    });
+  }
+
+  const individualSheet = getIdeaContestIndividualSheet_();
+  const individualData = individualSheet.getDataRange().getValues();
+  if (individualData.length > 1) {
+    const individualMap = getHeaderMap_(individualData[0]);
+    individualData.slice(1).forEach((values) => {
+      if (normalizeEmail_(values[individualMap.email]) !== email) return;
+      applications.push(
+        toPublicManagedIndividualApplication_(values, individualMap)
+      );
+    });
+  }
+
+  const programSheet = getProgramApplicationsSheet_();
+  const programData = programSheet.getDataRange().getValues();
+  if (programData.length > 1) {
+    const programMap = getHeaderMap_(programData[0]);
+    programData.slice(1).forEach((values) => {
+      if (normalizeEmail_(values[programMap.email]) !== email) return;
+      applications.push(toPublicManagedProgramApplication_(values, programMap));
+    });
+  }
+
+  return applications.sort((a, b) =>
+    String(b.submitted_at || "").localeCompare(String(a.submitted_at || ""))
+  );
+}
+
+function toPublicManagedTeamApplication_(values, headerMap) {
+  const applicationId = String(values[headerMap.application_id] || "").trim();
+  const participants = getContestParticipants_(applicationId).map(
+    toPublicContestParticipant_
+  );
+  const representative = participants.find((item) => item.member_role === "대표자") || {
+    member_role: "대표자",
+    name: String(values[headerMap.representative_name] || ""),
+    student_id: String(values[headerMap.representative_student_id] || ""),
+    department: String(values[headerMap.representative_department] || ""),
+    phone: String(values[headerMap.representative_phone] || ""),
+    email: normalizeEmail_(values[headerMap.representative_email]),
+    defense_industry_course_status: ""
+  };
+  const status = String(values[headerMap.application_status] || "접수").trim();
+  return {
+    application_id: applicationId,
+    application_type: "team",
+    application_type_label: "경진대회 팀 신청",
+    program: "2026 전북대학교 방산 AI 아이디어 경진대회",
+    application_status: status,
+    submitted_at: formatApplicationDate_(values[headerMap.submitted_at]),
+    can_manage: status === "접수",
+    data: {
+      team_name: String(values[headerMap.team_name] || ""),
+      idea_topic: String(values[headerMap.idea_topic] || ""),
+      representative,
+      members: participants.filter((item) => item.member_role !== "대표자")
+    }
+  };
+}
+
+function toPublicContestParticipant_(participant) {
+  return {
+    member_role: participant.member_role,
+    name: participant.name,
+    student_id: participant.student_id,
+    department: participant.department,
+    phone: participant.phone,
+    email: participant.email,
+    defense_industry_course_status:
+      participant.defense_industry_course_status
+  };
+}
+
+function toPublicManagedIndividualApplication_(values, headerMap) {
+  const status = String(values[headerMap.application_status] || "접수").trim();
+  return {
+    application_id: String(values[headerMap.application_id] || "").trim(),
+    application_type: "individual",
+    application_type_label: "경진대회 개인 신청",
+    program: "2026 전북대학교 방산 AI 아이디어 경진대회 팀 매칭",
+    application_status: status,
+    submitted_at: formatApplicationDate_(values[headerMap.submitted_at]),
+    can_manage: status === "접수",
+    data: {
+      applicant: {
+        name: String(values[headerMap.name] || ""),
+        student_id: String(values[headerMap.student_id] || ""),
+        department: String(values[headerMap.department] || ""),
+        phone: String(values[headerMap.phone] || ""),
+        email: normalizeEmail_(values[headerMap.email]),
+        defense_industry_course_status: String(
+          values[headerMap.defense_industry_course_status] || ""
+        )
+      },
+      idea_interest_fields: String(values[headerMap.idea_interest_fields] || "")
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean)
+    }
+  };
+}
+
+function toPublicManagedProgramApplication_(values, headerMap) {
+  const status = String(values[headerMap.application_status] || "접수").trim();
+  return {
+    application_id: String(values[headerMap.application_id] || "").trim(),
+    application_type: "program",
+    application_type_label: "초급과정 신청",
+    program: String(values[headerMap.program] || ""),
+    application_status: status,
+    submitted_at: formatApplicationDate_(values[headerMap.submitted_at]),
+    can_manage: status === "접수",
+    data: {
+      applicant: {
+        student_id: String(values[headerMap.student_id] || ""),
+        name: String(values[headerMap.name] || ""),
+        phone: String(values[headerMap.phone] || ""),
+        email: normalizeEmail_(values[headerMap.email]),
+        gender: String(values[headerMap.gender] || ""),
+        university: String(values[headerMap.university] || ""),
+        department: String(values[headerMap.department] || ""),
+        major_field: String(values[headerMap.major_field] || ""),
+        course_years: String(values[headerMap.course_years] || ""),
+        birth_date: formatApplicationDateValue_(values[headerMap.birth_date]),
+        admission_month: formatApplicationMonthValue_(values[headerMap.admission_month]),
+        graduation_month: formatApplicationMonthValue_(values[headerMap.graduation_month])
+      },
+      application_motivation: String(values[headerMap.application_motivation] || ""),
+      ai_experience: String(values[headerMap.ai_experience] || ""),
+      preferred_ai_service: String(values[headerMap.preferred_ai_service] || ""),
+      ai_invitation_email: normalizeEmail_(values[headerMap.ai_invitation_email])
+    }
+  };
+}
+
+function getContestParticipants_(applicationId) {
+  const sheet = getIdeaContestMemberSheet_();
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) return [];
+  const headerMap = getHeaderMap_(data[0]);
+  return data
+    .slice(1)
+    .map((values, index) => ({ values, rowNumber: index + 2 }))
+    .filter((record) =>
+      String(record.values[headerMap.application_id] || "").trim() === applicationId
+    )
+    .map((record) => ({
+      row_number: record.rowNumber,
+      member_role: String(record.values[headerMap.member_role] || ""),
+      name: String(record.values[headerMap.name] || ""),
+      student_id: String(record.values[headerMap.student_id] || ""),
+      department: String(record.values[headerMap.department] || ""),
+      phone: String(record.values[headerMap.phone] || ""),
+      email: normalizeEmail_(record.values[headerMap.email]),
+      defense_industry_course_status: String(
+        record.values[headerMap.defense_industry_course_status] || ""
+      )
+    }))
+    .sort((a, b) => {
+      if (a.member_role === "대표자") return -1;
+      if (b.member_role === "대표자") return 1;
+      return a.row_number - b.row_number;
+    });
+}
+
+function updateManagedApplication_(sessionTokenValue, payloadValue) {
+  const email = getApplicationSessionEmail_(sessionTokenValue);
+  const payload = payloadValue || {};
+  const applicationId = normalizeSingleLine_(payload.application_id);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const record = findManagedApplication_(applicationId, email);
+    ensureManagedApplicationEditable_(record);
+    if (record.type === "team") updateManagedTeamApplication_(record, payload, email);
+    if (record.type === "individual") updateManagedIndividualApplication_(record, payload, email);
+    if (record.type === "program") updateManagedProgramApplication_(record, payload, email);
+    appendApplicationChangeLog_(record, email, "변경", "신청자 입력정보", "접수", "접수");
+    try {
+      sendApplicationManagementConfirmation_(email, record, "변경");
+    } catch (mailError) {
+      console.error(mailError && mailError.stack ? mailError.stack : mailError);
+    }
+    return {
+      result: "success",
+      applications: collectManagedApplicationsByEmail_(email)
+    };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function updateManagedTeamApplication_(record, payload, email) {
+  const teamName = validateTextField_(payload.team_name, "팀명", 2, 60);
+  const ideaTopic = validateTextField_(payload.idea_topic, "아이디어 주제", 10, 600);
+  const representative = validateContestParticipant_(
+    Object.assign({}, payload.representative || {}, { email }),
+    "대표자"
+  );
+  const memberValues = Array.isArray(payload.members) ? payload.members : [];
+  const existingParticipants = getContestParticipants_(record.applicationId);
+  if (
+    memberValues.length < 2 ||
+    memberValues.length > 4 ||
+    memberValues.length + 1 !== existingParticipants.length
+  ) {
+    throwPublicError_(
+      "invalid_team",
+      "온라인 변경에서는 기존 팀원 수를 유지해주세요. 팀원 수 변경은 사업단에 문의해주세요."
+    );
+  }
+  const members = memberValues.map((value, index) =>
+    validateContestParticipant_(value, `팀원 ${index + 1}`)
+  );
+  const participants = [representative].concat(members);
+  validateUniqueParticipants_(participants);
+  if (isIdeaContestTeamNameUsed_(teamName, record.applicationId)) {
+    throwPublicError_("duplicate", "이미 사용 중인 팀명입니다.");
+  }
+  if (findActiveIdeaContestParticipantConflict_(participants, record.applicationId)) {
+    throwPublicError_(
+      "duplicate",
+      "대표자 또는 팀원 중 이미 다른 팀에 접수된 학생이 있습니다."
+    );
+  }
+
+  const values = record.values.slice();
+  const map = record.headerMap;
+  values[map.team_name] = teamName;
+  values[map.representative_name] = representative.name;
+  values[map.representative_student_id] = representative.studentId;
+  values[map.representative_department] = representative.department;
+  values[map.representative_phone] = representative.phone;
+  values[map.idea_topic] = ideaTopic;
+  values[map.member_count] = participants.length;
+  values[map.defense_industry_course_summary] =
+    formatDefenseIndustryCourseSummary_(participants);
+  record.sheet
+    .getRange(record.rowNumber, 1, 1, IDEA_CONTEST_TEAM_HEADERS.length)
+    .setValues([values]);
+
+  const memberSheet = getIdeaContestMemberSheet_();
+  existingParticipants.forEach((existing, index) => {
+    const participant = participants[index];
+    memberSheet
+      .getRange(existing.row_number, 1, 1, IDEA_CONTEST_MEMBER_HEADERS.length)
+      .setValues([[
+        record.applicationId,
+        teamName,
+        index === 0 ? "대표자" : "팀원",
+        participant.name,
+        participant.studentId,
+        participant.department,
+        participant.phone,
+        participant.email,
+        participant.defenseIndustryCourseStatus
+      ]]);
+  });
+}
+
+function updateManagedIndividualApplication_(record, payload, email) {
+  const applicant = validateContestParticipant_(
+    Object.assign({}, payload.applicant || {}, { email }),
+    "신청자"
+  );
+  if (isIndividualStudentIdUsed_(applicant.studentId, record.applicationId)) {
+    throwPublicError_("duplicate", "해당 학번으로 이미 개인 신청이 등록되어 있습니다.");
+  }
+  const interests = validateIdeaInterestFields_(payload.idea_interest_fields);
+  const values = record.values.slice();
+  const map = record.headerMap;
+  values[map.name] = applicant.name;
+  values[map.student_id] = applicant.studentId;
+  values[map.department] = applicant.department;
+  values[map.phone] = applicant.phone;
+  values[map.defense_industry_course_status] =
+    applicant.defenseIndustryCourseStatus;
+  values[map.idea_interest_fields] = interests.join(", ");
+  record.sheet
+    .getRange(record.rowNumber, 1, 1, IDEA_CONTEST_INDIVIDUAL_HEADERS.length)
+    .setValues([values]);
+}
+
+function updateManagedProgramApplication_(record, payload, email) {
+  const applicant = validateApplicant_(
+    Object.assign({}, payload.applicant || {}, { email }),
+    "신청자"
+  );
+  const program = String(record.values[record.headerMap.program] || "").trim();
+  if (isProgramStudentIdUsed_(program, applicant.studentId, record.applicationId)) {
+    throwPublicError_("duplicate", "해당 학번으로 이미 같은 과정에 신청되어 있습니다.");
+  }
+  const motivation = validateTextField_(
+    payload.application_motivation,
+    "수강 목적",
+    10,
+    1000
+  );
+  const aiExperience = validateOptionalTextField_(
+    payload.ai_experience,
+    "AI 활용 경험",
+    1000
+  );
+  const aiSupport = validateAiSupport_(payload, "신청자");
+  const values = record.values.slice();
+  const map = record.headerMap;
+  values[map.student_id] = applicant.studentId;
+  values[map.name] = applicant.name;
+  values[map.phone] = applicant.phone;
+  values[map.gender] = applicant.gender;
+  values[map.university] = applicant.university;
+  values[map.department] = applicant.department;
+  values[map.major_field] = applicant.majorField;
+  values[map.course_years] = applicant.courseYears;
+  values[map.birth_date] = applicant.birthDate;
+  values[map.admission_month] = applicant.admissionMonth;
+  values[map.graduation_month] = applicant.graduationMonth;
+  values[map.application_motivation] = motivation;
+  values[map.ai_experience] = aiExperience;
+  values[map.preferred_ai_service] = aiSupport.preferredAiService;
+  values[map.ai_invitation_email] = aiSupport.aiInvitationEmail;
+  record.sheet
+    .getRange(record.rowNumber, 1, 1, PROGRAM_APPLICATION_HEADERS.length)
+    .setValues([values]);
+}
+
+function cancelManagedApplication_(sessionTokenValue, applicationIdValue) {
+  const email = getApplicationSessionEmail_(sessionTokenValue);
+  const applicationId = normalizeSingleLine_(applicationIdValue);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const record = findManagedApplication_(applicationId, email);
+    ensureManagedApplicationEditable_(record);
+    const previousStatus = String(
+      record.values[record.headerMap.application_status] || "접수"
+    ).trim();
+    const now = new Date();
+    record.sheet
+      .getRange(record.rowNumber, record.headerMap.application_status + 1)
+      .setValue("취소");
+    record.sheet
+      .getRange(record.rowNumber, record.headerMap.reviewed_at + 1)
+      .setValue(now);
+    appendApplicationChangeLog_(
+      record,
+      email,
+      "취소",
+      "application_status",
+      previousStatus,
+      "취소"
+    );
+    try {
+      sendApplicationManagementConfirmation_(email, record, "취소");
+    } catch (mailError) {
+      console.error(mailError && mailError.stack ? mailError.stack : mailError);
+    }
+    return {
+      result: "success",
+      applications: collectManagedApplicationsByEmail_(email)
+    };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function findManagedApplication_(applicationId, email) {
+  const definitions = [
+    {
+      type: "team",
+      sheet: getIdeaContestTeamSheet_(),
+      headers: IDEA_CONTEST_TEAM_HEADERS,
+      emailHeader: "representative_email"
+    },
+    {
+      type: "individual",
+      sheet: getIdeaContestIndividualSheet_(),
+      headers: IDEA_CONTEST_INDIVIDUAL_HEADERS,
+      emailHeader: "email"
+    },
+    {
+      type: "program",
+      sheet: getProgramApplicationsSheet_(),
+      headers: PROGRAM_APPLICATION_HEADERS,
+      emailHeader: "email"
+    }
+  ];
+  for (const definition of definitions) {
+    const data = definition.sheet.getDataRange().getValues();
+    if (data.length < 2) continue;
+    const headerMap = getHeaderMap_(data[0]);
+    for (let index = 1; index < data.length; index += 1) {
+      if (String(data[index][headerMap.application_id] || "").trim() !== applicationId) continue;
+      if (normalizeEmail_(data[index][headerMap[definition.emailHeader]]) !== email) continue;
+      return {
+        type: definition.type,
+        applicationId,
+        sheet: definition.sheet,
+        rowNumber: index + 1,
+        headerMap,
+        values: data[index]
+      };
+    }
+  }
+  throwPublicError_("not_found", "신청 내역을 찾을 수 없습니다.");
+}
+
+function ensureManagedApplicationEditable_(record) {
+  const status = String(
+    record.values[record.headerMap.application_status] || ""
+  ).trim();
+  if (status !== "접수") {
+    throwPublicError_(
+      "application_locked",
+      "현재 상태에서는 온라인 변경이나 취소를 할 수 없습니다."
+    );
+  }
+}
+
+function isIdeaContestTeamNameUsed_(teamName, excludedApplicationId) {
+  const sheet = getIdeaContestTeamSheet_();
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) return false;
+  const map = getHeaderMap_(data[0]);
+  return data.slice(1).some((values) => {
+    const applicationId = String(values[map.application_id] || "").trim();
+    const status = String(values[map.application_status] || "").trim();
+    return (
+      applicationId !== excludedApplicationId &&
+      status !== "취소" &&
+      normalizeLookupText_(values[map.team_name]) === normalizeLookupText_(teamName)
+    );
+  });
+}
+
+function isIndividualStudentIdUsed_(studentId, excludedApplicationId) {
+  const sheet = getIdeaContestIndividualSheet_();
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) return false;
+  const map = getHeaderMap_(data[0]);
+  return data.slice(1).some((values) => {
+    const applicationId = String(values[map.application_id] || "").trim();
+    const status = String(values[map.application_status] || "").trim();
+    return (
+      applicationId !== excludedApplicationId &&
+      status !== "취소" &&
+      normalizeLookupText_(values[map.student_id]) === normalizeLookupText_(studentId)
+    );
+  });
+}
+
+function isProgramStudentIdUsed_(program, studentId, excludedApplicationId) {
+  const sheet = getProgramApplicationsSheet_();
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) return false;
+  const map = getHeaderMap_(data[0]);
+  return data.slice(1).some((values) => {
+    const applicationId = String(values[map.application_id] || "").trim();
+    const status = String(values[map.application_status] || "").trim();
+    return (
+      applicationId !== excludedApplicationId &&
+      status !== "취소" &&
+      String(values[map.program] || "").trim() === program &&
+      normalizeLookupText_(values[map.student_id]) === normalizeLookupText_(studentId)
+    );
+  });
+}
+
+function appendApplicationChangeLog_(
+  record,
+  email,
+  action,
+  changedFields,
+  statusBefore,
+  statusAfter
+) {
+  getApplicationChangeLogSheet_().appendRow([
+    new Date(),
+    record.applicationId,
+    record.type,
+    email,
+    action,
+    changedFields,
+    statusBefore,
+    statusAfter
+  ]);
+}
+
+function sendApplicationManagementConfirmation_(email, record, action) {
+  const labels = {
+    team: "경진대회 팀 신청",
+    individual: "경진대회 개인 신청",
+    program: "초급과정 신청"
+  };
+  MailApp.sendEmail({
+    to: email,
+    subject: `[전북대 방산 AI 부트캠프] 신청 ${action} 안내`,
+    body: [
+      "안녕하세요.",
+      "",
+      `${labels[record.type] || "프로그램 신청"}이(가) ${action} 처리되었습니다.`,
+      `접수번호: ${record.applicationId}`,
+      `처리 시각: ${formatDate_(new Date(), "yyyy-MM-dd HH:mm")}`,
+      "",
+      "본인이 처리하지 않았다면 사업단으로 문의해주세요."
+    ].join("\n"),
+    name: "전북대 방산 AI 부트캠프"
+  });
+}
+
+function getApplicationSessionEmail_(sessionTokenValue) {
+  const sessionToken = String(sessionTokenValue || "").trim();
+  if (!/^[a-f0-9]{64}$/i.test(sessionToken)) {
+    throwPublicError_("session_expired", "인증 시간이 만료되었습니다.");
+  }
+  const cache = CacheService.getScriptCache();
+  const key = `application_session_${sessionToken}`;
+  const email = cache.get(key);
+  if (!email) {
+    throwPublicError_("session_expired", "인증 시간이 만료되었습니다.");
+  }
+  cache.put(key, email, BENEFITS_CONFIG.SESSION_TTL_SECONDS);
+  return email;
+}
+
+function formatApplicationDate_(value) {
+  if (!value) return "";
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value || "");
+  return formatDate_(date, "yyyy-MM-dd HH:mm");
+}
+
+function formatApplicationDateValue_(value) {
+  if (!value) return "";
+  if (value instanceof Date) return formatDate_(value, "yyyy-MM-dd");
+  return String(value).slice(0, 10);
+}
+
+function formatApplicationMonthValue_(value) {
+  if (!value) return "";
+  if (value instanceof Date) return formatDate_(value, "yyyy-MM");
+  return String(value).slice(0, 7);
+}
+
 function findIdeaContestApplication_(representativeEmail, teamName) {
   const sheet = getIdeaContestTeamSheet_();
   const data = sheet.getDataRange().getValues();
   if (data.length < 2) return null;
   const headerMap = getHeaderMap_(data[0]);
   for (let index = 1; index < data.length; index += 1) {
+    if (String(data[index][headerMap.application_status] || "").trim() === "취소") continue;
     const sameEmail = normalizeEmail_(data[index][headerMap.representative_email]) === representativeEmail;
     const sameTeam = normalizeLookupText_(data[index][headerMap.team_name]) === normalizeLookupText_(teamName);
     if (sameEmail || sameTeam) return { rowNumber: index + 1 };
+  }
+  return null;
+}
+
+function findIdeaContestIndividualApplication_(email, studentId) {
+  const sheet = getIdeaContestIndividualSheet_();
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) return null;
+  const headerMap = getHeaderMap_(data[0]);
+  for (let index = 1; index < data.length; index += 1) {
+    if (String(data[index][headerMap.application_status] || "").trim() === "취소") continue;
+    const sameEmail =
+      normalizeEmail_(data[index][headerMap.email]) === email;
+    const sameStudentId =
+      normalizeLookupText_(data[index][headerMap.student_id]) ===
+      normalizeLookupText_(studentId);
+    if (sameEmail || sameStudentId) return { rowNumber: index + 1 };
   }
   return null;
 }
@@ -1813,10 +2803,49 @@ function findProgramApplication_(program, email, studentId) {
   if (data.length < 2) return null;
   const headerMap = getHeaderMap_(data[0]);
   for (let index = 1; index < data.length; index += 1) {
+    if (String(data[index][headerMap.application_status] || "").trim() === "취소") continue;
     if (String(data[index][headerMap.program] || "").trim() !== program) continue;
     const sameEmail = normalizeEmail_(data[index][headerMap.email]) === email;
     const sameStudentId = normalizeLookupText_(data[index][headerMap.student_id]) === normalizeLookupText_(studentId);
     if (sameEmail || sameStudentId) return { rowNumber: index + 1 };
+  }
+  return null;
+}
+
+function findActiveIdeaContestParticipantConflict_(participants, excludedApplicationId) {
+  const participantEmails = new Set(
+    participants.map((participant) => normalizeEmail_(participant.email))
+  );
+  const participantStudentIds = new Set(
+    participants.map((participant) => normalizeLookupText_(participant.studentId))
+  );
+  const teamSheet = getIdeaContestTeamSheet_();
+  const teamData = teamSheet.getDataRange().getValues();
+  if (teamData.length < 2) return null;
+  const teamMap = getHeaderMap_(teamData[0]);
+  const activeApplicationIds = new Set();
+  teamData.slice(1).forEach((values) => {
+    const applicationId = String(values[teamMap.application_id] || "").trim();
+    const status = String(values[teamMap.application_status] || "").trim();
+    if (applicationId && applicationId !== excludedApplicationId && status !== "취소") {
+      activeApplicationIds.add(applicationId);
+    }
+  });
+  if (!activeApplicationIds.size) return null;
+
+  const memberSheet = getIdeaContestMemberSheet_();
+  const memberData = memberSheet.getDataRange().getValues();
+  if (memberData.length < 2) return null;
+  const memberMap = getHeaderMap_(memberData[0]);
+  for (let index = 1; index < memberData.length; index += 1) {
+    const values = memberData[index];
+    const applicationId = String(values[memberMap.application_id] || "").trim();
+    if (!activeApplicationIds.has(applicationId)) continue;
+    const email = normalizeEmail_(values[memberMap.email]);
+    const studentId = normalizeLookupText_(values[memberMap.student_id]);
+    if (participantEmails.has(email) || participantStudentIds.has(studentId)) {
+      return { applicationId, rowNumber: index + 1 };
+    }
   }
   return null;
 }
@@ -1843,6 +2872,25 @@ function sendIdeaContestConfirmation_(email, nameValue, application) {
       "",
       "아이디어 제안서는 사업단 지정 양식으로 작성하여 별도 안내되는 기한까지 yimjc@jbnu.ac.kr로 제출해주세요.",
       "대표자를 포함한 모든 팀원은 초급과정 3개 중 1개를 홈페이지에서 개인별로 신청해야 합니다."
+    ].join("\n"),
+    name: "전북대 방산 AI 부트캠프"
+  });
+}
+
+function sendIdeaContestIndividualConfirmation_(email, nameValue, application) {
+  MailApp.sendEmail({
+    to: email,
+    subject: "[전북대 방산 AI 부트캠프] 방산 AI 아이디어 경진대회 팀 매칭 신청 안내",
+    body: [
+      `${String(nameValue || "학생").trim()}님, 안녕하세요.`,
+      "",
+      "2026 전북대학교 방산 AI 아이디어 경진대회 팀 매칭 신청이 접수되었습니다.",
+      `접수번호: ${application.applicationId}`,
+      `관심 분야: ${application.ideaInterestFields.join(", ")}`,
+      `접수 시각: ${formatDate_(application.submittedAt, "yyyy-MM-dd HH:mm")}`,
+      "",
+      "개인 접수는 참가팀 확정을 의미하지 않습니다.",
+      "팀 매칭 검토 후 입력하신 이메일 또는 전화번호로 별도 안내드립니다."
     ].join("\n"),
     name: "전북대 방산 AI 부트캠프"
   });
@@ -1939,6 +2987,9 @@ function validateContestParticipant_(value, label) {
   const phone = normalizeSingleLine_(participantValue.phone);
   const email = normalizeEmail_(participantValue.email);
   const department = validateTextField_(participantValue.department, `${label} 학과`, 2, 100);
+  const defenseIndustryCourseStatus = normalizeSingleLine_(
+    participantValue.defense_industry_course_status
+  );
   if (!/^[0-9A-Za-z-]{4,20}$/.test(studentId)) {
     throwPublicError_("invalid_team", `${label} 학번을 확인해주세요.`);
   }
@@ -1948,7 +2999,20 @@ function validateContestParticipant_(value, label) {
   if (!isValidEmail_(email)) {
     throwPublicError_("invalid_team", `${label} 이메일을 확인해주세요.`);
   }
-  return { name, studentId, phone, email, department };
+  if (!DEFENSE_INDUSTRY_COURSE_STATUS_OPTIONS.includes(defenseIndustryCourseStatus)) {
+    throwPublicError_(
+      "invalid_team",
+      `${label}의 방위산업육성개론 수강 여부를 확인해주세요.`
+    );
+  }
+  return {
+    name,
+    studentId,
+    phone,
+    email,
+    department,
+    defenseIndustryCourseStatus
+  };
 }
 
 function validateAiSupport_(value, label) {
@@ -1979,6 +3043,50 @@ function validateUniqueParticipants_(participants) {
     emailSet.add(emailKey);
     studentIdSet.add(studentIdKey);
   });
+}
+
+function formatDefenseIndustryCourseSummary_(participants) {
+  const displayNames = {
+    수강완료: "수강 완료",
+    수강중: "현재 수강 중",
+    미수강: "미수강"
+  };
+  return participants
+    .map((participant, index) => {
+      const role = index === 0 ? "대표자" : `팀원 ${index}`;
+      const status =
+        displayNames[participant.defenseIndustryCourseStatus] ||
+        participant.defenseIndustryCourseStatus;
+      return `${role} ${participant.name}: ${status}`;
+    })
+    .join(" / ");
+}
+
+function validateIdeaInterestFields_(values) {
+  const interests = Array.isArray(values)
+    ? values.map(normalizeSingleLine_).filter(Boolean)
+    : [];
+  const uniqueInterests = Array.from(new Set(interests));
+  if (
+    uniqueInterests.length < 1 ||
+    uniqueInterests.length > 2 ||
+    uniqueInterests.some((interest) => !IDEA_INTEREST_FIELD_OPTIONS.includes(interest))
+  ) {
+    throwPublicError_(
+      "invalid_request",
+      "관심 있는 아이디어 분야를 1개 이상, 최대 2개까지 선택해주세요."
+    );
+  }
+  if (
+    uniqueInterests.includes("아직 정하지 못함") &&
+    uniqueInterests.length > 1
+  ) {
+    throwPublicError_(
+      "invalid_request",
+      "아직 정하지 못함은 다른 관심 분야와 함께 선택할 수 없습니다."
+    );
+  }
+  return uniqueInterests;
 }
 
 function validateTextField_(value, label, minLength, maxLength) {
@@ -2356,6 +3464,13 @@ function getIdeaContestMemberSheet_() {
   );
 }
 
+function getIdeaContestIndividualSheet_() {
+  return getConfiguredApplicationSheet_(
+    BENEFITS_CONFIG.IDEA_CONTEST_INDIVIDUAL_SHEET_NAME,
+    "경진대회 팀 매칭 신청 시트를 찾을 수 없습니다."
+  );
+}
+
 function getProgramApplicationsSheet_() {
   return getConfiguredApplicationSheet_(
     BENEFITS_CONFIG.PROGRAM_APPLICATION_SHEET_NAME,
@@ -2363,12 +3478,31 @@ function getProgramApplicationsSheet_() {
   );
 }
 
+function getApplicationChangeLogSheet_() {
+  return getConfiguredApplicationSheet_(
+    BENEFITS_CONFIG.APPLICATION_CHANGE_LOG_SHEET_NAME,
+    "신청 변경 이력 시트를 찾을 수 없습니다."
+  );
+}
+
 function getConfiguredApplicationSheet_(sheetName, errorMessage) {
-  const sheet = getBenefitsSpreadsheet_().getSheetByName(sheetName);
+  const sheet = getApplicationSpreadsheet_().getSheetByName(sheetName);
   if (!sheet) {
     throwPublicError_("not_configured", errorMessage);
   }
   return sheet;
+}
+
+function getApplicationSpreadsheet_() {
+  try {
+    return SpreadsheetApp.openById(BENEFITS_CONFIG.APPLICATION_SPREADSHEET_ID);
+  } catch (error) {
+    console.error(error && error.stack ? error.stack : error);
+    throwPublicError_(
+      "not_configured",
+      "경진대회·초급과정 접수 관리대장에 접근할 수 없습니다."
+    );
+  }
 }
 
 function getBenefitsSpreadsheet_() {

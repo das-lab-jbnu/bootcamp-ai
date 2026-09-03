@@ -1,13 +1,25 @@
 const ProgramApplication = (() => {
   const ENDPOINT = window.getBenefitsApiEndpoint ? window.getBenefitsApiEndpoint() : "";
-  const APPLICATIONS_OPEN = false;
+  const LOCAL_PREVIEW =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1";
+  const URL_PARAMETERS = new URLSearchParams(window.location.search);
+  const LIVE_TEST_REQUESTED =
+    LOCAL_PREVIEW && URL_PARAMETERS.get("liveTest") === "1";
+  const APPLICATION_TEST_KEY = URL_PARAMETERS.get("testKey") || "";
+  const LIVE_TEST_MODE =
+    LIVE_TEST_REQUESTED && APPLICATION_TEST_KEY.length >= 20;
+  const APPLICATIONS_OPEN =
+    Boolean(window.BOOTCAMP_CONFIG && window.BOOTCAMP_CONFIG.applicationsOpen) ||
+    LOCAL_PREVIEW;
 
   const BEGINNER_PROGRAMS = [
     "[초급프로그램] AI Agent 마스터",
     "[초급프로그램] 바이브코딩 입문",
-    "[초급프로그램] 생성형 AI의 기본 개념·작동 원리·활용"
+    "[초급프로그램] 생성형 AI 첫걸음: 원리부터 실전 활용까지"
   ];
-  const AI_SERVICES = ["ChatGPT", "Claude", "Gemini", "서비스 종류 무관", "신청하지 않음"];
+  const AI_SERVICES = ["ChatGPT", "Claude", "신청하지 않음"];
+  const DEFENSE_INDUSTRY_COURSE_STATUSES = ["수강완료", "수강중", "미수강"];
 
   const PROGRAMS = {
     "idea-contest": {
@@ -22,19 +34,19 @@ const ProgramApplication = (() => {
       title: BEGINNER_PROGRAMS[0],
       label: "40시간 초급과정",
       description: "AI Agent의 기본 개념부터 활용 흐름까지 학습하는 초급 비교과프로그램입니다.",
-      guidance: "신청은 개인 단위로 진행합니다. 경진대회 참가자는 팀원별로 서로 다른 초급과정을 선택할 수 있으며, 수료 기준은 전체 진도율 80% 이상입니다."
+      guidance: "신청은 개인 단위로 진행합니다. 경진대회 참가자는 팀원별로 서로 다른 초급과정을 선택할 수 있으며, 수료 기준은 출석 80% 이상 및 미니프로젝트 제출입니다."
     },
     "vibe-coding": {
       type: "course",
       title: BEGINNER_PROGRAMS[1],
       label: "40시간 초급과정",
       description: "생성형 AI와 자연어를 활용해 아이디어를 빠르게 구현하는 바이브코딩 입문 과정입니다.",
-      guidance: "신청은 개인 단위로 진행합니다. 경진대회 참가자는 팀원별로 서로 다른 초급과정을 선택할 수 있으며, 수료 기준은 전체 진도율 80% 이상입니다."
+      guidance: "신청은 개인 단위로 진행합니다. 경진대회 참가자는 팀원별로 서로 다른 초급과정을 선택할 수 있으며, 수료 기준은 출석 80% 이상 및 미니프로젝트 제출입니다."
     },
     "generative-ai": {
       type: "course",
       title: BEGINNER_PROGRAMS[2],
-      label: "40시간 초급과정",
+      label: "60시간 초급과정",
       description: "LLM·생성형 AI의 기본 개념, 작동 원리와 올바른 활용 방법을 배우는 초급과정입니다.",
       guidance: "신청은 개인 단위로 진행합니다. 경진대회 참가자는 팀원별로 서로 다른 초급과정을 선택할 수 있으며, 수료 기준은 전체 진도율 80% 이상입니다."
     }
@@ -46,7 +58,13 @@ const ProgramApplication = (() => {
     typeLabel: "#application-type-label",
     description: "#application-description",
     guidance: "#application-guidance",
+    liveTestNotice: "#live-test-notice",
     slug: "#program-slug",
+    defenseIndustryCourseField: "#defense-industry-course-field",
+    contestEntryType: "#contest-entry-type",
+    contestIndividualFields: "#contest-individual-fields",
+    ideaInterestFields: "[data-idea-interest]",
+    ideaInterestGuidance: "#idea-interest-guidance",
     contestFields: "#contest-fields",
     courseFields: "#course-fields",
     members: "#team-members",
@@ -76,6 +94,7 @@ const ProgramApplication = (() => {
     document.querySelector(SELECTORS.description).textContent = currentProgram.description;
     document.querySelector(SELECTORS.guidance).textContent = currentProgram.guidance;
     document.querySelector(SELECTORS.slug).value = slug;
+    configureLiveTestNotice();
 
     if (currentProgram.type === "contest") {
       setupContestForm();
@@ -92,7 +111,11 @@ const ProgramApplication = (() => {
 
   function setApplicationPending(form) {
     form.querySelectorAll("input, select, textarea, button").forEach((element) => {
-      element.disabled = true;
+      const isContestTypePreview =
+        currentProgram &&
+        currentProgram.type === "contest" &&
+        element.matches('[name="contest_entry_type"]');
+      element.disabled = !isContestTypePreview;
     });
     const submitText = form.querySelector("[data-submit-text]");
     if (submitText) submitText.textContent = "접수예정";
@@ -103,17 +126,124 @@ const ProgramApplication = (() => {
   }
 
   function setupContestForm() {
+    const entryTypeSection = document.querySelector(SELECTORS.contestEntryType);
     const contestFields = document.querySelector(SELECTORS.contestFields);
-    contestFields.classList.remove("hidden");
-    setRequired(contestFields, true);
-    document.querySelector("#applicant-role-help").textContent = "팀 대표자 본인의 정보를 입력해주세요.";
+    entryTypeSection.classList.remove("hidden");
+    document.querySelector(SELECTORS.defenseIndustryCourseField).classList.remove("hidden");
+    document.querySelector("#defense-industry-course-status").required = true;
     document.querySelector("#department-label").textContent = "학과";
 
-    document.querySelector("#security-pledge-wrap").classList.remove("hidden");
-    document.querySelector("#security-pledge").required = true;
+    entryTypeSection.querySelectorAll('[name="contest_entry_type"]').forEach((radio) => {
+      radio.addEventListener("change", updateContestEntryType);
+    });
+    document.querySelectorAll(SELECTORS.ideaInterestFields).forEach((checkbox) => {
+      checkbox.addEventListener("change", handleIdeaInterestChange);
+    });
     document.querySelector(SELECTORS.addMember).addEventListener("click", addMember);
     addMember();
     addMember();
+
+    const requestedEntryType = new URLSearchParams(window.location.search).get("entry");
+    if (requestedEntryType === "individual") {
+      entryTypeSection.querySelector('[value="individual"]').checked = true;
+    }
+    updateContestEntryType();
+  }
+
+  function configureLiveTestNotice() {
+    if (!LIVE_TEST_REQUESTED) return;
+    const notice = document.querySelector(SELECTORS.liveTestNotice);
+    notice.classList.remove("hidden");
+    if (LIVE_TEST_MODE) {
+      notice.textContent =
+        "로컬 실전 테스트 모드입니다. 접수하기를 누르면 입력 정보가 실제 Google Sheet에 저장되고 접수 확인 이메일이 발송됩니다.";
+      notice.classList.add("border-red-300", "bg-red-50", "text-red-800");
+      return;
+    }
+    notice.textContent =
+      "실전 테스트 키가 없거나 올바르지 않습니다. 현재 제출은 미리보기로만 처리되며 Google Sheet에 저장되지 않습니다.";
+    notice.classList.add("border-amber-300", "bg-amber-50", "text-amber-900");
+  }
+
+  function updateContestEntryType() {
+    const selected = document.querySelector('[name="contest_entry_type"]:checked');
+    const entryType = selected ? selected.value : "team";
+    const isTeam = entryType === "team";
+    const contestFields = document.querySelector(SELECTORS.contestFields);
+    const individualFields = document.querySelector(SELECTORS.contestIndividualFields);
+    const securityWrap = document.querySelector("#security-pledge-wrap");
+    const securityPledge = document.querySelector("#security-pledge");
+
+    contestFields.classList.toggle("hidden", !isTeam);
+    individualFields.classList.toggle("hidden", isTeam);
+    setRequired(contestFields, isTeam);
+    securityWrap.classList.toggle("hidden", !isTeam);
+    securityPledge.required = isTeam;
+    if (!isTeam) securityPledge.checked = false;
+
+    document.querySelector("#common-info-title").textContent =
+      isTeam ? "대표자 기본정보" : "개인 신청자 기본정보";
+    document.querySelector("#applicant-role-help").textContent = isTeam
+      ? "팀 대표자 본인의 정보를 입력해주세요."
+      : "팀 매칭 안내를 받을 학생 본인의 정보를 입력해주세요.";
+    document.querySelector(SELECTORS.guidance).textContent = isTeam
+      ? "팀 대표자 1명이 대표자를 포함한 3~5명의 기본정보를 제출합니다. 아이디어 제안서는 지정 양식으로 별도 제출합니다."
+      : "아직 팀을 편성하지 못한 학생은 개인 기본정보를 제출하면 사업단에서 팀 매칭 절차를 별도로 안내합니다.";
+    validateIdeaInterestFields();
+  }
+
+  function handleIdeaInterestChange(event) {
+    const selectedCheckbox = event.currentTarget;
+    const checkboxes = Array.from(document.querySelectorAll(SELECTORS.ideaInterestFields));
+    const undecided = checkboxes.find((checkbox) => checkbox.hasAttribute("data-undecided"));
+
+    if (selectedCheckbox === undecided && selectedCheckbox.checked) {
+      checkboxes.forEach((checkbox) => {
+        if (checkbox !== undecided) checkbox.checked = false;
+      });
+    } else if (selectedCheckbox.checked && undecided) {
+      undecided.checked = false;
+    }
+
+    const selected = checkboxes.filter((checkbox) => checkbox.checked);
+    if (selected.length > 2) {
+      selectedCheckbox.checked = false;
+      setIdeaInterestGuidance("관심 분야는 최대 2개까지 선택할 수 있습니다.", true);
+      return;
+    }
+    validateIdeaInterestFields();
+  }
+
+  function validateIdeaInterestFields() {
+    const checkboxes = Array.from(document.querySelectorAll(SELECTORS.ideaInterestFields));
+    if (!checkboxes.length) return true;
+    const selectedEntryType = document.querySelector('[name="contest_entry_type"]:checked');
+    const isIndividual =
+      currentProgram &&
+      currentProgram.type === "contest" &&
+      selectedEntryType &&
+      selectedEntryType.value === "individual";
+    const selected = checkboxes.filter((checkbox) => checkbox.checked);
+    const isValid = !isIndividual || (selected.length >= 1 && selected.length <= 2);
+
+    checkboxes[0].setCustomValidity(
+      isValid ? "" : "관심 있는 아이디어 분야를 1개 이상 선택해주세요."
+    );
+    setIdeaInterestGuidance(
+      isValid
+        ? "※ 팀 매칭을 위한 참고자료로 활용되며, 최대 2개까지 선택할 수 있습니다."
+        : "관심 있는 아이디어 분야를 1개 이상 선택해주세요.",
+      !isValid
+    );
+    return isValid;
+  }
+
+  function setIdeaInterestGuidance(message, isError) {
+    const guidance = document.querySelector(SELECTORS.ideaInterestGuidance);
+    guidance.textContent = message;
+    guidance.classList.toggle("font-semibold", isError);
+    guidance.classList.toggle("text-red-700", isError);
+    guidance.classList.toggle("text-slate-600", !isError);
   }
 
   function setupCourseForm() {
@@ -158,6 +288,22 @@ const ProgramApplication = (() => {
         ${memberInput(index, "phone", "전화번호", "tel", 20, "010-0000-0000")}
         ${memberInput(index, "email", "이메일", "email", 254)}
         ${memberInput(index, "department", "학과", "text", 100)}
+        ${memberCourseStatusSelect(index)}
+      </div>
+    `;
+  }
+
+  function memberCourseStatusSelect(index) {
+    const options = DEFENSE_INDUSTRY_COURSE_STATUSES
+      .map((status) => `<option value="${status}">${status === "수강중" ? "현재 수강 중" : status === "수강완료" ? "수강 완료" : status}</option>`)
+      .join("");
+    return `
+      <div class="grid gap-2">
+        <label class="text-sm font-semibold text-slate-800" for="member-${index}-defense-industry-course-status">방위산업육성개론 수강 여부</label>
+        <select class="apply-field" id="member-${index}-defense-industry-course-status" data-field="defense_industry_course_status" required>
+          <option value="">선택</option>
+          ${options}
+        </select>
       </div>
     `;
   }
@@ -192,9 +338,24 @@ const ProgramApplication = (() => {
     resetMessage();
 
     const datesValid = validateMonthOrder(form);
-    if (!datesValid || !form.checkValidity()) {
+    const ideaInterestsValid = validateIdeaInterestFields();
+    if (!datesValid || !ideaInterestsValid || !form.checkValidity()) {
       form.reportValidity();
-      showMessage("필수 항목과 날짜 형식을 확인해주세요.", "error");
+      showMessage(
+        ideaInterestsValid
+          ? "필수 항목과 날짜 형식을 확인해주세요."
+          : "관심 있는 아이디어 분야를 1개 이상 선택해주세요.",
+        "error"
+      );
+      return;
+    }
+
+    const payload = buildPayload(form);
+    if (LOCAL_PREVIEW && !LIVE_TEST_MODE) {
+      showMessage(
+        "로컬 미리보기 확인이 완료되었습니다. 입력 정보는 Google Sheet로 전송되지 않았습니다.",
+        "success"
+      );
       return;
     }
     if (!ENDPOINT) {
@@ -202,7 +363,6 @@ const ProgramApplication = (() => {
       return;
     }
 
-    const payload = buildPayload(form);
     setSubmitting(true);
     try {
       const result = await postJson(payload);
@@ -226,10 +386,24 @@ const ProgramApplication = (() => {
     const basicApplicant = buildBasicApplicant(formData);
     const common = {
       website: field(formData, "website"),
-      privacy_consent: formData.get("privacy_consent") === "on"
+      privacy_consent: formData.get("privacy_consent") === "on",
+      test_mode: LIVE_TEST_MODE,
+      test_key: LIVE_TEST_MODE ? APPLICATION_TEST_KEY : ""
     };
 
     if (currentProgram.type === "contest") {
+      const entryType = field(formData, "contest_entry_type") || "team";
+      if (entryType === "individual") {
+        return {
+          action: "submitIdeaContestIndividualApplication",
+          ...common,
+          applicant: basicApplicant,
+          idea_interest_fields: formData
+            .getAll("idea_interest_fields")
+            .filter((value) => typeof value === "string")
+            .map((value) => value.trim())
+        };
+      }
       return {
         action: "submitIdeaContestApplication",
         ...common,
@@ -260,7 +434,8 @@ const ProgramApplication = (() => {
       name: field(formData, "name"),
       phone: field(formData, "phone"),
       email: field(formData, "email"),
-      department: field(formData, "department")
+      department: field(formData, "department"),
+      defense_industry_course_status: field(formData, "defense_industry_course_status")
     };
   }
 
@@ -284,7 +459,8 @@ const ProgramApplication = (() => {
       name: value("name"),
       phone: value("phone"),
       email: value("email"),
-      department: value("department")
+      department: value("department"),
+      defense_industry_course_status: value("defense_industry_course_status")
     };
   }
 
@@ -390,6 +566,11 @@ const ProgramApplication = (() => {
     }
     if (code === "consent_required") return "필수 동의 항목을 확인해주세요.";
     if (code === "invalid_program") return "현재 신청할 수 없는 프로그램입니다.";
+    if (code === "applications_not_open") {
+      return LIVE_TEST_REQUESTED
+        ? "Apps Script의 테스트 키가 일치하지 않습니다. 테스트 키 생성과 웹 앱 새 버전 배포 여부를 확인해주세요."
+        : "현재 모집예정 상태입니다.";
+    }
     if (error && error.name === "AbortError") return "접수 확인 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.";
     return "접수 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
   }
