@@ -436,7 +436,7 @@ const StudentBenefits = (() => {
         await Promise.resolve();
         state.benefits[level] = {
           ...state.benefits[level],
-          certificate_number: "JBNU-DAI-2026-0001",
+          certificate_number: level === "basic" ? "2026-초-0001" : "2026-중-0001",
           can_issue: true
         };
         renderCompletion(level, state.benefits[level]);
