@@ -285,7 +285,7 @@ const ProgramApplication = (() => {
       <div class="grid gap-4 md:grid-cols-2">
         ${memberInput(index, "student_id", "학번", "text", 20)}
         ${memberInput(index, "name", "성명", "text", 50)}
-        ${memberInput(index, "phone", "전화번호", "tel", 20, "010-0000-0000")}
+        ${memberInput(index, "phone", "전화번호", "tel", 20, "01012345678")}
         ${memberInput(index, "email", "이메일", "email", 254)}
         ${memberInput(index, "department", "학과", "text", 100)}
         ${memberCourseStatusSelect(index)}
@@ -316,6 +316,7 @@ const ProgramApplication = (() => {
       <div class="grid gap-2">
         <label class="text-sm font-semibold text-slate-800" for="member-${index}-${field}">${label}</label>
         <input class="apply-field" id="member-${index}-${field}" data-field="${field}" type="${type}"${max}${hint}${initial} required />
+        ${field === "phone" ? '<p class="text-xs text-slate-500">하이픈(-) 없이 숫자만 입력해주세요.</p>' : ""}
       </div>
     `;
   }

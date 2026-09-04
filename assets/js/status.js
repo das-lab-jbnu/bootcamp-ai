@@ -343,7 +343,10 @@ const ApplicationManagement = (() => {
   }
 
   function inputField(name, label, value, type, attributes) {
-    return `<div class="grid gap-2"><label class="text-sm font-semibold text-slate-800" for="edit-${escapeAttribute(name)}">${escapeHtml(label)}</label><input class="apply-field" id="edit-${escapeAttribute(name)}" name="${escapeAttribute(name)}" type="${escapeAttribute(type)}" value="${escapeAttribute(value)}" ${attributes || ""} /></div>`;
+    const phoneGuidance = name === "phone" || name.endsWith("_phone")
+      ? '<p class="text-xs text-slate-500">하이픈(-) 없이 숫자만 입력해주세요.</p>'
+      : "";
+    return `<div class="grid gap-2"><label class="text-sm font-semibold text-slate-800" for="edit-${escapeAttribute(name)}">${escapeHtml(label)}</label><input class="apply-field" id="edit-${escapeAttribute(name)}" name="${escapeAttribute(name)}" type="${escapeAttribute(type)}" value="${escapeAttribute(value)}" ${attributes || ""} />${phoneGuidance}</div>`;
   }
 
   function readonlyField(name, label, value) {

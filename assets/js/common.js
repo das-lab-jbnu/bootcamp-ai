@@ -54,6 +54,7 @@ function renderHeaderFooter() {
       <div class="max-w-6xl mx-auto px-4 py-8 text-sm">
         <p class="font-semibold">전북대학교 방산 AI 인재양성 부트캠프 사업단</p>
         <p class="mt-2 text-slate-300">전북특별자치도 전주시 덕진구 백제대로 567</p>
+        <p class="mt-1 text-slate-300">문의처 <a class="hover:text-white hover:underline" href="tel:063-219-5777">063-219-5777</a> <a class="ml-2 hover:text-white hover:underline" href="mailto:yimjc@jbnu.ac.kr">yimjc@jbnu.ac.kr</a></p>
         <p class="mt-1 text-slate-400">© ${year} Jeonbuk National University. All rights reserved.</p>
       </div>
     </div>
