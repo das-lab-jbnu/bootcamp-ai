@@ -167,6 +167,14 @@ PDF는 Drive 링크나 파일 ID를 공개하지 않습니다. Apps Script가 �
 `certificate_issuance_log` 탭에도 발급 이력을 추가합니다. 이미 유효한 PDF가 있으면
 새 번호를 만들지 않고 기존 파일을 다시 제공합니다.
 
+학생이 홈페이지 이메일 인증 후 이수증을 발급하면 `certificate_access_log` 탭에
+발급 시각, 학생 이메일·학번·성명, 과정, 이수증 번호, PDF 파일 ID와 전달 방식을
+기록합니다. 사업단이 미리 발급하지 않은 이수증은 학생의 최초 요청 때 PDF를 생성하므로
+`certificate_issuance_log`와 `certificate_access_log`에 모두 기록됩니다. 이후 요청은
+기존 PDF를 재사용하고 `certificate_access_log`에 새로운 행만 추가합니다. 이 기록은
+Apps Script가 인증된 학생에게 PDF 데이터를 정상적으로 준비한 사실을 의미하며,
+학생 기기에서 파일 열기나 저장이 완료되었는지는 확인하지 않습니다.
+
 사업단이 홈페이지 이메일 인증 없이 직접 발급할 때는 별도 관리 메뉴 대신
 `Code.gs` 상단의 `ADMIN_CERTIFICATE_ISSUE`를 사용합니다.
 

@@ -2,6 +2,7 @@ const BENEFITS_CONFIG = {
   SHEET_NAME: "benefits",
   APPLICATION_SHEET_NAME: "scholarship_applications",
   CERTIFICATE_LOG_SHEET_NAME: "certificate_issuance_log",
+  CERTIFICATE_ACCESS_LOG_SHEET_NAME: "certificate_access_log",
   IDEA_CONTEST_TEAM_SHEET_NAME: "idea_contest_teams",
   IDEA_CONTEST_MEMBER_SHEET_NAME: "idea_contest_members",
   IDEA_CONTEST_INDIVIDUAL_SHEET_NAME: "idea_contest_individuals",
@@ -97,6 +98,21 @@ const CERTIFICATE_ISSUANCE_HEADERS = [
   "pdf_url",
   "status",
   "internal_note"
+];
+
+const CERTIFICATE_ACCESS_HEADERS = [
+  "accessed_at",
+  "access_id",
+  "email",
+  "student_id",
+  "name",
+  "level",
+  "course_name",
+  "certificate_number",
+  "delivery_type",
+  "pdf_file_id",
+  "source",
+  "result"
 ];
 
 const SCHOLARSHIP_APPLICATION_HEADERS = [
@@ -418,6 +434,7 @@ function setupBenefitsSheet() {
 
   setupScholarshipApplicationsSheet_(spreadsheet);
   setupCertificateIssuanceLogSheet_(spreadsheet);
+  setupCertificateAccessLogSheet_(spreadsheet);
   setupApplicationSheets();
   const uploadFolder = getScholarshipUploadFolder_();
   const certificateFolder = getCertificateOutputFolder_();
@@ -478,6 +495,38 @@ function setupCertificateIssuanceLogSheet_(spreadsheet) {
     CERTIFICATE_ISSUANCE_HEADERS,
     "status",
     ["발급완료", "폐기"],
+    rows
+  );
+  return sheet;
+}
+
+function setupCertificateAccessLogSheet_(spreadsheet) {
+  const sheet = prepareApplicationSheet_(
+    spreadsheet,
+    BENEFITS_CONFIG.CERTIFICATE_ACCESS_LOG_SHEET_NAME,
+    CERTIFICATE_ACCESS_HEADERS,
+    [165, 290, 220, 140, 120, 100, 280, 190, 160, 220, 180, 140]
+  );
+  const rows = Math.max(sheet.getMaxRows() - 1, 1);
+  const headerMap = getHeaderMap_(CERTIFICATE_ACCESS_HEADERS);
+  sheet
+    .getRange(2, headerMap.accessed_at + 1, rows, 1)
+    .setNumberFormat("yyyy-mm-dd hh:mm:ss");
+  sheet
+    .getRange(2, headerMap.student_id + 1, rows, 1)
+    .setNumberFormat("@");
+  setSheetListValidation_(
+    sheet,
+    CERTIFICATE_ACCESS_HEADERS,
+    "delivery_type",
+    ["새 PDF 생성", "기존 PDF 재사용"],
+    rows
+  );
+  setSheetListValidation_(
+    sheet,
+    CERTIFICATE_ACCESS_HEADERS,
+    "result",
+    ["발급완료"],
     rows
   );
   return sheet;
@@ -807,6 +856,10 @@ function runBenefitsSmokeTest() {
     .getRange(1, 1, 1, CERTIFICATE_ISSUANCE_HEADERS.length)
     .getValues()[0]
     .map(String);
+  const certificateAccessLogHeaders = getCertificateAccessLogSheet_()
+    .getRange(1, 1, 1, CERTIFICATE_ACCESS_HEADERS.length)
+    .getValues()[0]
+    .map(String);
   const uploadFolder = getScholarshipUploadFolder_();
   const certificateFolder = getCertificateOutputFolder_();
   const templateCheck = validateCertificateTemplate_();
@@ -849,6 +902,9 @@ function runBenefitsSmokeTest() {
     certificate_log_sheet_ready:
       certificateLogHeaders.join("|") ===
       CERTIFICATE_ISSUANCE_HEADERS.join("|"),
+    certificate_access_log_sheet_ready:
+      certificateAccessLogHeaders.join("|") ===
+      CERTIFICATE_ACCESS_HEADERS.join("|"),
     certificate_template_ready: templateCheck.missing.length === 0,
     upload_folder_ready:
       uploadFolder.id ===
@@ -1100,6 +1156,17 @@ function issueCertificate_(sessionTokenValue, levelValue) {
     certificateNumber,
     record.values.name
   );
+  appendCertificateAccessLog_({
+    accessedAt: new Date(),
+    email,
+    studentId: record.values.student_id,
+    name: record.values.name,
+    level: levelConfig.label,
+    courseName: record.values[levelConfig.courseNameHeader],
+    certificateNumber,
+    deliveryType: issueResult.reused ? "기존 PDF 재사용" : "새 PDF 생성",
+    pdfFileId: record.values[levelConfig.fileIdHeader]
+  });
 
   return {
     result: "success",
@@ -1114,6 +1181,30 @@ function issueCertificate_(sessionTokenValue, levelValue) {
     },
     benefits: toPublicBenefits_(record.values)
   };
+}
+
+function appendCertificateAccessLog_(entry) {
+  const accessedAt = entry.accessedAt || new Date();
+  const accessId = `CERT-ACCESS-${Utilities.formatDate(
+    accessedAt,
+    BENEFITS_CONFIG.TIMEZONE,
+    "yyyyMMdd-HHmmss"
+  )}-${Utilities.getUuid().replace(/-/g, "").slice(0, 8).toUpperCase()}`;
+  getCertificateAccessLogSheet_().appendRow([
+    accessedAt,
+    accessId,
+    normalizeEmail_(entry.email),
+    normalizeSingleLine_(entry.studentId),
+    normalizeSingleLine_(entry.name),
+    normalizeSingleLine_(entry.level),
+    normalizeSingleLine_(entry.courseName),
+    normalizeSingleLine_(entry.certificateNumber),
+    normalizeSingleLine_(entry.deliveryType),
+    String(entry.pdfFileId || "").trim(),
+    "홈페이지 학생 발급",
+    "발급완료"
+  ]);
+  return accessId;
 }
 
 /**
@@ -3445,6 +3536,20 @@ function getCertificateIssuanceLogSheet_() {
     throwPublicError_(
       "not_configured",
       "이수증 발급 이력 시트를 찾을 수 없습니다."
+    );
+  }
+  return sheet;
+}
+
+function getCertificateAccessLogSheet_() {
+  const spreadsheet = getBenefitsSpreadsheet_();
+  const sheet = spreadsheet.getSheetByName(
+    BENEFITS_CONFIG.CERTIFICATE_ACCESS_LOG_SHEET_NAME
+  );
+  if (!sheet) {
+    throwPublicError_(
+      "not_configured",
+      "학생 이수증 발급 기록 시트를 찾을 수 없습니다."
     );
   }
   return sheet;
