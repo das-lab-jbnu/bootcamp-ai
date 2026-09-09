@@ -16,7 +16,10 @@
         <section class="mt-5 overflow-hidden border border-slate-200 bg-white shadow-sm">
           <div class="bg-gradient-to-r from-blue-950 to-slate-900 px-5 py-7 text-white md:px-8">
             <p class="text-sm font-semibold text-cyan-200" id="application-type-label">프로그램 접수</p>
-            <h1 class="mt-2 text-2xl font-black md:text-3xl" id="application-title">신청 정보를 불러오는 중입니다.</h1>
+            <div class="mt-2 flex flex-wrap items-center gap-3">
+              <h1 class="text-2xl font-black md:text-3xl" id="application-title">신청 정보를 불러오는 중입니다.</h1>
+              <span class="hidden w-fit border border-cyan-300 bg-cyan-100/10 px-3 py-1 text-sm font-bold text-cyan-100" id="application-ai-service-badge"></span>
+            </div>
             <p class="mt-3 max-w-3xl text-sm leading-6 text-slate-200" id="application-description"></p>
           </div>
 
@@ -194,12 +197,12 @@
               </div>
               <div class="grid gap-4 border border-blue-100 bg-blue-50 p-4">
                 <div>
-                  <h3 class="font-bold text-blue-950">생성형 AI 서비스 지원</h3>
-                  <p class="mt-1 text-sm text-slate-600">교육에 사용할 생성형 AI 서비스 지원 희망 여부를 선택해주세요.</p>
+                  <h3 class="font-bold text-blue-950" id="course-ai-support-title">생성형 AI 서비스 지원</h3>
+                  <p class="mt-1 text-sm text-slate-600" id="course-ai-support-description">교육에 사용할 생성형 AI 서비스 지원 희망 여부를 선택해주세요.</p>
                 </div>
                 <div class="grid gap-4 md:grid-cols-2">
                   <div class="grid gap-2">
-                    <label class="text-sm font-semibold text-slate-800" for="course-ai-service">희망 AI 서비스</label>
+                    <label class="text-sm font-semibold text-slate-800" for="course-ai-service" id="course-ai-service-label">희망 AI 서비스</label>
                     <select class="apply-field" id="course-ai-service" name="preferred_ai_service"></select>
                   </div>
                   <div class="grid gap-2">

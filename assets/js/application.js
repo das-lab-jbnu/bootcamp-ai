@@ -34,14 +34,16 @@ const ProgramApplication = (() => {
       title: BEGINNER_PROGRAMS[0],
       label: "40시간 초급과정",
       description: "AI Agent의 기본 개념부터 활용 흐름까지 학습하는 초급 비교과프로그램입니다.",
-      guidance: "신청은 개인 단위로 진행합니다. 경진대회 참가자는 팀원별로 서로 다른 초급과정을 선택할 수 있으며, 수료 기준은 출석 80% 이상 및 미니프로젝트 제출입니다."
+      guidance: "신청은 개인 단위로 진행합니다. 경진대회 참가자는 팀원별로 서로 다른 초급과정을 선택할 수 있으며, 수료 기준은 출석 80% 이상 및 미니프로젝트 제출입니다.",
+      aiService: "ChatGPT"
     },
     "vibe-coding": {
       type: "course",
       title: BEGINNER_PROGRAMS[1],
       label: "40시간 초급과정",
       description: "생성형 AI와 자연어를 활용해 아이디어를 빠르게 구현하는 바이브코딩 입문 과정입니다.",
-      guidance: "신청은 개인 단위로 진행합니다. 경진대회 참가자는 팀원별로 서로 다른 초급과정을 선택할 수 있으며, 수료 기준은 출석 80% 이상 및 미니프로젝트 제출입니다."
+      guidance: "신청은 개인 단위로 진행합니다. 경진대회 참가자는 팀원별로 서로 다른 초급과정을 선택할 수 있으며, 수료 기준은 출석 80% 이상 및 미니프로젝트 제출입니다.",
+      aiService: "Claude"
     },
     "generative-ai": {
       type: "course",
@@ -56,6 +58,7 @@ const ProgramApplication = (() => {
     form: "#application-form",
     title: "#application-title",
     typeLabel: "#application-type-label",
+    aiServiceBadge: "#application-ai-service-badge",
     description: "#application-description",
     guidance: "#application-guidance",
     liveTestNotice: "#live-test-notice",
@@ -94,6 +97,7 @@ const ProgramApplication = (() => {
     document.querySelector(SELECTORS.description).textContent = currentProgram.description;
     document.querySelector(SELECTORS.guidance).textContent = currentProgram.guidance;
     document.querySelector(SELECTORS.slug).value = slug;
+    configureAiServiceBadge();
     configureLiveTestNotice();
 
     if (currentProgram.type === "contest") {
@@ -248,14 +252,34 @@ const ProgramApplication = (() => {
 
   function setupCourseForm() {
     const courseFields = document.querySelector(SELECTORS.courseFields);
+    const serviceSelect = document.querySelector("#course-ai-service");
+    const assignedAiService = currentProgram.aiService || "";
     courseFields.classList.remove("hidden");
     setRequired(courseFields, true);
     document.querySelector("#ai-experience").required = false;
-    fillSelect(document.querySelector("#course-ai-service"), AI_SERVICES, "희망 서비스 선택");
+
+    if (assignedAiService) {
+      document.querySelector("#course-ai-support-title").textContent = "지정 AI 서비스 지원";
+      document.querySelector("#course-ai-support-description").textContent =
+        `이 과정은 ${assignedAiService}를 사용합니다. 서비스 지원 신청 여부를 선택해주세요.`;
+      document.querySelector("#course-ai-service-label").textContent = "지정 AI 서비스";
+      fillSelect(serviceSelect, [assignedAiService, "신청하지 않음"], "지원 여부 선택");
+      serviceSelect.options[1].textContent = `${assignedAiService} 지원 신청`;
+    } else {
+      fillSelect(serviceSelect, AI_SERVICES, "희망 서비스 선택");
+    }
+
     bindAiEmailToggle(
-      document.querySelector("#course-ai-service"),
+      serviceSelect,
       document.querySelector("#course-ai-email")
     );
+  }
+
+  function configureAiServiceBadge() {
+    const badge = document.querySelector(SELECTORS.aiServiceBadge);
+    if (!badge || !currentProgram.aiService) return;
+    badge.textContent = `지정 AI · ${currentProgram.aiService}`;
+    badge.classList.remove("hidden");
   }
 
   function addMember() {
