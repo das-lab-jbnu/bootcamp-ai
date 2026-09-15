@@ -77,7 +77,14 @@ const StudentBenefits = (() => {
     };
   }
 
-  function init() {
+  async function init() {
+    const settings = window.getApplicationSettings
+      ? await window.getApplicationSettings()
+      : { available: false, scholarshipApplicationsOpen: false };
+    SERVICE_OPEN.scholarship =
+      settings.available && settings.scholarshipApplicationsOpen === true;
+    configureScholarshipAvailability();
+
     initServiceTabs();
     SERVICE_KEYS.forEach(bindServiceAuthentication);
     bindCertificateIssuance();
@@ -102,6 +109,27 @@ const StudentBenefits = (() => {
             : "라이브 서버에서 장학금 대상 확인과 신청 화면을 샘플 데이터로 미리 확인할 수 있습니다.";
       }
     });
+  }
+
+  function configureScholarshipAvailability() {
+    const title = document.querySelector("#benefits-preparing-title");
+    const guidance = document.querySelector("#benefits-service-guidance");
+    const tabDescription = document.querySelector("#scholarship-tab-description");
+    if (SERVICE_OPEN.scholarship) {
+      if (title) title.textContent = "이수증 발급 운영 중 · 장학금 신청 운영 중";
+      if (guidance) {
+        guidance.textContent =
+          "이수증 발급과 장학금 신청은 프로그램 신청 이메일 인증 후 이용할 수 있습니다.";
+      }
+      if (tabDescription) tabDescription.textContent = "장학금 대상 확인 및 신청";
+      return;
+    }
+    if (title) title.textContent = "이수증 발급 운영 중 · 장학금 신청 준비 중";
+    if (guidance) {
+      guidance.textContent =
+        "이수증은 프로그램 신청 이메일 인증 후 발급할 수 있습니다. 장학금 신청은 대상자 정보와 접수 일정 정비 후 활성화할 예정입니다.";
+    }
+    if (tabDescription) tabDescription.textContent = "장학금 접수 준비 중";
   }
 
   function initServiceTabs() {

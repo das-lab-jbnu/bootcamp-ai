@@ -43,11 +43,36 @@ const ApplicationManagement = (() => {
   let activeApplication = null;
   let activeEditButton = null;
 
-  function init() {
+  async function init() {
     const emailForm = document.querySelector(SELECTORS.emailForm);
     const codeForm = document.querySelector(SELECTORS.codeForm);
     const editForm = document.querySelector(SELECTORS.editForm);
     if (!emailForm || !codeForm || !editForm) return;
+
+    document.querySelector(SELECTORS.sendCodeButton).disabled = true;
+    document.querySelector(SELECTORS.verifyCodeButton).disabled = true;
+    const settings = window.getApplicationSettings
+      ? await window.getApplicationSettings()
+      : { available: false, applicationManagementOpen: false };
+    if (!settings.available) {
+      showMessage(
+        SELECTORS.statusMessage,
+        "신청 관리 상태를 불러오지 못했습니다. 잠시 후 페이지를 새로고침해주세요.",
+        "error"
+      );
+      return;
+    }
+    if (!settings.applicationManagementOpen) {
+      showMessage(
+        SELECTORS.statusMessage,
+        "현재 신청 확인·변경·취소 기능이 일시 중지되어 있습니다.",
+        "error"
+      );
+      return;
+    }
+
+    document.querySelector(SELECTORS.sendCodeButton).disabled = false;
+    document.querySelector(SELECTORS.verifyCodeButton).disabled = false;
 
     emailForm.addEventListener("submit", sendVerificationCode);
     codeForm.addEventListener("submit", verifyCode);
@@ -578,6 +603,7 @@ const ApplicationManagement = (() => {
     if (code === "invalid_code") return "인증번호가 올바르지 않거나 만료되었습니다.";
     if (code === "session_expired") return "인증 시간이 만료되었습니다. 페이지를 새로고침하고 다시 인증해주세요.";
     if (code === "application_locked") return error.message || "현재 상태에서는 온라인 변경이나 취소를 할 수 없습니다.";
+    if (code === "application_management_closed") return "현재 신청 확인·변경·취소 기능이 일시 중지되어 있습니다.";
     if (["invalid_request", "invalid_applicant", "invalid_team", "duplicate"].includes(code)) return error.message || "입력 내용을 확인해주세요.";
     if (error && error.name === "AbortError") return "처리 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.";
     return "처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";

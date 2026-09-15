@@ -9,8 +9,6 @@ const ProgramApplication = (() => {
   const APPLICATION_TEST_KEY = URL_PARAMETERS.get("testKey") || "";
   const LIVE_TEST_MODE =
     LIVE_TEST_REQUESTED && APPLICATION_TEST_KEY.length >= 20;
-  const APPLICATIONS_OPEN =
-    Boolean(window.BOOTCAMP_CONFIG && window.BOOTCAMP_CONFIG.applicationsOpen);
 
   const BEGINNER_PROGRAMS = [
     "[초급프로그램] AI Agent 마스터",
@@ -79,7 +77,7 @@ const ProgramApplication = (() => {
   let memberSequence = 0;
   let applicationComplete = false;
 
-  function init() {
+  async function init() {
     const form = document.querySelector(SELECTORS.form);
     if (!form) return;
 
@@ -105,11 +103,53 @@ const ProgramApplication = (() => {
       setupCourseForm();
     }
 
-    if (!APPLICATIONS_OPEN) {
+    setApplicationLoading(form);
+    const settings = window.getApplicationSettings
+      ? await window.getApplicationSettings()
+      : { available: false, programs: {} };
+    if (!settings.available) {
+      setApplicationUnavailable(form);
+      return;
+    }
+    if (settings.programs[slug] !== true) {
       setApplicationClosed(form);
       return;
     }
+    setApplicationOpen(form);
     form.addEventListener("submit", submitApplication);
+  }
+
+  function setApplicationLoading(form) {
+    const submitButton = form.querySelector(SELECTORS.submit);
+    if (submitButton) submitButton.disabled = true;
+    const submitText = form.querySelector("[data-submit-text]");
+    if (submitText) submitText.textContent = "접수 상태 확인 중";
+  }
+
+  function setApplicationOpen(form) {
+    const submitButton = form.querySelector(SELECTORS.submit);
+    if (submitButton) submitButton.disabled = false;
+    const submitText = form.querySelector("[data-submit-text]");
+    if (submitText) submitText.textContent = "접수하기";
+  }
+
+  function setApplicationUnavailable(form) {
+    form.querySelectorAll("input, select, textarea, button").forEach((element) => {
+      element.disabled = true;
+    });
+    const submitText = form.querySelector("[data-submit-text]");
+    if (submitText) submitText.textContent = "상태 확인 필요";
+    const message = document.querySelector(SELECTORS.message);
+    message.textContent =
+      "접수 상태를 불러오지 못했습니다. 잠시 후 페이지를 새로고침해주세요.";
+    message.classList.remove(
+      "hidden",
+      "bg-red-50",
+      "text-red-700",
+      "bg-emerald-50",
+      "text-emerald-800"
+    );
+    message.classList.add("bg-slate-100", "text-slate-700");
   }
 
   function setApplicationClosed(form) {
@@ -589,7 +629,7 @@ const ProgramApplication = (() => {
     if (code === "applications_not_open") {
       return LIVE_TEST_REQUESTED
         ? "Apps Script의 테스트 키가 일치하지 않습니다. 테스트 키 생성과 웹 앱 새 버전 배포 여부를 확인해주세요."
-        : "현재 모집예정 상태입니다.";
+        : error.message || "현재 이 프로그램의 신규 접수가 종료되었습니다.";
     }
     if (error && error.name === "AbortError") return "접수 확인 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.";
     return "접수 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";

@@ -10,12 +10,14 @@ const BENEFITS_CONFIG = {
   APPLICATION_CHANGE_LOG_SHEET_NAME: "application_change_log",
   INTEGRATED_MANAGEMENT_SHEET_NAME: "통합관리",
   DEFENSE_INDUSTRY_COURSE_SHEET_NAME: "방위산업육성개론",
+  APPLICATION_SETTINGS_SHEET_NAME: "운영설정",
   APPLICATION_SPREADSHEET_ID: "1aRNgmAqS6IbRbn5Q-PBqnticH1gJ45c_-sahOs9nDRc",
   UPLOAD_FOLDER_NAME: "[비공개] 학생 장학금 통장사본 (웹신청 전용)",
   CERTIFICATE_TEMPLATE_ID: "19QCbrjGHuGVqJdfFldOcowVsEftsd_2y8qhFuB5NpmI",
   CERTIFICATE_OUTPUT_FOLDER_NAME: "[비공개] 학생 이수증 PDF (웹발급 전용)",
   TIMEZONE: "Asia/Seoul",
-  APPLICATIONS_OPEN: true,
+  // 운영설정 시트를 읽지 못한 경우 사용할 안전 기본값입니다.
+  APPLICATIONS_OPEN: false,
   SCHOLARSHIP_APPLICATIONS_OPEN: false,
   OTP_TTL_SECONDS: 600,
   OTP_RESEND_SECONDS: 60,
@@ -232,6 +234,53 @@ const BEGINNER_PROGRAMS = [
   "[초급프로그램] 생성형 AI 첫걸음: 원리부터 실전 활용까지"
 ];
 
+const APPLICATION_SETTINGS_HEADERS = ["기능", "운영 여부", "설명", "설정 키"];
+const APPLICATION_SETTINGS = [
+  {
+    key: "idea_contest_open",
+    label: "방산 AI 아이디어 경진대회",
+    defaultValue: BENEFITS_CONFIG.APPLICATIONS_OPEN,
+    description: "팀 접수와 팀 미편성 개인 접수를 함께 제어합니다."
+  },
+  {
+    key: "ai_agent_open",
+    label: "AI Agent 마스터",
+    defaultValue: BENEFITS_CONFIG.APPLICATIONS_OPEN,
+    description: "AI Agent 마스터 신규 접수를 제어합니다."
+  },
+  {
+    key: "vibe_coding_open",
+    label: "바이브코딩 입문",
+    defaultValue: BENEFITS_CONFIG.APPLICATIONS_OPEN,
+    description: "바이브코딩 입문 신규 접수를 제어합니다."
+  },
+  {
+    key: "generative_ai_open",
+    label: "생성형 AI 첫걸음",
+    defaultValue: BENEFITS_CONFIG.APPLICATIONS_OPEN,
+    description: "생성형 AI 첫걸음 신규 접수를 제어합니다."
+  },
+  {
+    key: "application_management_open",
+    label: "신청 확인·변경·취소",
+    defaultValue: true,
+    description: "기존 신청의 이메일 인증, 조회, 변경, 취소를 제어합니다."
+  },
+  {
+    key: "scholarship_open",
+    label: "장학금 신청",
+    defaultValue: BENEFITS_CONFIG.SCHOLARSHIP_APPLICATIONS_OPEN,
+    description: "학생지원혜택의 장학금 신청을 제어합니다."
+  }
+];
+
+const PROGRAM_SETTING_KEYS = {
+  "[초급프로그램] AI Agent 마스터": "ai_agent_open",
+  "[초급프로그램] 바이브코딩 입문": "vibe_coding_open",
+  "[초급프로그램] 생성형 AI 첫걸음: 원리부터 실전 활용까지":
+    "generative_ai_open"
+};
+
 const GENDER_OPTIONS = ["남성", "여성"];
 const MAJOR_FIELD_OPTIONS = ["공학", "예체능", "자연과학", "의학", "인문사회"];
 const COURSE_YEAR_OPTIONS = ["2년", "3년", "4년", "5년", "6년"];
@@ -247,7 +296,14 @@ const IDEA_INTEREST_FIELD_OPTIONS = [
   "아직 정하지 못함"
 ];
 
-function doGet() {
+function doGet(e) {
+  const action = String(e && e.parameter && e.parameter.action || "").trim();
+  if (action === "getApplicationSettings") {
+    return jsonResponse_({
+      result: "success",
+      settings: getPublicApplicationSettings_()
+    });
+  }
   return jsonResponse_({
     result: "success",
     service: "bootcamp-ai-student-benefits"
@@ -283,43 +339,51 @@ function doPost(e) {
     }
 
     if (action === "submitIdeaContestApplication") {
-      ensureApplicationsOpen_(payload);
+      ensureApplicationsOpen_(payload, "idea_contest_open");
       return jsonResponse_(submitIdeaContestApplication_(payload));
     }
 
     if (action === "submitIdeaContestIndividualApplication") {
-      ensureApplicationsOpen_(payload);
+      ensureApplicationsOpen_(payload, "idea_contest_open");
       return jsonResponse_(submitIdeaContestIndividualApplication_(payload));
     }
 
     if (action === "submitProgramApplication") {
-      ensureApplicationsOpen_(payload);
+      ensureApplicationsOpen_(
+        payload,
+        PROGRAM_SETTING_KEYS[normalizeSingleLine_(payload.program)] || ""
+      );
       return jsonResponse_(submitProgramApplication_(payload));
     }
 
     if (action === "sendApplicationCode") {
+      ensureApplicationManagementOpen_();
       return jsonResponse_(sendApplicationVerificationCode_(payload.email));
     }
 
     if (action === "verifyApplicationCode") {
+      ensureApplicationManagementOpen_();
       return jsonResponse_(
         verifyApplicationCode_(payload.email, payload.code)
       );
     }
 
     if (action === "getApplications") {
+      ensureApplicationManagementOpen_();
       return jsonResponse_(
         getManagedApplicationsBySession_(payload.session_token)
       );
     }
 
     if (action === "updateApplication") {
+      ensureApplicationManagementOpen_();
       return jsonResponse_(
         updateManagedApplication_(payload.session_token, payload)
       );
     }
 
     if (action === "cancelApplication") {
+      ensureApplicationManagementOpen_();
       return jsonResponse_(
         cancelManagedApplication_(payload.session_token, payload.application_id)
       );
@@ -452,12 +516,92 @@ function setupBenefitsSheet() {
 /** 별도 경진대회·초급과정 접수 관리대장의 탭과 편집 트리거를 설정합니다. */
 function setupApplicationSheets() {
   const spreadsheet = getApplicationSpreadsheet_();
+  setupApplicationSettingsSheet_(spreadsheet);
   setupIdeaContestSheets_(spreadsheet);
   setupProgramApplicationsSheet_(spreadsheet);
   setupApplicationChangeLogSheet_(spreadsheet);
   setupIntegratedManagementSheet_(spreadsheet);
   ensureApplicationEditTrigger_(spreadsheet);
   return `설정 완료: ${spreadsheet.getName()} / 경진대회·초급과정 접수 탭`;
+}
+
+function setupApplicationSettingsSheet_(spreadsheet) {
+  let sheet = spreadsheet.getSheetByName(
+    BENEFITS_CONFIG.APPLICATION_SETTINGS_SHEET_NAME
+  );
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet(
+      BENEFITS_CONFIG.APPLICATION_SETTINGS_SHEET_NAME
+    );
+  }
+  if (sheet.getMaxColumns() < APPLICATION_SETTINGS_HEADERS.length) {
+    sheet.insertColumnsAfter(
+      sheet.getMaxColumns(),
+      APPLICATION_SETTINGS_HEADERS.length - sheet.getMaxColumns()
+    );
+  }
+
+  const currentHeaders = sheet
+    .getRange(1, 1, 1, APPLICATION_SETTINGS_HEADERS.length)
+    .getValues()[0]
+    .map(String);
+  const hasExistingHeaders = currentHeaders.some((value) => value.trim());
+  if (
+    hasExistingHeaders &&
+    currentHeaders.join("|") !== APPLICATION_SETTINGS_HEADERS.join("|")
+  ) {
+    throw new Error("운영설정 시트의 첫 행 구조가 다릅니다. 헤더를 확인해주세요.");
+  }
+
+  const existingValues = {};
+  if (sheet.getLastRow() > 1) {
+    sheet
+      .getRange(2, 1, sheet.getLastRow() - 1, APPLICATION_SETTINGS_HEADERS.length)
+      .getValues()
+      .forEach((row) => {
+        const key = String(row[3] || "").trim();
+        if (key) existingValues[key] = row[1];
+      });
+  }
+
+  const rows = APPLICATION_SETTINGS.map((setting) => [
+    setting.label,
+    Object.prototype.hasOwnProperty.call(existingValues, setting.key)
+      ? toBooleanSetting_(existingValues[setting.key], setting.defaultValue)
+      : setting.defaultValue,
+    setting.description,
+    setting.key
+  ]);
+  sheet
+    .getRange(1, 1, 1, APPLICATION_SETTINGS_HEADERS.length)
+    .setValues([APPLICATION_SETTINGS_HEADERS])
+    .setBackground("#e5e7eb")
+    .setFontColor("#111827")
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setVerticalAlignment("middle")
+    .setWrap(true);
+  sheet.getRange(2, 1, rows.length, APPLICATION_SETTINGS_HEADERS.length)
+    .setValues(rows);
+  sheet.getRange(2, 2, rows.length, 1)
+    .setDataValidation(
+      SpreadsheetApp.newDataValidation()
+        .requireCheckbox()
+        .setAllowInvalid(false)
+        .build()
+    )
+    .setHorizontalAlignment("center")
+    .setVerticalAlignment("middle");
+  sheet.getRange(2, 3, rows.length, 1)
+    .setWrap(true)
+    .setVerticalAlignment("middle");
+  sheet.setFrozenRows(1);
+  sheet.setHiddenGridlines(true);
+  sheet.setRowHeight(1, 38);
+  [220, 100, 420, 230].forEach((width, index) =>
+    sheet.setColumnWidth(index + 1, width)
+  );
+  return sheet;
 }
 
 function setupApplicationChangeLogSheet_(spreadsheet) {
@@ -1307,6 +1451,16 @@ function runBenefitsSmokeTest() {
     .getRange(1, 1, 1, APPLICATION_CHANGE_LOG_HEADERS.length)
     .getValues()[0]
     .map(String);
+  const applicationSettingsSheet = getApplicationSpreadsheet_().getSheetByName(
+    BENEFITS_CONFIG.APPLICATION_SETTINGS_SHEET_NAME
+  );
+  const applicationSettingsHeaders = applicationSettingsSheet
+    ? applicationSettingsSheet
+        .getRange(1, 1, 1, APPLICATION_SETTINGS_HEADERS.length)
+        .getValues()[0]
+        .map(String)
+    : [];
+  const publicApplicationSettings = getPublicApplicationSettings_();
   const integratedManagementSheet = getApplicationSpreadsheet_().getSheetByName(
     BENEFITS_CONFIG.INTEGRATED_MANAGEMENT_SHEET_NAME
   );
@@ -1328,7 +1482,7 @@ function runBenefitsSmokeTest() {
   const certificateFolder = getCertificateOutputFolder_();
   const templateCheck = validateCertificateTemplate_();
   const expectedCanApply =
-    BENEFITS_CONFIG.SCHOLARSHIP_APPLICATIONS_OPEN &&
+    isScholarshipApplicationsOpen_() &&
     normalizeText_(smokeValues.scholarship_eligibility) === "대상" &&
     !isScholarshipSubmitted_(smokeValues.scholarship_application_status) &&
     isScholarshipWindowOpen_(smokeValues);
@@ -1363,6 +1517,17 @@ function runBenefitsSmokeTest() {
     application_change_log_sheet_ready:
       applicationChangeLogHeaders.join("|") ===
       APPLICATION_CHANGE_LOG_HEADERS.join("|"),
+    application_settings_sheet_ready:
+      applicationSettingsHeaders.join("|") ===
+      APPLICATION_SETTINGS_HEADERS.join("|"),
+    public_application_settings_ready:
+      publicApplicationSettings.programs &&
+      typeof publicApplicationSettings.programs["idea-contest"] === "boolean" &&
+      typeof publicApplicationSettings.programs["ai-agent"] === "boolean" &&
+      typeof publicApplicationSettings.programs["vibe-coding"] === "boolean" &&
+      typeof publicApplicationSettings.programs["generative-ai"] === "boolean" &&
+      typeof publicApplicationSettings.applicationManagementOpen === "boolean" &&
+      typeof publicApplicationSettings.scholarshipApplicationsOpen === "boolean",
     integrated_management_sheet_ready:
       integratedManagementHeaders.join("|") ===
       INTEGRATED_MANAGEMENT_HEADERS.join("|"),
@@ -2658,8 +2823,68 @@ function submitIdeaContestIndividualApplication_(payloadValue) {
   }
 }
 
-function ensureApplicationsOpen_(payloadValue) {
-  if (BENEFITS_CONFIG.APPLICATIONS_OPEN) return;
+function getApplicationSettingsDefaults_() {
+  return APPLICATION_SETTINGS.reduce((values, setting) => {
+    values[setting.key] = setting.defaultValue === true;
+    return values;
+  }, {});
+}
+
+function getApplicationSettingsValues_() {
+  const values = getApplicationSettingsDefaults_();
+  try {
+    const spreadsheet = getApplicationSpreadsheet_();
+    const sheet = spreadsheet.getSheetByName(
+      BENEFITS_CONFIG.APPLICATION_SETTINGS_SHEET_NAME
+    );
+    if (!sheet || sheet.getLastRow() < 2) return values;
+
+    sheet
+      .getRange(2, 1, sheet.getLastRow() - 1, APPLICATION_SETTINGS_HEADERS.length)
+      .getValues()
+      .forEach((row) => {
+        const key = String(row[3] || "").trim();
+        if (!Object.prototype.hasOwnProperty.call(values, key)) return;
+        values[key] = toBooleanSetting_(row[1], values[key]);
+      });
+  } catch (error) {
+    console.error(
+      `운영설정 조회 실패: ${error && error.stack ? error.stack : error}`
+    );
+  }
+  return values;
+}
+
+function getPublicApplicationSettings_() {
+  const values = getApplicationSettingsValues_();
+  return {
+    programs: {
+      "idea-contest": values.idea_contest_open === true,
+      "ai-agent": values.ai_agent_open === true,
+      "vibe-coding": values.vibe_coding_open === true,
+      "generative-ai": values.generative_ai_open === true
+    },
+    applicationManagementOpen:
+      values.application_management_open === true,
+    scholarshipApplicationsOpen: values.scholarship_open === true
+  };
+}
+
+function toBooleanSetting_(value, fallback) {
+  if (value === true || value === false) return value;
+  const normalized = normalizeText_(value).toLowerCase();
+  if (["true", "1", "사용", "운영", "열림", "접수중"].includes(normalized)) {
+    return true;
+  }
+  if (["false", "0", "미사용", "중지", "닫힘", "접수종료"].includes(normalized)) {
+    return false;
+  }
+  return fallback === true;
+}
+
+function ensureApplicationsOpen_(payloadValue, settingKey) {
+  const settings = getApplicationSettingsValues_();
+  if (settingKey && settings[settingKey] === true) return;
 
   const payload = payloadValue || {};
   const configuredTestKey = String(
@@ -2677,12 +2902,26 @@ function ensureApplicationsOpen_(payloadValue) {
 
   throwPublicError_(
     "applications_not_open",
-    "신규 접수가 종료되었습니다. 기존 신청은 확인·변경·취소할 수 있습니다."
+    "현재 이 프로그램의 신규 접수가 종료되었습니다. 기존 신청은 확인·변경·취소할 수 있습니다."
   );
 }
 
+function ensureApplicationManagementOpen_() {
+  if (getApplicationSettingsValues_().application_management_open === true) {
+    return;
+  }
+  throwPublicError_(
+    "application_management_closed",
+    "현재 신청 확인·변경·취소 기능이 일시 중지되어 있습니다."
+  );
+}
+
+function isScholarshipApplicationsOpen_() {
+  return getApplicationSettingsValues_().scholarship_open === true;
+}
+
 function ensureScholarshipApplicationsOpen_() {
-  if (!BENEFITS_CONFIG.SCHOLARSHIP_APPLICATIONS_OPEN) {
+  if (!isScholarshipApplicationsOpen_()) {
     throwPublicError_(
       "scholarship_applications_closed",
       "현재 장학금 접수 준비 중입니다."
@@ -3953,7 +4192,7 @@ function toPublicBenefits_(values) {
     application_status: displayValue_(values.scholarship_application_status, "신청 전")
   };
   scholarship.can_apply =
-    BENEFITS_CONFIG.SCHOLARSHIP_APPLICATIONS_OPEN &&
+    isScholarshipApplicationsOpen_() &&
     normalizeText_(scholarship.eligibility) === "대상" &&
     !isScholarshipSubmitted_(scholarship.application_status) &&
     isScholarshipWindowOpen_(values);
@@ -4004,7 +4243,7 @@ function isCertificateDataReady_(values, config) {
 }
 
 function getScholarshipGuidance_(scholarship, values) {
-  if (!BENEFITS_CONFIG.SCHOLARSHIP_APPLICATIONS_OPEN) {
+  if (!isScholarshipApplicationsOpen_()) {
     return "현재 장학금 접수 준비 중입니다.";
   }
   if (scholarship.can_apply) {
