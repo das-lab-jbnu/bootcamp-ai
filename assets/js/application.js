@@ -10,8 +10,7 @@ const ProgramApplication = (() => {
   const LIVE_TEST_MODE =
     LIVE_TEST_REQUESTED && APPLICATION_TEST_KEY.length >= 20;
   const APPLICATIONS_OPEN =
-    Boolean(window.BOOTCAMP_CONFIG && window.BOOTCAMP_CONFIG.applicationsOpen) ||
-    LOCAL_PREVIEW;
+    Boolean(window.BOOTCAMP_CONFIG && window.BOOTCAMP_CONFIG.applicationsOpen);
 
   const BEGINNER_PROGRAMS = [
     "[초급프로그램] AI Agent 마스터",
@@ -107,24 +106,20 @@ const ProgramApplication = (() => {
     }
 
     if (!APPLICATIONS_OPEN) {
-      setApplicationPending(form);
+      setApplicationClosed(form);
       return;
     }
     form.addEventListener("submit", submitApplication);
   }
 
-  function setApplicationPending(form) {
+  function setApplicationClosed(form) {
     form.querySelectorAll("input, select, textarea, button").forEach((element) => {
-      const isContestTypePreview =
-        currentProgram &&
-        currentProgram.type === "contest" &&
-        element.matches('[name="contest_entry_type"]');
-      element.disabled = !isContestTypePreview;
+      element.disabled = true;
     });
     const submitText = form.querySelector("[data-submit-text]");
-    if (submitText) submitText.textContent = "접수예정";
+    if (submitText) submitText.textContent = "접수종료";
     const message = document.querySelector(SELECTORS.message);
-    message.textContent = "현재 모집예정 상태입니다. 접수 일정이 확정되면 신청할 수 있습니다.";
+    message.textContent = "신규 접수가 종료되었습니다. 기존 신청은 신청 확인/변경/취소 메뉴에서 관리할 수 있습니다.";
     message.classList.remove("hidden", "bg-red-50", "text-red-700", "bg-emerald-50", "text-emerald-800");
     message.classList.add("bg-slate-100", "text-slate-700");
   }

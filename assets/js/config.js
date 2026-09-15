@@ -1,5 +1,5 @@
 window.BOOTCAMP_CONFIG = {
-  applicationsOpen: true,
+  applicationsOpen: false,
   appsScriptEndpoints: {
     production: "https://script.google.com/macros/s/AKfycbzeUIxoYLxWC8_X0KJ4DPCP70DXp6cmuYXBRHya6bFX7qUXFzqOxmk7tw6Cq1J0ADN0/exec",
     development: "https://script.google.com/macros/s/PASTE_DEV_DEPLOYMENT_ID/exec"

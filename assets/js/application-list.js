@@ -5,13 +5,30 @@
   const applicationsOpen = Boolean(
     window.BOOTCAMP_CONFIG && window.BOOTCAMP_CONFIG.applicationsOpen
   );
-  if (!applicationsOpen && !isLocalPreview) return;
   const currentParameters = new URLSearchParams(window.location.search);
   const liveTestRequested = currentParameters.get("liveTest") === "1";
   const testKey = currentParameters.get("testKey") || "";
   const liveTestMode = liveTestRequested && testKey.length >= 20;
 
   const guidance = document.querySelector("#new-programs-guidance");
+  if (!applicationsOpen) {
+    if (guidance) {
+      guidance.textContent =
+        "신규 접수가 종료되었습니다. 기존 신청자는 신청 확인/변경/취소 메뉴를 이용해주세요.";
+    }
+    document.querySelectorAll("[data-local-application-status]").forEach((status) => {
+      status.textContent = "모집종료";
+      status.classList.remove("bg-emerald-600");
+      status.classList.add("bg-slate-500");
+    });
+    document.querySelectorAll("[data-local-application-link]").forEach((button) => {
+      button.textContent = "접수종료";
+      button.disabled = true;
+      button.setAttribute("aria-disabled", "true");
+    });
+    return;
+  }
+
   if (guidance) {
     guidance.textContent = liveTestMode
       ? "로컬 실전 테스트 모드입니다. 제출하면 실제 Google Sheet에 저장되고 접수 확인 이메일이 발송됩니다."

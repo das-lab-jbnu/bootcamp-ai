@@ -8,12 +8,14 @@ const BENEFITS_CONFIG = {
   IDEA_CONTEST_INDIVIDUAL_SHEET_NAME: "idea_contest_individuals",
   PROGRAM_APPLICATION_SHEET_NAME: "program_applications",
   APPLICATION_CHANGE_LOG_SHEET_NAME: "application_change_log",
+  INTEGRATED_MANAGEMENT_SHEET_NAME: "통합관리",
+  DEFENSE_INDUSTRY_COURSE_SHEET_NAME: "방위산업육성개론",
   APPLICATION_SPREADSHEET_ID: "1aRNgmAqS6IbRbn5Q-PBqnticH1gJ45c_-sahOs9nDRc",
   UPLOAD_FOLDER_NAME: "[비공개] 학생 장학금 통장사본 (웹신청 전용)",
   CERTIFICATE_TEMPLATE_ID: "19QCbrjGHuGVqJdfFldOcowVsEftsd_2y8qhFuB5NpmI",
   CERTIFICATE_OUTPUT_FOLDER_NAME: "[비공개] 학생 이수증 PDF (웹발급 전용)",
   TIMEZONE: "Asia/Seoul",
-  APPLICATIONS_OPEN: true,
+  APPLICATIONS_OPEN: false,
   SCHOLARSHIP_APPLICATIONS_OPEN: false,
   OTP_TTL_SECONDS: 600,
   OTP_RESEND_SECONDS: 60,
@@ -216,6 +218,12 @@ const APPLICATION_CHANGE_LOG_HEADERS = [
   "changed_fields",
   "status_before",
   "status_after"
+];
+
+const INTEGRATED_MANAGEMENT_HEADERS = [
+  "번호", "성명", "학번", "학과", "이메일", "전화번호",
+  "방위산업육성개론 수강", "경진대회 신청", "경진대회 신청구분",
+  "초급프로그램 신청", "초급 신청 이력수", "통합 구분", "확인 메모"
 ];
 
 const BEGINNER_PROGRAMS = [
@@ -447,6 +455,7 @@ function setupApplicationSheets() {
   setupIdeaContestSheets_(spreadsheet);
   setupProgramApplicationsSheet_(spreadsheet);
   setupApplicationChangeLogSheet_(spreadsheet);
+  setupIntegratedManagementSheet_(spreadsheet);
   ensureApplicationEditTrigger_(spreadsheet);
   return `설정 완료: ${spreadsheet.getName()} / 경진대회·초급과정 접수 탭`;
 }
@@ -793,6 +802,452 @@ function setSheetListValidation_(sheet, headers, header, values, rowCount) {
   sheet.getRange(2, column, rowCount, 1).setDataValidation(rule);
 }
 
+function setupIntegratedManagementSheet_(spreadsheet) {
+  let sheet = spreadsheet.getSheetByName(
+    BENEFITS_CONFIG.INTEGRATED_MANAGEMENT_SHEET_NAME
+  );
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet(
+      BENEFITS_CONFIG.INTEGRATED_MANAGEMENT_SHEET_NAME
+    );
+  }
+  if (sheet.getMaxColumns() < INTEGRATED_MANAGEMENT_HEADERS.length) {
+    sheet.insertColumnsAfter(
+      sheet.getMaxColumns(),
+      INTEGRATED_MANAGEMENT_HEADERS.length - sheet.getMaxColumns()
+    );
+  }
+
+  const headerRange = sheet.getRange(
+    1,
+    1,
+    1,
+    INTEGRATED_MANAGEMENT_HEADERS.length
+  );
+  const currentHeaders = headerRange.getValues()[0].map(String);
+  const hasExistingHeaders = currentHeaders.some((value) => value.trim());
+  if (
+    hasExistingHeaders &&
+    currentHeaders.join("|") !== INTEGRATED_MANAGEMENT_HEADERS.join("|")
+  ) {
+    throw new Error("통합관리 시트의 첫 행 구조가 다릅니다. 헤더를 확인해주세요.");
+  }
+  headerRange.setValues([INTEGRATED_MANAGEMENT_HEADERS]);
+  return sheet;
+}
+
+function tryRefreshIntegratedManagement_(identities, spreadsheet) {
+  try {
+    refreshIntegratedManagement_(identities, spreadsheet);
+  } catch (error) {
+    console.error(
+      `통합관리 자동 반영 실패: ${error && error.stack ? error.stack : error}`
+    );
+  }
+}
+
+function refreshIntegratedManagement_(identityValues, spreadsheetValue) {
+  const identities = dedupeIntegratedIdentities_(identityValues || []);
+  if (!identities.length) return;
+
+  const spreadsheet = spreadsheetValue || getApplicationSpreadsheet_();
+  const sheet = setupIntegratedManagementSheet_(spreadsheet);
+  const context = createIntegratedManagementContext_(spreadsheet);
+  const lastRow = Math.max(sheet.getLastRow(), 1);
+  const rows = lastRow > 1
+    ? sheet
+        .getRange(2, 1, lastRow - 1, INTEGRATED_MANAGEMENT_HEADERS.length)
+        .getValues()
+    : [];
+
+  identities.forEach((identity) => {
+    const snapshot = buildIntegratedManagementSnapshot_(identity, context);
+    const rowIndex = findIntegratedManagementRowIndex_(rows, snapshot);
+    const previous = rowIndex >= 0 ? rows[rowIndex] : [];
+    const note = String(previous[12] || "").trim();
+    const number = Number(previous[0]) || getNextIntegratedManagementNumber_(rows);
+    const row = [
+      number,
+      snapshot.name,
+      snapshot.studentId,
+      snapshot.department,
+      snapshot.email,
+      snapshot.phone,
+      snapshot.inDefenseIndustryCourse ? "수강" : "미수강",
+      snapshot.hasActiveContest ? "신청" : "미신청",
+      snapshot.contestTypes.join("·"),
+      snapshot.programStatusSummary || "미신청",
+      snapshot.programApplicationCount,
+      getIntegratedManagementCategory_(snapshot),
+      note || (!snapshot.inDefenseIndustryCourse ? "방위산업육성개론 명단 외" : "")
+    ];
+    if (rowIndex >= 0) rows[rowIndex] = row;
+    else rows.push(row);
+  });
+
+  if (sheet.getMaxRows() < rows.length + 1) {
+    sheet.insertRowsAfter(
+      sheet.getMaxRows(),
+      rows.length + 1 - sheet.getMaxRows()
+    );
+  }
+  if (rows.length) {
+    sheet
+      .getRange(2, 1, rows.length, INTEGRATED_MANAGEMENT_HEADERS.length)
+      .setValues(rows);
+  }
+  formatIntegratedManagementSheet_(sheet, rows.length);
+}
+
+function createIntegratedManagementContext_(spreadsheet) {
+  const teamData = getSheetDataWithHeaderMap_(spreadsheet.getSheetByName(
+    BENEFITS_CONFIG.IDEA_CONTEST_TEAM_SHEET_NAME
+  ));
+  const activeTeamIds = {};
+  teamData.rows.forEach((row) => {
+    const applicationId = String(
+      row[teamData.headerMap.application_id] || ""
+    ).trim();
+    const status = String(
+      row[teamData.headerMap.application_status] || ""
+    ).trim();
+    if (applicationId && status !== "취소") activeTeamIds[applicationId] = true;
+  });
+
+  return {
+    course: getCourseRosterData_(spreadsheet.getSheetByName(
+      BENEFITS_CONFIG.DEFENSE_INDUSTRY_COURSE_SHEET_NAME
+    )),
+    members: getSheetDataWithHeaderMap_(spreadsheet.getSheetByName(
+      BENEFITS_CONFIG.IDEA_CONTEST_MEMBER_SHEET_NAME
+    )),
+    individuals: getSheetDataWithHeaderMap_(spreadsheet.getSheetByName(
+      BENEFITS_CONFIG.IDEA_CONTEST_INDIVIDUAL_SHEET_NAME
+    )),
+    programs: getSheetDataWithHeaderMap_(spreadsheet.getSheetByName(
+      BENEFITS_CONFIG.PROGRAM_APPLICATION_SHEET_NAME
+    )),
+    activeTeamIds
+  };
+}
+
+function buildIntegratedManagementSnapshot_(identityValue, context) {
+  const identity = normalizeIntegratedIdentity_(identityValue);
+  const courseRow = context.course.rows.find((row) =>
+    matchesIntegratedIdentity_(context.course.toIdentity(row), identity)
+  );
+  const courseIdentity = courseRow
+    ? context.course.toIdentity(courseRow)
+    : normalizeIntegratedIdentity_({});
+
+  const matchingMembers = context.members.rows.filter((row) =>
+    matchesIntegratedIdentity_({
+      name: row[context.members.headerMap.name],
+      studentId: row[context.members.headerMap.student_id],
+      department: row[context.members.headerMap.department],
+      phone: row[context.members.headerMap.phone],
+      email: row[context.members.headerMap.email]
+    }, identity)
+  );
+  const activeMembers = matchingMembers.filter((row) =>
+    context.activeTeamIds[
+      String(row[context.members.headerMap.application_id] || "").trim()
+    ]
+  );
+  const matchingIndividuals = context.individuals.rows.filter((row) =>
+    matchesIntegratedIdentity_({
+      name: row[context.individuals.headerMap.name],
+      studentId: row[context.individuals.headerMap.student_id],
+      department: row[context.individuals.headerMap.department],
+      phone: row[context.individuals.headerMap.phone],
+      email: row[context.individuals.headerMap.email]
+    }, identity)
+  );
+  const activeIndividuals = matchingIndividuals.filter((row) =>
+    String(row[context.individuals.headerMap.application_status] || "").trim() !== "취소"
+  );
+  const matchingPrograms = context.programs.rows.filter((row) =>
+    matchesIntegratedIdentity_({
+      name: row[context.programs.headerMap.name],
+      studentId: row[context.programs.headerMap.student_id],
+      department: row[context.programs.headerMap.department],
+      phone: row[context.programs.headerMap.phone],
+      email: row[context.programs.headerMap.email]
+    }, identity)
+  );
+  const activePrograms = matchingPrograms.filter((row) =>
+    String(row[context.programs.headerMap.application_status] || "").trim() !== "취소"
+  );
+
+  let resolved = mergeIntegratedIdentities_(courseIdentity, identity);
+  if (activeMembers.length) {
+    const row = activeMembers[activeMembers.length - 1];
+    resolved = mergeIntegratedIdentities_(resolved, {
+      name: row[context.members.headerMap.name],
+      studentId: row[context.members.headerMap.student_id],
+      department: row[context.members.headerMap.department],
+      phone: row[context.members.headerMap.phone],
+      email: row[context.members.headerMap.email]
+    });
+  }
+  if (activeIndividuals.length) {
+    const row = activeIndividuals[activeIndividuals.length - 1];
+    resolved = mergeIntegratedIdentities_(resolved, {
+      name: row[context.individuals.headerMap.name],
+      studentId: row[context.individuals.headerMap.student_id],
+      department: row[context.individuals.headerMap.department],
+      phone: row[context.individuals.headerMap.phone],
+      email: row[context.individuals.headerMap.email]
+    });
+  }
+  if (activePrograms.length) {
+    const row = activePrograms[activePrograms.length - 1];
+    resolved = mergeIntegratedIdentities_(resolved, {
+      name: row[context.programs.headerMap.name],
+      studentId: row[context.programs.headerMap.student_id],
+      department: row[context.programs.headerMap.department],
+      phone: row[context.programs.headerMap.phone],
+      email: row[context.programs.headerMap.email]
+    });
+  }
+
+  const contestTypes = [];
+  if (activeMembers.length) contestTypes.push("팀");
+  if (activeIndividuals.length) contestTypes.push("개별");
+  return Object.assign({}, resolved, {
+    inDefenseIndustryCourse: Boolean(courseRow),
+    hasActiveContest: contestTypes.length > 0,
+    contestTypes,
+    activeProgramCount: activePrograms.length,
+    programApplicationCount: matchingPrograms.length,
+    programStatusSummary: getIntegratedProgramStatusSummary_(
+      matchingPrograms,
+      context.programs.headerMap
+    )
+  });
+}
+
+function getIntegratedProgramStatusSummary_(rows, headerMap) {
+  return (rows || []).map((row) => {
+    const program = String(row[headerMap.program] || "")
+      .replace(/^\[초급프로그램\]\s*/, "")
+      .trim();
+    const status = String(row[headerMap.application_status] || "").trim() || "접수";
+    return `${program || "초급프로그램"} (${status})`;
+  }).join("\n");
+}
+
+function getSheetDataWithHeaderMap_(sheet) {
+  if (!sheet) return { rows: [], headerMap: {} };
+  const values = sheet.getDataRange().getValues();
+  if (!values.length) return { rows: [], headerMap: {} };
+  return { rows: values.slice(1), headerMap: getHeaderMap_(values[0]) };
+}
+
+function getCourseRosterData_(sheet) {
+  if (!sheet) {
+    return { rows: [], toIdentity: () => normalizeIntegratedIdentity_({}) };
+  }
+  const values = sheet.getDataRange().getValues();
+  if (!values.length) {
+    return { rows: [], toIdentity: () => normalizeIntegratedIdentity_({}) };
+  }
+  const headers = values[0].map((value) => String(value || "").trim());
+  const indexes = {
+    name: findHeaderIndex_(headers, ["이름", "성명", "name"]),
+    studentId: findHeaderIndex_(headers, ["아이디", "학번", "student_id"]),
+    department: findHeaderIndex_(headers, ["학과", "소속학과", "department"]),
+    email: findHeaderIndex_(headers, ["이메일 주소", "이메일", "email"]),
+    phone: findHeaderIndex_(headers, ["휴대 전화", "전화번호", "phone"]),
+    role: findHeaderIndex_(headers, ["역할", "role"])
+  };
+  if (indexes.name < 0) {
+    throw new Error("방위산업육성개론 시트에서 이름 열을 찾을 수 없습니다.");
+  }
+  const rows = values.slice(1).filter((row) => {
+    if (!String(row[indexes.name] || "").trim()) return false;
+    if (indexes.role < 0) return true;
+    return String(row[indexes.role] || "").trim() === "학생";
+  });
+  return {
+    rows,
+    toIdentity: (row) => normalizeIntegratedIdentity_({
+      name: row[indexes.name],
+      studentId: indexes.studentId >= 0 ? row[indexes.studentId] : "",
+      department: indexes.department >= 0 ? row[indexes.department] : "",
+      email: indexes.email >= 0 ? row[indexes.email] : "",
+      phone: indexes.phone >= 0 ? row[indexes.phone] : ""
+    })
+  };
+}
+
+function findHeaderIndex_(headers, candidates) {
+  for (let index = 0; index < candidates.length; index += 1) {
+    const headerIndex = headers.indexOf(candidates[index]);
+    if (headerIndex >= 0) return headerIndex;
+  }
+  return -1;
+}
+
+function normalizeIntegratedIdentity_(value) {
+  const source = value || {};
+  return {
+    name: normalizeSingleLine_(source.name || ""),
+    studentId: normalizeSingleLine_(source.studentId || source.student_id || ""),
+    department: String(source.department || "").trim(),
+    email: normalizeEmail_(source.email || ""),
+    phone: normalizeSingleLine_(source.phone || "")
+  };
+}
+
+function mergeIntegratedIdentities_(baseValue, overrideValue) {
+  const base = normalizeIntegratedIdentity_(baseValue);
+  const override = normalizeIntegratedIdentity_(overrideValue);
+  return {
+    name: override.name || base.name,
+    studentId: override.studentId || base.studentId,
+    department: override.department || base.department,
+    email: override.email || base.email,
+    phone: override.phone || base.phone
+  };
+}
+
+function matchesIntegratedIdentity_(leftValue, rightValue) {
+  const left = normalizeIntegratedIdentity_(leftValue);
+  const right = normalizeIntegratedIdentity_(rightValue);
+  if (left.studentId && right.studentId && left.studentId === right.studentId) return true;
+  if (left.email && right.email && left.email === right.email) return true;
+  if (
+    left.studentId && right.studentId && left.studentId !== right.studentId &&
+    left.email && right.email && left.email !== right.email
+  ) return false;
+  return Boolean(
+    left.name && right.name &&
+    normalizeLookupText_(left.name) === normalizeLookupText_(right.name)
+  );
+}
+
+function dedupeIntegratedIdentities_(identityValues) {
+  const result = [];
+  (identityValues || []).forEach((value) => {
+    const identity = normalizeIntegratedIdentity_(value);
+    if (!identity.name && !identity.studentId && !identity.email) return;
+    const index = result.findIndex((item) =>
+      matchesIntegratedIdentity_(item, identity)
+    );
+    if (index >= 0) {
+      result[index] = mergeIntegratedIdentities_(result[index], identity);
+    } else {
+      result.push(identity);
+    }
+  });
+  return result;
+}
+
+function findIntegratedManagementRowIndex_(rows, identity) {
+  return rows.findIndex((row) => matchesIntegratedIdentity_({
+    name: row[1],
+    studentId: row[2],
+    department: row[3],
+    email: row[4],
+    phone: row[5]
+  }, identity));
+}
+
+function getNextIntegratedManagementNumber_(rows) {
+  return rows.reduce(
+    (maxValue, row) => Math.max(maxValue, Number(row[0]) || 0),
+    0
+  ) + 1;
+}
+
+function getIntegratedManagementCategory_(snapshot) {
+  if (!snapshot.inDefenseIndustryCourse) {
+    return snapshot.hasActiveContest || snapshot.activeProgramCount > 0
+      ? "수강명단 외 신청자"
+      : "신청 이력(현재 비활성)";
+  }
+  if (snapshot.hasActiveContest && snapshot.activeProgramCount > 0) {
+    return "경진대회·초급 모두 신청";
+  }
+  if (snapshot.hasActiveContest) return "경진대회만 신청";
+  if (snapshot.activeProgramCount > 0) return "초급프로그램만 신청";
+  return "미신청";
+}
+
+function formatIntegratedManagementSheet_(sheet, dataRowCount) {
+  const columnCount = INTEGRATED_MANAGEMENT_HEADERS.length;
+  const usedRows = Math.max(dataRowCount + 1, 1);
+  sheet.setFrozenRows(1);
+  sheet.setHiddenGridlines(true);
+  sheet.setRowHeight(1, 42);
+  if (dataRowCount > 0) sheet.setRowHeights(2, dataRowCount, 72);
+  [55, 85, 95, 230, 210, 115, 155, 125, 125, 300, 110, 190, 190]
+    .forEach((width, index) => sheet.setColumnWidth(index + 1, width));
+
+  sheet.getRange(1, 1, 1, columnCount)
+    .setBackground("#356854")
+    .setFontColor("#ffffff")
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setVerticalAlignment("middle")
+    .setWrap(true);
+  if (dataRowCount > 0) {
+    sheet.getRange(2, 1, dataRowCount, columnCount)
+      .setVerticalAlignment("middle")
+      .setWrap(true);
+    sheet.getRange(2, 3, dataRowCount, 1).setNumberFormat("@");
+    sheet.getRange(2, 6, dataRowCount, 1).setNumberFormat("@");
+    sheet.getRange(2, 1, dataRowCount, 1).setHorizontalAlignment("center");
+    sheet.getRange(2, 7, dataRowCount, 5).setHorizontalAlignment("center");
+  }
+
+  if (sheet.getFilter()) sheet.getFilter().remove();
+  sheet.getRange(1, 1, usedRows, columnCount).createFilter();
+  sheet.getBandings().forEach((banding) => banding.remove());
+  sheet.getRange(1, 1, usedRows, columnCount)
+    .applyRowBanding(SpreadsheetApp.BandingTheme.GREEN, true, false);
+
+  if (!dataRowCount) {
+    sheet.setConditionalFormatRules([]);
+    return;
+  }
+  const courseRange = sheet.getRange(2, 7, dataRowCount, 1);
+  const contestRange = sheet.getRange(2, 8, dataRowCount, 1);
+  const programRange = sheet.getRange(2, 10, dataRowCount, 1);
+  const categoryRange = sheet.getRange(2, 12, dataRowCount, 1);
+  sheet.setConditionalFormatRules([
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo("수강").setBackground("#d8efdb").setFontColor("#1a662d")
+      .setRanges([courseRange]).build(),
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo("신청").setBackground("#dbe8f9").setFontColor("#1f4f99")
+      .setRanges([contestRange]).build(),
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenTextContains("취소").setBackground("#fff0cc").setFontColor("#8c590d")
+      .setRanges([programRange]).build(),
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenTextContains("접수").setBackground("#dbe8f9").setFontColor("#1f4f99")
+      .setRanges([programRange]).build(),
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo("수강명단 외 신청자")
+      .setBackground("#fff0cc").setFontColor("#8c590d")
+      .setRanges([categoryRange]).build()
+  ]);
+}
+
+function getManagedApplicationIdentities_(record) {
+  if (record.type === "team") return getContestParticipants_(record.applicationId);
+  const map = record.headerMap;
+  return [{
+    name: record.values[map.name],
+    studentId: record.values[map.student_id],
+    department: record.values[map.department],
+    phone: record.values[map.phone],
+    email: record.values[map.email]
+  }];
+}
+
 /**
  * 배포 전 데이터 구조와 공개 응답을 점검하는 읽기 전용 스모크 테스트입니다.
  * setupBenefitsSheet 실행 후 Apps Script 편집기에서 한 번 실행합니다.
@@ -852,6 +1307,15 @@ function runBenefitsSmokeTest() {
     .getRange(1, 1, 1, APPLICATION_CHANGE_LOG_HEADERS.length)
     .getValues()[0]
     .map(String);
+  const integratedManagementSheet = getApplicationSpreadsheet_().getSheetByName(
+    BENEFITS_CONFIG.INTEGRATED_MANAGEMENT_SHEET_NAME
+  );
+  const integratedManagementHeaders = integratedManagementSheet
+    ? integratedManagementSheet
+        .getRange(1, 1, 1, INTEGRATED_MANAGEMENT_HEADERS.length)
+        .getValues()[0]
+        .map(String)
+    : [];
   const certificateLogHeaders = getCertificateIssuanceLogSheet_()
     .getRange(1, 1, 1, CERTIFICATE_ISSUANCE_HEADERS.length)
     .getValues()[0]
@@ -899,6 +1363,9 @@ function runBenefitsSmokeTest() {
     application_change_log_sheet_ready:
       applicationChangeLogHeaders.join("|") ===
       APPLICATION_CHANGE_LOG_HEADERS.join("|"),
+    integrated_management_sheet_ready:
+      integratedManagementHeaders.join("|") ===
+      INTEGRATED_MANAGEMENT_HEADERS.join("|"),
     certificate_log_sheet_ready:
       certificateLogHeaders.join("|") ===
       CERTIFICATE_ISSUANCE_HEADERS.join("|"),
@@ -940,16 +1407,29 @@ function onEdit(e) {
 
   if (sheet.getName() === BENEFITS_CONFIG.IDEA_CONTEST_TEAM_SHEET_NAME) {
     handleApplicationReviewEdit_(e, IDEA_CONTEST_TEAM_HEADERS);
+    tryRefreshIntegratedManagement_(getEditedIntegratedIdentities_(e), e.source);
+    return;
+  }
+
+  if (sheet.getName() === BENEFITS_CONFIG.IDEA_CONTEST_MEMBER_SHEET_NAME) {
+    tryRefreshIntegratedManagement_(getEditedIntegratedIdentities_(e), e.source);
     return;
   }
 
   if (sheet.getName() === BENEFITS_CONFIG.IDEA_CONTEST_INDIVIDUAL_SHEET_NAME) {
     handleApplicationReviewEdit_(e, IDEA_CONTEST_INDIVIDUAL_HEADERS);
+    tryRefreshIntegratedManagement_(getEditedIntegratedIdentities_(e), e.source);
     return;
   }
 
   if (sheet.getName() === BENEFITS_CONFIG.PROGRAM_APPLICATION_SHEET_NAME) {
     handleApplicationReviewEdit_(e, PROGRAM_APPLICATION_HEADERS);
+    tryRefreshIntegratedManagement_(getEditedIntegratedIdentities_(e), e.source);
+    return;
+  }
+
+  if (sheet.getName() === BENEFITS_CONFIG.DEFENSE_INDUSTRY_COURSE_SHEET_NAME) {
+    tryRefreshIntegratedManagement_(getEditedIntegratedIdentities_(e), e.source);
     return;
   }
 
@@ -1027,6 +1507,93 @@ function handleApplicationReviewEdit_(e, headers) {
     .getSheet()
     .getRange(e.range.getRow(), headerMap.reviewed_at + 1, rowCount, 1)
     .setValues(Array.from({ length: rowCount }, () => [new Date()]));
+}
+
+function getEditedIntegratedIdentities_(e) {
+  const sheet = e.range.getSheet();
+  const sheetName = sheet.getName();
+  const firstRow = e.range.getRow();
+  const rowCount = e.range.getNumRows();
+
+  if (sheetName === BENEFITS_CONFIG.IDEA_CONTEST_TEAM_SHEET_NAME) {
+    const map = getHeaderMap_(IDEA_CONTEST_TEAM_HEADERS);
+    const applicationIds = sheet
+      .getRange(firstRow, 1, rowCount, IDEA_CONTEST_TEAM_HEADERS.length)
+      .getValues()
+      .map((row) => String(row[map.application_id] || "").trim())
+      .filter(Boolean);
+    const memberSheet = e.source.getSheetByName(
+      BENEFITS_CONFIG.IDEA_CONTEST_MEMBER_SHEET_NAME
+    );
+    const memberData = getSheetDataWithHeaderMap_(memberSheet);
+    return memberData.rows
+      .filter((row) => applicationIds.includes(String(
+        row[memberData.headerMap.application_id] || ""
+      ).trim()))
+      .map((row) => ({
+        name: row[memberData.headerMap.name],
+        studentId: row[memberData.headerMap.student_id],
+        department: row[memberData.headerMap.department],
+        phone: row[memberData.headerMap.phone],
+        email: row[memberData.headerMap.email]
+      }));
+  }
+
+  const definitions = {};
+  definitions[BENEFITS_CONFIG.IDEA_CONTEST_MEMBER_SHEET_NAME] = {
+    headers: IDEA_CONTEST_MEMBER_HEADERS,
+    name: "name", studentId: "student_id", department: "department",
+    phone: "phone", email: "email"
+  };
+  definitions[BENEFITS_CONFIG.IDEA_CONTEST_INDIVIDUAL_SHEET_NAME] = {
+    headers: IDEA_CONTEST_INDIVIDUAL_HEADERS,
+    name: "name", studentId: "student_id", department: "department",
+    phone: "phone", email: "email"
+  };
+  definitions[BENEFITS_CONFIG.PROGRAM_APPLICATION_SHEET_NAME] = {
+    headers: PROGRAM_APPLICATION_HEADERS,
+    name: "name", studentId: "student_id", department: "department",
+    phone: "phone", email: "email"
+  };
+  const definition = definitions[sheetName];
+  if (definition) {
+    const map = getHeaderMap_(definition.headers);
+    return sheet
+      .getRange(firstRow, 1, rowCount, definition.headers.length)
+      .getValues()
+      .map((row) => ({
+        name: row[map[definition.name]],
+        studentId: row[map[definition.studentId]],
+        department: row[map[definition.department]],
+        phone: row[map[definition.phone]],
+        email: row[map[definition.email]]
+      }));
+  }
+
+  if (sheetName === BENEFITS_CONFIG.DEFENSE_INDUSTRY_COURSE_SHEET_NAME) {
+    const headers = sheet
+      .getRange(1, 1, 1, sheet.getLastColumn())
+      .getValues()[0]
+      .map((value) => String(value || "").trim());
+    const indexes = {
+      name: findHeaderIndex_(headers, ["이름", "성명", "name"]),
+      studentId: findHeaderIndex_(headers, ["아이디", "학번", "student_id"]),
+      department: findHeaderIndex_(headers, ["학과", "소속학과", "department"]),
+      email: findHeaderIndex_(headers, ["이메일 주소", "이메일", "email"]),
+      phone: findHeaderIndex_(headers, ["휴대 전화", "전화번호", "phone"])
+    };
+    return sheet
+      .getRange(firstRow, 1, rowCount, sheet.getLastColumn())
+      .getValues()
+      .map((row) => ({
+        name: indexes.name >= 0 ? row[indexes.name] : "",
+        studentId: indexes.studentId >= 0 ? row[indexes.studentId] : "",
+        department: indexes.department >= 0 ? row[indexes.department] : "",
+        email: indexes.email >= 0 ? row[indexes.email] : "",
+        phone: indexes.phone >= 0 ? row[indexes.phone] : ""
+      }));
+  }
+  return [];
 }
 
 function sendVerificationCode_(emailValue) {
@@ -1988,6 +2555,7 @@ function submitIdeaContestApplication_(payloadValue) {
     memberSheet
       .getRange(memberStartRow, 1, participantRows.length, IDEA_CONTEST_MEMBER_HEADERS.length)
       .setValues(participantRows);
+    tryRefreshIntegratedManagement_(participants);
 
     try {
       sendIdeaContestConfirmation_(representative.email, representative.name, {
@@ -2063,6 +2631,7 @@ function submitIdeaContestIndividualApplication_(payloadValue) {
         applicant.defenseIndustryCourseStatus,
         ideaInterestFields.join(", ")
       ]]);
+    tryRefreshIntegratedManagement_([applicant]);
 
     try {
       sendIdeaContestIndividualConfirmation_(applicant.email, applicant.name, {
@@ -2108,7 +2677,7 @@ function ensureApplicationsOpen_(payloadValue) {
 
   throwPublicError_(
     "applications_not_open",
-    "현재 모집예정 상태입니다. 접수 일정 확정 후 신청해주세요."
+    "신규 접수가 종료되었습니다. 기존 신청은 확인·변경·취소할 수 있습니다."
   );
 }
 
@@ -2176,6 +2745,7 @@ function submitProgramApplication_(payloadValue) {
       "",
       ""
     ]]);
+    tryRefreshIntegratedManagement_([applicant]);
 
     try {
       sendProgramApplicationConfirmation_(applicant.email, applicant.name, {
@@ -2571,9 +3141,11 @@ function updateManagedTeamApplication_(record, payload, email) {
         participant.defenseIndustryCourseStatus
       ]]);
   });
+  tryRefreshIntegratedManagement_(existingParticipants.concat(participants));
 }
 
 function updateManagedIndividualApplication_(record, payload, email) {
+  const previousIdentity = getManagedApplicationIdentities_(record)[0];
   const applicant = validateContestParticipant_(
     Object.assign({}, payload.applicant || {}, { email }),
     "신청자"
@@ -2594,9 +3166,11 @@ function updateManagedIndividualApplication_(record, payload, email) {
   record.sheet
     .getRange(record.rowNumber, 1, 1, IDEA_CONTEST_INDIVIDUAL_HEADERS.length)
     .setValues([values]);
+  tryRefreshIntegratedManagement_([previousIdentity, applicant]);
 }
 
 function updateManagedProgramApplication_(record, payload, email) {
+  const previousIdentity = getManagedApplicationIdentities_(record)[0];
   const applicant = validateApplicant_(
     Object.assign({}, payload.applicant || {}, { email }),
     "신청자"
@@ -2637,6 +3211,7 @@ function updateManagedProgramApplication_(record, payload, email) {
   record.sheet
     .getRange(record.rowNumber, 1, 1, PROGRAM_APPLICATION_HEADERS.length)
     .setValues([values]);
+  tryRefreshIntegratedManagement_([previousIdentity, applicant]);
 }
 
 function cancelManagedApplication_(sessionTokenValue, applicationIdValue) {
@@ -2647,6 +3222,7 @@ function cancelManagedApplication_(sessionTokenValue, applicationIdValue) {
   try {
     const record = findManagedApplication_(applicationId, email);
     ensureManagedApplicationEditable_(record);
+    const affectedIdentities = getManagedApplicationIdentities_(record);
     const previousStatus = String(
       record.values[record.headerMap.application_status] || "접수"
     ).trim();
@@ -2665,6 +3241,7 @@ function cancelManagedApplication_(sessionTokenValue, applicationIdValue) {
       previousStatus,
       "취소"
     );
+    tryRefreshIntegratedManagement_(affectedIdentities);
     try {
       sendApplicationManagementConfirmation_(email, record, "취소");
     } catch (mailError) {
