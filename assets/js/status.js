@@ -327,6 +327,7 @@ const ApplicationManagement = (() => {
   function buildProgramFields(application) {
     const data = application.data || {};
     const applicant = data.applicant || {};
+    const isIntermediate = application.application_type_label === "중급과정 신청";
     return `
       <section class="grid gap-4">
         ${readonlyField("program", "신청과정", application.program)}
@@ -346,10 +347,10 @@ const ApplicationManagement = (() => {
         </div>
         ${textareaField("application_motivation", "수강 목적", data.application_motivation, 1000, true)}
         ${textareaField("ai_experience", "AI 활용 경험", data.ai_experience, 1000, false)}
-        <div class="grid gap-4 md:grid-cols-2">
+        ${isIntermediate ? "" : `<div class="grid gap-4 md:grid-cols-2">
           ${selectField("preferred_ai_service", "생성형 AI 서비스 지원", AI_SERVICES, data.preferred_ai_service, true)}
           ${inputField("ai_invitation_email", "AI 서비스 초대용 이메일", data.ai_invitation_email, "email", "maxlength=\"254\"")}
-        </div>
+        </div>`}
       </section>
     `;
   }
@@ -392,7 +393,8 @@ const ApplicationManagement = (() => {
         checkbox.addEventListener("change", handleInterestChange);
       });
     }
-    if (application.application_type === "program") {
+    if (application.application_type === "program" &&
+        application.application_type_label !== "중급과정 신청") {
       const service = document.querySelector("#edit-preferred_ai_service");
       const invitationEmail = document.querySelector("#edit-ai_invitation_email");
       const update = () => {

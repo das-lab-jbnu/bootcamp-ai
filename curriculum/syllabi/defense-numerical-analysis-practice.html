@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="전북대학교 방산AI부트캠프 중급과정 방산수치해석 및 실습 강의계획서" />
+    <title>방산수치해석 및 실습 | 강의계획서</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --navy: #082d59;
+        --blue: #1d5ca8;
+        --text: #1e293b;
+        --muted: #52647d;
+        --line: #dce6f2;
+        --surface: #ffffff;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: linear-gradient(180deg, #edf4fc 0%, #f8fafc 42%, #eef3f9 100%);
+        color: var(--text);
+        font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+        line-height: 1.65;
+      }
+      a { color: inherit; }
+      a:focus-visible { outline: 3px solid #60a5fa; outline-offset: 3px; }
+      .container { width: min(100% - 40px, 1080px); margin: 0 auto; padding: 32px 0 70px; }
+      .back-link { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 18px; color: var(--navy); font-size: 14px; font-weight: 700; text-decoration: none; }
+      .back-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+      .hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 28px;
+        padding: 46px 48px 48px;
+        background: linear-gradient(125deg, #081a35, #123c72 65%, #12638f);
+        color: #fff;
+        box-shadow: 0 22px 50px rgba(8, 45, 89, .2);
+      }
+      .hero::after {
+        content: "";
+        position: absolute;
+        right: -85px;
+        top: -120px;
+        width: 360px;
+        height: 360px;
+        border: 1px solid rgba(186, 230, 253, .28);
+        border-radius: 50%;
+        box-shadow: 0 0 0 42px rgba(255, 255, 255, .035), 0 0 0 86px rgba(255, 255, 255, .025);
+        pointer-events: none;
+      }
+      .hero > * { position: relative; z-index: 1; }
+      .eyebrow { margin: 0 0 18px; color: #bfdbfe; font-size: 13px; font-weight: 800; letter-spacing: .15em; }
+      .badge { display: inline-block; padding: 5px 12px; border: 1px solid rgba(191, 219, 254, .42); border-radius: 999px; background: rgba(255, 255, 255, .11); color: #eff6ff; font-size: 13px; font-weight: 700; }
+      h1 { margin: 18px 0 12px; font-size: clamp(32px, 5vw, 46px); line-height: 1.24; letter-spacing: -.045em; }
+      .hero-description { max-width: 690px; margin: 0; color: #e0efff; font-size: 18px; line-height: 1.8; }
+      .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; margin-top: 24px; }
+      .summary-card { min-width: 0; padding: 19px 21px; border: 1px solid #dce7f4; border-radius: 18px; background: var(--surface); box-shadow: 0 8px 24px rgba(15, 23, 42, .05); }
+      .summary-card dt { color: var(--muted); font-size: 13px; font-weight: 700; }
+      .summary-card dd { margin: 5px 0 0; color: var(--navy); font-size: 18px; font-weight: 800; line-height: 1.45; }
+      .panel { margin-top: 24px; padding: 30px 34px; border: 1px solid #e2eaf4; border-radius: 24px; background: var(--surface); box-shadow: 0 9px 30px rgba(15, 23, 42, .045); }
+      h2 { display: flex; align-items: center; gap: 12px; margin: 0 0 18px; color: #102947; font-size: 25px; line-height: 1.4; }
+      h2::before { content: ""; flex: 0 0 auto; width: 6px; height: 27px; border-radius: 4px; background: var(--blue); }
+      .overview-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+      .info-box { padding: 20px 22px; border: 1px solid var(--line); border-radius: 17px; background: #f8fbff; }
+      .info-box h3 { margin: 0 0 8px; color: var(--navy); font-size: 17px; }
+      .info-box p { margin: 0; color: #35445b; }
+      .note { margin: 18px 0 0; padding: 16px 20px; border-left: 4px solid #3b82f6; border-radius: 0 12px 12px 0; background: #eff6ff; color: #28446b; }
+      .schedule-intro { margin: -5px 0 18px; color: var(--muted); }
+      .table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; }
+      table { width: 100%; min-width: 790px; border-collapse: collapse; font-size: 14px; }
+      caption { padding: 0; text-align: left; }
+      thead { background: #103f7e; color: #fff; }
+      th, td { padding: 14px 13px; text-align: left; vertical-align: top; }
+      th:first-child, td:first-child { text-align: center; }
+      tbody tr:nth-child(even) { background: #f5f9ff; }
+      tbody tr + tr { border-top: 1px solid #e5edf7; }
+      td:nth-child(2) { white-space: nowrap; }
+      .topic { color: var(--navy); font-weight: 750; }
+      .mode { display: inline-block; min-width: 61px; padding: 4px 9px; border-radius: 999px; text-align: center; font-size: 12px; font-weight: 800; }
+      .mode.online { background: #e0efff; color: #15529a; }
+      .mode.offline { background: #e1f4eb; color: #14734c; }
+      .footer { margin-top: 28px; padding: 18px 0; border-top: 1px solid #d7e1ed; color: #64748b; font-size: 13px; text-align: center; }
+      @media (max-width: 800px) {
+        .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+      @media (max-width: 620px) {
+        .container { width: min(100% - 28px, 1080px); padding-top: 22px; }
+        .hero { padding: 30px 24px 34px; border-radius: 22px; }
+        .hero-description { font-size: 16px; }
+        .summary-card { padding: 16px; }
+        .summary-card dd { font-size: 16px; }
+        .panel { padding: 23px 19px; border-radius: 20px; }
+        h2 { font-size: 22px; }
+        .overview-grid { grid-template-columns: 1fr; }
+      }
+      @media print {
+        body { background: #fff; }
+        .container { width: 100%; padding: 0; }
+        .back-link { display: none; }
+        .hero, .summary-card, .panel { box-shadow: none; }
+        .panel { break-inside: avoid; }
+        .table-scroll { overflow: visible; }
+        table { min-width: 0; font-size: 11px; }
+        th, td { padding: 8px 7px; }
+        tr { break-inside: avoid; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <a class="back-link" href="../index.html"><span aria-hidden="true">←</span> 교육과정으로 돌아가기</a>
+
+      <header class="hero">
+        <p class="eyebrow">전북대학교 방산AI부트캠프사업단 · 강의계획서</p>
+        <span class="badge">중급과정</span>
+        <h1>방산수치해석 및 실습</h1>
+        <p class="hero-description">데이터와 신호처리에 필요한 알고리즘을 배우고, 벡터·행렬 연산을 컴퓨터 프로그램으로 실습합니다.</p>
+      </header>
+
+      <dl class="summary-grid" aria-label="교과목 기본 정보">
+        <div class="summary-card"><dt>담당 교수</dt><dd>김명훈</dd></div>
+        <div class="summary-card"><dt>강의 기간</dt><dd><time datetime="2026-12-21">2026.12.21.</time> ~ <time datetime="2027-01-04">2027.01.04.</time></dd></div>
+        <div class="summary-card"><dt>강의 구성</dt><dd>총 10회</dd></div>
+        <div class="summary-card"><dt>운영 방식</dt><dd>온라인 5회 · 대면 5회</dd></div>
+      </dl>
+
+      <section class="panel" aria-labelledby="course-intro-title">
+        <h2 id="course-intro-title">교과목 안내</h2>
+        <div class="overview-grid">
+          <div class="info-box"><h3>교과목 개요</h3><p>데이터와 신호처리를 위해 필요한 기초적인 알고리즘을 공부한다.</p></div>
+          <div class="info-box"><h3>교육목표</h3><p>벡터와 행렬 연산을 컴퓨터 프로그램을 활용해서 계산할 수 있다.</p></div>
+          <div class="info-box"><h3>운영방법</h3><p>온라인 강의 / 대면 실습</p></div>
+          <div class="info-box"><h3>특이사항</h3><p>방산업체 재직자 3명을 초청하여 각 2시간씩 총 6시간 특강을 운영함. 오프라인 수업 기간 중 운영 예정.</p></div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="schedule-title">
+        <h2 id="schedule-title">강의 세부 계획</h2>
+        <p class="schedule-intro">온라인 강의 후 대면 실습으로 이어지는 총 10회 구성입니다.</p>
+        <div class="table-scroll" role="region" aria-label="강의 세부 계획 표" tabindex="0">
+          <table>
+            <caption class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">방산수치해석 및 실습 회차별 강의 일정</caption>
+            <thead><tr><th scope="col">회차</th><th scope="col">일자</th><th scope="col">주제</th><th scope="col">구분</th><th scope="col">주요 내용</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td><time datetime="2026-12-21">2026.12.21.(월)</time></td><td class="topic">Course Orientation · 벡터와 행렬</td><td><span class="mode online">온라인</span></td><td>강의 소개 및 벡터와 행렬</td></tr>
+              <tr><td>2</td><td><time datetime="2026-12-22">2026.12.22.(화)</time></td><td class="topic">벡터와 행렬</td><td><span class="mode online">온라인</span></td><td>고유값·고유벡터 및 대칭·정부호 행렬</td></tr>
+              <tr><td>3</td><td><time datetime="2026-12-23">2026.12.23.(수)</time></td><td class="topic">벡터와 행렬</td><td><span class="mode online">온라인</span></td><td>특이값 분해</td></tr>
+              <tr><td>4</td><td><time datetime="2026-12-24">2026.12.24.(목)</time></td><td class="topic">벡터와 행렬</td><td><span class="mode online">온라인</span></td><td>최소제곱법</td></tr>
+              <tr><td>5</td><td><time datetime="2026-12-25">2026.12.25.(금)</time></td><td class="topic">수치해석</td><td><span class="mode online">온라인</span></td><td>임의화 알고리즘 및 특수행렬의 이해</td></tr>
+              <tr><td>6</td><td><time datetime="2026-12-28">2026.12.28.(월)</time></td><td class="topic">수치해석</td><td><span class="mode offline">오프라인</span></td><td>수치해석 현장 활용, 벡터와 행렬 응용</td></tr>
+              <tr><td>7</td><td><time datetime="2026-12-29">2026.12.29.(화)</time></td><td class="topic">큰 행렬의 계산</td><td><span class="mode offline">오프라인</span></td><td>큰 행렬의 계산 응용</td></tr>
+              <tr><td>8</td><td><time datetime="2026-12-30">2026.12.30.(수)</time></td><td class="topic">큰 행렬의 계산</td><td><span class="mode offline">오프라인</span></td><td>임의화 알고리즘</td></tr>
+              <tr><td>9</td><td><time datetime="2026-12-31">2026.12.31.(목)</time></td><td class="topic">특별한 행렬</td><td><span class="mode offline">오프라인</span></td><td>크로네커 곱</td></tr>
+              <tr><td>10</td><td><time datetime="2027-01-04">2027.01.04.(월)</time></td><td class="topic">특별한 행렬</td><td><span class="mode offline">오프라인</span></td><td>퇴플리츠 행렬, 최종 정리/마무리</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">재직자 특강 6시간은 오프라인 수업 기간에 운영할 예정입니다.</p>
+      </section>
+
+      <footer class="footer">전북대학교 방산AI부트캠프사업단 · 방산수치해석 및 실습 강의계획서</footer>
+    </main>
+  </body>
+</html>

@@ -3,9 +3,10 @@ const ProgramApplication = (() => {
   const LOCAL_PREVIEW =
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1";
+  const PREVIEW_MODE = window.isIntermediateApplicationPreview?.() === true;
   const URL_PARAMETERS = new URLSearchParams(window.location.search);
   const LIVE_TEST_REQUESTED =
-    LOCAL_PREVIEW && URL_PARAMETERS.get("liveTest") === "1";
+    LOCAL_PREVIEW && !PREVIEW_MODE && URL_PARAMETERS.get("liveTest") === "1";
   const APPLICATION_TEST_KEY = URL_PARAMETERS.get("testKey") || "";
   const LIVE_TEST_MODE =
     LIVE_TEST_REQUESTED && APPLICATION_TEST_KEY.length >= 20;
@@ -14,6 +15,11 @@ const ProgramApplication = (() => {
     "[초급프로그램] AI Agent 마스터",
     "[초급프로그램] 바이브코딩 입문",
     "[초급프로그램] 생성형 AI 첫걸음: 원리부터 실전 활용까지"
+  ];
+  const INTERMEDIATE_PROGRAMS = [
+    "[중급과정] 방산 AI 보안",
+    "[중급과정] 방산 개방형 아키텍처",
+    "[중급과정] 방산수치해석 및 실습"
   ];
   const AI_SERVICES = ["ChatGPT", "Claude", "신청하지 않음"];
   const DEFENSE_INDUSTRY_COURSE_STATUSES = ["수강완료", "수강중", "미수강"];
@@ -48,6 +54,33 @@ const ProgramApplication = (() => {
       label: "60시간 초급과정",
       description: "LLM·생성형 AI의 기본 개념, 작동 원리와 올바른 활용 방법을 배우는 초급과정입니다.",
       guidance: "신청은 개인 단위로 진행합니다. 경진대회 참가자는 팀원별로 서로 다른 초급과정을 선택할 수 있으며, 수료 기준은 전체 진도율 80% 이상입니다."
+    },
+    "defense-ai-security": {
+      type: "course",
+      level: "intermediate",
+      title: INTERMEDIATE_PROGRAMS[0],
+      syllabus: "../curriculum/syllabi/defense-ai-security-2026-fall.html",
+      label: "중급과정",
+      description: "국방 AI 및 자율무인체계 보안을 학습하고 공격·방어 시뮬레이션을 실습합니다.",
+      guidance: "온라인 학습은 상시 운영하며 오프라인 실습 일정은 미정입니다. 접수는 2026.10.31.까지이고 신청은 개인 단위로 진행합니다."
+    },
+    "defense-open-architecture": {
+      type: "course",
+      level: "intermediate",
+      title: INTERMEDIATE_PROGRAMS[1],
+      syllabus: "../curriculum/syllabi/defense-open-architecture-2026-fall.html",
+      label: "중급과정",
+      description: "방산 개방형 아키텍처와 ROS2 기반 자율무인체계의 구조를 학습합니다.",
+      guidance: "온라인 학습은 상시 운영하며 오프라인 실습 일정은 미정입니다. 접수는 2026.10.31.까지이고 신청은 개인 단위로 진행합니다."
+    },
+    "defense-numerical-analysis": {
+      type: "course",
+      level: "intermediate",
+      title: INTERMEDIATE_PROGRAMS[2],
+      syllabus: "../curriculum/syllabi/defense-numerical-analysis-practice.html",
+      label: "중급과정",
+      description: "데이터·신호처리를 위한 기초 알고리즘과 벡터·행렬 연산을 학습합니다.",
+      guidance: "강의기간은 2026.12.21.~2027.01.04.이며 온라인 강의와 대면 실습으로 운영합니다. 신청은 개인 단위로 진행합니다."
     }
   };
 
@@ -56,6 +89,8 @@ const ProgramApplication = (() => {
     title: "#application-title",
     typeLabel: "#application-type-label",
     aiServiceBadge: "#application-ai-service-badge",
+    statusBadge: "#application-status-badge",
+    syllabusLink: "#application-syllabus-link",
     description: "#application-description",
     guidance: "#application-guidance",
     liveTestNotice: "#live-test-notice",
@@ -94,6 +129,16 @@ const ProgramApplication = (() => {
     document.querySelector(SELECTORS.description).textContent = currentProgram.description;
     document.querySelector(SELECTORS.guidance).textContent = currentProgram.guidance;
     document.querySelector(SELECTORS.slug).value = slug;
+    const syllabusLink = document.querySelector(SELECTORS.syllabusLink);
+    if (syllabusLink && currentProgram.syllabus) {
+      syllabusLink.href = currentProgram.syllabus;
+      syllabusLink.classList.remove("hidden");
+    }
+    if (PREVIEW_MODE) {
+      document.querySelectorAll("[data-application-back-link]").forEach((link) => {
+        link.href = "./index.html?preview=1";
+      });
+    }
     configureAiServiceBadge();
     configureLiveTestNotice();
 
@@ -111,7 +156,11 @@ const ProgramApplication = (() => {
       setApplicationUnavailable(form);
       return;
     }
-    if (settings.programs[slug] !== true) {
+    if (!Object.prototype.hasOwnProperty.call(settings.programs, slug)) {
+      setApplicationUnavailable(form);
+      return;
+    }
+    if (settings.programs[slug] !== true && !LIVE_TEST_MODE) {
       setApplicationClosed(form);
       return;
     }
@@ -124,6 +173,7 @@ const ProgramApplication = (() => {
     if (submitButton) submitButton.disabled = true;
     const submitText = form.querySelector("[data-submit-text]");
     if (submitText) submitText.textContent = "접수 상태 확인 중";
+    setStatusBadge("상태 확인 중", "bg-slate-500");
   }
 
   function setApplicationOpen(form) {
@@ -131,6 +181,15 @@ const ProgramApplication = (() => {
     if (submitButton) submitButton.disabled = false;
     const submitText = form.querySelector("[data-submit-text]");
     if (submitText) submitText.textContent = "접수하기";
+    setStatusBadge("접수중", "bg-emerald-600");
+  }
+
+  function setStatusBadge(label, backgroundClass) {
+    const badge = document.querySelector(SELECTORS.statusBadge);
+    if (!badge) return;
+    badge.textContent = label;
+    badge.classList.remove("bg-slate-500", "bg-blue-700", "bg-emerald-600");
+    badge.classList.add(backgroundClass);
   }
 
   function setApplicationUnavailable(form) {
@@ -139,6 +198,7 @@ const ProgramApplication = (() => {
     });
     const submitText = form.querySelector("[data-submit-text]");
     if (submitText) submitText.textContent = "상태 확인 필요";
+    setStatusBadge("상태 확인 필요", "bg-slate-500");
     const message = document.querySelector(SELECTORS.message);
     message.textContent =
       "접수 상태를 불러오지 못했습니다. 잠시 후 페이지를 새로고침해주세요.";
@@ -158,6 +218,7 @@ const ProgramApplication = (() => {
     });
     const submitText = form.querySelector("[data-submit-text]");
     if (submitText) submitText.textContent = "접수종료";
+    setStatusBadge("접수종료", "bg-blue-700");
     const message = document.querySelector(SELECTORS.message);
     message.textContent = "신규 접수가 종료되었습니다. 기존 신청은 신청 확인/변경/취소 메뉴에서 관리할 수 있습니다.";
     message.classList.remove("hidden", "bg-red-50", "text-red-700", "bg-emerald-50", "text-emerald-800");
@@ -190,6 +251,14 @@ const ProgramApplication = (() => {
   }
 
   function configureLiveTestNotice() {
+    if (PREVIEW_MODE) {
+      const notice = document.querySelector(SELECTORS.liveTestNotice);
+      notice.classList.remove("hidden");
+      notice.textContent =
+        "로컬 배포 전 미리보기입니다. 접수 정보를 입력하고 검증할 수 있지만 Google Sheet 저장과 확인 이메일 발송은 하지 않습니다.";
+      notice.classList.add("border-emerald-300", "bg-emerald-50", "text-emerald-900");
+      return;
+    }
     if (!LIVE_TEST_REQUESTED) return;
     const notice = document.querySelector(SELECTORS.liveTestNotice);
     notice.classList.remove("hidden");
@@ -292,6 +361,22 @@ const ProgramApplication = (() => {
     courseFields.classList.remove("hidden");
     setRequired(courseFields, true);
     document.querySelector("#ai-experience").required = false;
+    document.querySelector("#course-form-guidance").textContent =
+      currentProgram.level === "intermediate"
+        ? "중급과정은 과목별로 신청자 본인이 직접 신청해주세요."
+        : "경진대회 참가자도 팀 접수와 별도로 본인이 직접 신청해주세요.";
+
+    if (currentProgram.level === "intermediate") {
+      const submitButton = document.querySelector(SELECTORS.submit);
+      submitButton.classList.remove("bg-blue-900", "hover:bg-blue-800");
+      submitButton.classList.add("bg-emerald-700", "hover:bg-emerald-800");
+      document.querySelector("#course-ai-support").classList.add("hidden");
+      fillSelect(serviceSelect, ["신청하지 않음"], "희망 AI 서비스 없음");
+      serviceSelect.value = "신청하지 않음";
+      serviceSelect.required = false;
+      document.querySelector("#course-ai-email").required = false;
+      return;
+    }
 
     if (assignedAiService) {
       document.querySelector("#course-ai-support-title").textContent = "지정 AI 서비스 지원";

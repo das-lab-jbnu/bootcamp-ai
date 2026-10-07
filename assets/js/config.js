@@ -18,12 +18,20 @@ window.getBenefitsApiEndpoint = function getBenefitsApiEndpoint() {
   return window.BOOTCAMP_CONFIG.benefitsEndpoint;
 };
 
+window.isIntermediateApplicationPreview = function isIntermediateApplicationPreview() {
+  const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  return isLocal && new URLSearchParams(window.location.search).get("preview") === "1";
+};
+
 window.getApplicationSettings = async function getApplicationSettings() {
   const closedPrograms = {
     "idea-contest": false,
     "ai-agent": false,
     "vibe-coding": false,
-    "generative-ai": false
+    "generative-ai": false,
+    "defense-ai-security": false,
+    "defense-open-architecture": false,
+    "defense-numerical-analysis": false
   };
   const fallback = {
     available: false,
@@ -31,6 +39,20 @@ window.getApplicationSettings = async function getApplicationSettings() {
     applicationManagementOpen: false,
     scholarshipApplicationsOpen: false
   };
+  if (window.isIntermediateApplicationPreview()) {
+    return {
+      available: true,
+      preview: true,
+      programs: {
+        ...closedPrograms,
+        "defense-ai-security": true,
+        "defense-open-architecture": true,
+        "defense-numerical-analysis": true
+      },
+      applicationManagementOpen: false,
+      scholarshipApplicationsOpen: false
+    };
+  }
   const endpoint = window.getBenefitsApiEndpoint();
   if (!endpoint) return fallback;
 
@@ -51,14 +73,15 @@ window.getApplicationSettings = async function getApplicationSettings() {
       throw new Error("운영설정 응답이 올바르지 않습니다.");
     }
     const settings = result.settings;
+    const programs = {};
+    Object.keys(closedPrograms).forEach((key) => {
+      if (Object.prototype.hasOwnProperty.call(settings.programs || {}, key)) {
+        programs[key] = settings.programs[key] === true;
+      }
+    });
     return {
       available: true,
-      programs: {
-        "idea-contest": settings.programs?.["idea-contest"] === true,
-        "ai-agent": settings.programs?.["ai-agent"] === true,
-        "vibe-coding": settings.programs?.["vibe-coding"] === true,
-        "generative-ai": settings.programs?.["generative-ai"] === true
-      },
+      programs,
       applicationManagementOpen:
         settings.applicationManagementOpen === true,
       scholarshipApplicationsOpen:
