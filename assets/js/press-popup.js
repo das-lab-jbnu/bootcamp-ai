@@ -2,10 +2,11 @@
   const popup = document.getElementById("press-popup");
   const closeButton = document.getElementById("press-popup-close");
   const hideTodayButton = document.getElementById("press-popup-hide-today");
+  const hideForeverButton = document.getElementById("press-popup-hide-forever");
   const storageKey = "jbnu-defense-ai-press-popup-634111-hidden-date";
   let previousFocus = null;
 
-  if (!popup || !closeButton || !hideTodayButton) return;
+  if (!popup || !closeButton || !hideTodayButton || !hideForeverButton) return;
 
   function todayKey() {
     const now = new Date();
@@ -24,7 +25,8 @@
 
   function openPopup() {
     try {
-      if (window.localStorage.getItem(storageKey) === todayKey()) return;
+      const hiddenUntil = window.localStorage.getItem(storageKey);
+      if (hiddenUntil === "forever" || hiddenUntil === todayKey()) return;
     } catch (error) {
       // 저장소를 사용할 수 없어도 팝업은 표시합니다.
     }
@@ -39,6 +41,14 @@
   hideTodayButton.addEventListener("click", () => {
     try {
       window.localStorage.setItem(storageKey, todayKey());
+    } catch (error) {
+      // 저장소를 사용할 수 없으면 현재 팝업만 닫습니다.
+    }
+    closePopup();
+  });
+  hideForeverButton.addEventListener("click", () => {
+    try {
+      window.localStorage.setItem(storageKey, "forever");
     } catch (error) {
       // 저장소를 사용할 수 없으면 현재 팝업만 닫습니다.
     }
