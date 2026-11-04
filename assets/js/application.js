@@ -62,7 +62,7 @@ const ProgramApplication = (() => {
       syllabus: "../curriculum/syllabi/defense-ai-security-2026-fall.html",
       label: "중급과정",
       description: "국방 AI 및 자율무인체계 보안을 학습하고 공격·방어 시뮬레이션을 실습합니다.",
-      guidance: "온라인 학습은 상시 운영합니다. 오프라인 실습은 2026년 11월 5일·12일·19일·26일 오후 6시~10시, 창조2관 4층 402호에서 진행합니다. 접수는 2026.10.31.까지이고 신청은 개인 단위로 진행합니다."
+      guidance: "온라인 학습은 상시 운영합니다. 오프라인 실습은 2026년 11월 5일·12일·19일·26일 오후 6시~10시, 창조2관 4층 402호에서 진행합니다. 신청은 개인 단위로 진행합니다."
     },
     "defense-open-architecture": {
       type: "course",
@@ -71,7 +71,7 @@ const ProgramApplication = (() => {
       syllabus: "../curriculum/syllabi/defense-open-architecture-2026-fall.html",
       label: "중급과정",
       description: "방산 개방형 아키텍처와 ROS2 기반 자율무인체계의 구조를 학습합니다.",
-      guidance: "온라인 학습은 상시 운영합니다. 오프라인 실습은 2026년 11월 3일·24일, 12월 1일·22일 오후 6시~10시, 창조2관 4층 402호에서 진행합니다. 접수는 2026.10.31.까지이고 신청은 개인 단위로 진행합니다."
+      guidance: "온라인 학습은 상시 운영합니다. 오프라인 실습은 2026년 11월 3일·24일, 12월 1일·22일 오후 6시~10시, 창조2관 4층 402호에서 진행합니다. 신청은 개인 단위로 진행합니다."
     },
     "defense-numerical-analysis": {
       type: "course",

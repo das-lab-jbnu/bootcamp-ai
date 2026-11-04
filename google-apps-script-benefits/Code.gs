@@ -311,11 +311,6 @@ const PROGRAM_SETTING_KEYS = {
   "[중급과정] 방산 개방형 아키텍처": "defense_open_architecture_open",
   "[중급과정] 방산수치해석 및 실습": "defense_numerical_analysis_open"
 };
-const APPLICATION_DEADLINES = {
-  defense_ai_security_open: "20261031",
-  defense_open_architecture_open: "20261031"
-};
-
 const GENDER_OPTIONS = ["남성", "여성"];
 const MAJOR_FIELD_OPTIONS = ["공학", "예체능", "자연과학", "의학", "인문사회"];
 const COURSE_YEAR_OPTIONS = ["2년", "3년", "4년", "5년", "6년"];
@@ -2971,10 +2966,8 @@ function getPublicApplicationSettings_() {
       "ai-agent": values.ai_agent_open === true,
       "vibe-coding": values.vibe_coding_open === true,
       "generative-ai": values.generative_ai_open === true,
-      "defense-ai-security": values.defense_ai_security_open === true &&
-        isApplicationWithinDeadline_("defense_ai_security_open"),
-      "defense-open-architecture": values.defense_open_architecture_open === true &&
-        isApplicationWithinDeadline_("defense_open_architecture_open"),
+      "defense-ai-security": values.defense_ai_security_open === true,
+      "defense-open-architecture": values.defense_open_architecture_open === true,
       "defense-numerical-analysis": values.defense_numerical_analysis_open === true
     },
     applicationManagementOpen:
@@ -2995,19 +2988,9 @@ function toBooleanSetting_(value, fallback) {
   return fallback === true;
 }
 
-function isApplicationWithinDeadline_(settingKey, now) {
-  const deadline = APPLICATION_DEADLINES[settingKey];
-  if (!deadline) return true;
-  const today = Utilities.formatDate(
-    now || new Date(), BENEFITS_CONFIG.TIMEZONE, "yyyyMMdd"
-  );
-  return today <= deadline;
-}
-
 function ensureApplicationsOpen_(payloadValue, settingKey) {
   const settings = getApplicationSettingsValues_();
-  if (settingKey && settings[settingKey] === true &&
-      isApplicationWithinDeadline_(settingKey)) return;
+  if (settingKey && settings[settingKey] === true) return;
 
   const payload = payloadValue || {};
   const configuredTestKey = String(
