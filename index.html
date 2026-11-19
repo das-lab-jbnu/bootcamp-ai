@@ -29,70 +29,8 @@
       <footer id="site-footer"></footer>
     </div>
 
-    <div
-      id="press-popup"
-      class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-950/70 px-4 py-6"
-    >
-      <section
-        class="flex w-full max-w-xl flex-col overflow-hidden rounded-2xl border-2 border-amber-300/80 bg-[#071b34] text-white shadow-2xl"
-        style="max-height: calc(100vh - 3rem)"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="press-popup-title"
-        aria-describedby="press-popup-description"
-      >
-        <a
-          href="https://www.todayan.com/news/articleView.html?idxno=634111"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="group block min-h-0 overflow-y-auto bg-gradient-to-br from-[#071b34] via-[#143c60] to-[#071b34] px-5 py-6 text-white no-underline transition hover:from-[#103052] hover:via-[#1b4d76] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-[-4px] focus-visible:outline-amber-300 sm:px-8 sm:py-8"
-          aria-label="전주대·군산대·전북대 첨단산업 인재양성 협의회 발족 기사 원문 보기 (새 탭)"
-        >
-          <p class="text-xs font-bold tracking-[0.16em] text-amber-200">JBNU DEFENSE AI BOOTCAMP</p>
-          <p class="mt-5 inline-block rounded border border-blue-200/60 px-3 py-1.5 text-sm font-bold text-blue-100">언론보도 · 투데이안</p>
-          <h2 id="press-popup-title" class="mt-4 break-keep text-2xl font-extrabold leading-snug text-white sm:text-3xl">
-            전주대·군산대·전북대,<br class="hidden sm:block" />
-            <span class="text-amber-200">첨단산업 인재양성 협의회 발족</span>
-          </h2>
-          <p id="press-popup-description" class="mt-4 break-keep text-base leading-7 text-blue-50">
-            세 대학 부트캠프 사업단이 교육 경험과 성과를 공유하고, 현장 수요에 맞는 첨단산업 인재를 함께 양성하기로 했습니다.
-          </p>
-          <div class="mt-6 grid gap-2 sm:grid-cols-3">
-            <div class="rounded-lg border border-blue-200/30 bg-slate-950/30 p-3">
-              <strong class="block text-sm text-amber-200">3개 대학 협력</strong>
-              <span class="mt-1 block break-keep text-sm leading-5 text-blue-50">10월 16일 사업단 간 업무협약</span>
-            </div>
-            <div class="rounded-lg border border-blue-200/30 bg-slate-950/30 p-3">
-              <strong class="block text-sm text-amber-200">특화 역량 연계</strong>
-              <span class="mt-1 block break-keep text-sm leading-5 text-blue-50">방산 AI·로봇 AX·피지컬 AI</span>
-            </div>
-            <div class="rounded-lg border border-blue-200/30 bg-slate-950/30 p-3">
-              <strong class="block text-sm text-amber-200">전북대 참여</strong>
-              <span class="mt-1 block break-keep text-sm leading-5 text-blue-50">방산AI부트캠프사업단</span>
-            </div>
-          </div>
-          <p class="mt-5 text-sm text-blue-100">투데이안 · 2026.10.20 보도</p>
-          <span class="mt-4 inline-flex min-h-11 items-center justify-center rounded-md border border-amber-200 bg-amber-200 px-5 py-2 text-base font-extrabold text-[#071b34] transition group-hover:bg-amber-100">
-            기사 원문 보기 <span class="ml-2" aria-hidden="true">↗</span>
-          </span>
-        </a>
-        <div class="grid shrink-0 grid-cols-3 border-t border-amber-300/60 bg-[#06172b] text-center text-xs sm:text-sm">
-          <button id="press-popup-hide-today" type="button" class="min-h-12 px-1 font-semibold text-white hover:bg-blue-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300">
-            오늘 하루 보지 않기
-          </button>
-          <button id="press-popup-hide-forever" type="button" class="min-h-12 border-x border-blue-200/20 px-1 font-semibold text-white hover:bg-blue-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300">
-            다시 보지 않기
-          </button>
-          <button id="press-popup-close" type="button" class="min-h-12 px-1 font-semibold text-white hover:bg-blue-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300">
-            닫기
-          </button>
-        </div>
-      </section>
-    </div>
-
     <script src="./assets/js/data.js"></script>
     <script src="./assets/js/common.js"></script>
-    <script src="./assets/js/press-popup.js" defer></script>
     <script>
       const data = window.BOOTCAMP_DATA;
       document.getElementById("hero-message").textContent = data.heroMessage;
