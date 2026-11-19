@@ -1,11 +1,17 @@
 const NAV_ITEMS = [
   { href: "index.html", label: "홈" },
-  { href: "about/index.html", label: "사업단 소개" },
-  { href: "curriculum/index.html", label: "교육과정" },
-  { href: "partners/index.html", label: "참여기업" },
+  {
+    label: "사업단 안내",
+    children: [
+      { href: "about/index.html", label: "사업단 소개" },
+      { href: "curriculum/index.html", label: "교육과정" },
+      { href: "partners/index.html", label: "참여기업" }
+    ]
+  },
   { href: "faculty/index.html", label: "교수진/인프라" },
   { href: "support/index.html", label: "학생 지원 혜택" },
-  { href: "apply/index.html", label: "프로그램 신청/접수" }
+  { href: "apply/index.html", label: "프로그램 신청/접수" },
+  { href: "notices/index.html", label: "공지사항" }
 ];
 
 function getBasePrefix() {
@@ -16,7 +22,8 @@ function getBasePrefix() {
     path.includes("/partners/") ||
     path.includes("/faculty/") ||
     path.includes("/support/") ||
-    path.includes("/apply/");
+    path.includes("/apply/") ||
+    path.includes("/notices/");
   return isSubPage ? "../" : "./";
 }
 
@@ -27,14 +34,22 @@ function renderHeaderFooter() {
   if (!header || !footer) return;
   const basePrefix = getBasePrefix();
 
-  const navLinks = NAV_ITEMS.map(
-    (item) =>
-      `<a class="text-base md:text-lg font-semibold text-slate-700 hover:text-blue-900" href="${basePrefix}${item.href}">${item.label}</a>`
-  ).join("");
+  const navLinks = NAV_ITEMS.map((item) => {
+    if (item.children) {
+      const childLinks = item.children.map((child) =>
+        `<a href="${basePrefix}${child.href}">${child.label}</a>`
+      ).join("");
+      return `<details class="site-nav-group">
+        <summary class="site-nav-link">${item.label}<span class="site-nav-chevron" aria-hidden="true">▾</span></summary>
+        <div class="site-nav-group-menu">${childLinks}</div>
+      </details>`;
+    }
+    return `<a class="site-nav-link" href="${basePrefix}${item.href}">${item.label}</a>`;
+  }).join("");
 
   header.innerHTML = `
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <div class="relative z-40 bg-white border-b border-slate-200">
+      <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-start md:gap-6">
         <a href="${basePrefix}index.html" class="flex items-center gap-3 font-bold text-blue-950">
           <img
             src="${basePrefix}assets/images/jbnu-logo.png"
@@ -44,7 +59,7 @@ function renderHeaderFooter() {
           />
           <span class="text-xl md:text-2xl">방산AI부트캠프</span>
         </a>
-        <nav class="flex flex-wrap gap-x-5 gap-y-2">${navLinks}</nav>
+        <nav class="flex flex-wrap items-center gap-x-5 gap-y-2" aria-label="주 메뉴">${navLinks}</nav>
       </div>
     </div>
   `;

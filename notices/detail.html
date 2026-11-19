@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>공지사항 | 전북대 방산 AI 부트캠프</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body>
+    <div class="page-wrap">
+      <header id="site-header"></header>
+      <main class="mx-auto w-full max-w-4xl px-4 py-12">
+        <a href="./index.html" class="font-semibold text-blue-800 hover:underline">← 공지사항 목록</a>
+        <article id="notice-detail" class="mt-8 hidden" aria-labelledby="notice-title">
+          <header class="border-b border-slate-200 pb-7">
+            <div class="flex flex-wrap items-center gap-3">
+              <span id="notice-category" class="rounded bg-blue-50 px-3 py-1 text-sm font-bold text-blue-800"></span>
+              <time id="notice-date" class="text-sm text-slate-500"></time>
+            </div>
+            <h1 id="notice-title" class="section-title mt-4 break-keep text-3xl font-bold leading-tight"></h1>
+            <p id="notice-summary" class="mt-4 break-keep text-base leading-7 text-slate-600"></p>
+          </header>
+          <section id="notice-facts-section" class="hidden py-8" aria-label="모집 안내">
+            <dl id="notice-facts" class="divide-y divide-slate-200 border-y border-slate-200"></dl>
+          </section>
+          <div id="notice-content" class="space-y-5 py-8 text-base leading-8 text-slate-800"></div>
+          <section id="notice-images-section" class="hidden border-t border-slate-200 py-7" aria-labelledby="notice-images-title">
+            <h2 id="notice-images-title" class="text-lg font-bold text-slate-900">카드뉴스</h2>
+            <div id="notice-images" class="mt-5 grid gap-8"></div>
+          </section>
+          <section id="notice-links-section" class="hidden border-t border-slate-200 py-7" aria-labelledby="notice-links-title">
+            <h2 id="notice-links-title" class="text-lg font-bold text-slate-900">관련 링크</h2>
+            <ul id="notice-links" class="mt-4 space-y-3"></ul>
+          </section>
+          <section id="notice-attachments-section" class="hidden border-t border-slate-200 py-7" aria-labelledby="notice-attachments-title">
+            <h2 id="notice-attachments-title" class="text-lg font-bold text-slate-900">첨부파일</h2>
+            <ul id="notice-attachments" class="mt-4 space-y-3"></ul>
+          </section>
+        </article>
+        <div id="notice-not-found" class="hidden rounded-lg border border-slate-200 px-6 py-14 text-center text-slate-600">해당 공지를 찾을 수 없습니다. 목록에서 다시 선택해 주세요.</div>
+      </main>
+      <footer id="site-footer"></footer>
+    </div>
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/notices-data.js"></script>
+    <script src="../assets/js/notice-detail.js"></script>
+  </body>
+</html>

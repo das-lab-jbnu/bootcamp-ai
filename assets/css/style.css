@@ -445,3 +445,83 @@ body.apply-modal-open {
   }
 }
 
+/* 공통 메뉴의 사업단 안내 하위 링크 */
+.site-nav-link {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.35rem;
+  color: #334155;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.site-nav-link:hover,
+.site-nav-link:focus-visible,
+.site-nav-group[open] > .site-nav-link {
+  color: #1e3a8a;
+}
+
+.site-nav-link:focus-visible,
+.site-nav-group-menu a:focus-visible {
+  outline: 2px solid #1d4ed8;
+  outline-offset: 3px;
+}
+
+.site-nav-group {
+  position: relative;
+}
+
+.site-nav-group > summary {
+  list-style: none;
+}
+
+.site-nav-group > summary::-webkit-details-marker {
+  display: none;
+}
+
+.site-nav-chevron {
+  font-size: 0.8em;
+  transition: transform 0.15s ease;
+}
+
+.site-nav-group[open] .site-nav-chevron {
+  transform: rotate(180deg);
+}
+
+.site-nav-group-menu {
+  position: absolute;
+  top: calc(100% + 0.3rem);
+  left: 0;
+  z-index: 50;
+  display: grid;
+  min-width: 11rem;
+  padding: 0.4rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.65rem;
+  background: #fff;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.16);
+}
+
+.site-nav-group-menu a {
+  padding: 0.65rem 0.8rem;
+  border-radius: 0.4rem;
+  color: #334155;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.site-nav-group-menu a:hover {
+  color: #1e3a8a;
+  background: #eff6ff;
+}
+
+@media (min-width: 768px) {
+  .site-nav-link {
+    font-size: 1.125rem;
+  }
+}
